@@ -205,7 +205,7 @@ const ActivarLicencia = () => {
                     onChange={(e) => setCodigo(e.target.value.toUpperCase())}
                     placeholder="saludvalpa-XXXXX-XXXXX-XXXXX"
                     className="w-full px-5 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-saludvalpa-blue focus:border-transparent font-mono text-center text-lg shadow-sm"
-                    maxLength={24}
+                    maxLength={30}
                   />
                   <p className="text-xs text-gray-500 mt-2 text-center">
                     Formato: saludvalpa-XXXXX-XXXXX-XXXXX o BETA-PRO-YYYY-XXXXX

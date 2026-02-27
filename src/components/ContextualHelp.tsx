@@ -251,7 +251,7 @@ const ContextualHelp = () => {
           <li>Confirma la activación</li>
         </ol>
         
-        <p>💰 <strong>Planes disponibles:</strong> Mensual ($299 MXN) o Anual ($2,990 MXN - 2 meses gratis)</p>
+        <p>💰 <strong>Plan disponible:</strong> Licencia Anual ($999 MXN)</p>
         <p>❓ <strong>¿Preguntas?</strong> Contacta a soporte@saludvalpa.app para asistencia personalizada.</p>
       `,
       relatedTopics: ['getting_started']

@@ -214,7 +214,7 @@ export async function activarLicencia(codigo: string): Promise<{
       // Códigos beta: 6 meses gratis
       expiracion.setMonth(expiracion.getMonth() + 6);
     } else {
-      // Códigos pagados: 1 año por defecto
+      // Licencias anuales: 1 año
       expiracion.setFullYear(expiracion.getFullYear() + 1);
     }
 
@@ -247,9 +247,7 @@ export async function activarLicencia(codigo: string): Promise<{
     // Determinar mensaje según tipo
     let tipoMensaje = 'PRO';
     if (esBeta) tipoMensaje = 'Beta Tester';
-    if (tipoLicencia === 'mensual') tipoMensaje = 'Mensual';
-    if (tipoLicencia === 'trimestral') tipoMensaje = 'Trimestral';
-    if (tipoLicencia === 'semestral') tipoMensaje = 'Semestral';
+    // Solo licencias anuales disponibles
     
     const precio = detalles?.precio ? ` ($${detalles.precio} MXN)` : '';
     
