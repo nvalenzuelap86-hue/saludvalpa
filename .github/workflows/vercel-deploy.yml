@@ -1,4 +1,4 @@
-name: Vercel Deploy
+name: Vercel Deploy - SaludValpa
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_SALUDVALPA }}
   NODE_VERSION: 18
 
 jobs:
@@ -27,31 +27,22 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: valpa-app/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: |
-          cd valpa-app
-          npm ci
+        run: npm ci
 
       - name: TypeScript type check
-        run: |
-          cd valpa-app
-          npx tsc --noEmit
+        run: npx tsc --noEmit
 
       - name: Lint code
-        run: |
-          cd valpa-app
-          npm run lint
+        run: npm run lint
 
       - name: Build application
-        run: |
-          cd valpa-app
-          npm run build
+        run: npm run build
 
       - name: Run tests (if available)
         run: |
-          cd valpa-app
           if [ -f "package.json" ] && grep -q '"test"' package.json; then
             npm test -- --passWithNoTests
           else
@@ -74,8 +65,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-args: '--prod'
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: valpa-app
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_SALUDVALPA }}
+          working-directory: .
 
   verify-preview:
     needs: deploy-preview
@@ -95,7 +86,6 @@ jobs:
 
       - name: Run deployment verification
         run: |
-          cd valpa-app
           # Get preview URL from deployment step
           DEPLOYMENT_URL="${{ needs.deploy-preview.outputs.preview-url }}"
           
@@ -144,10 +134,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-args: '--prod'
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: valpa-app
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_SALUDVALPA }}
+          working-directory: .
           alias-domains: |
-            valpa-app.vercel.app
+            saludvalpa-app.vercel.app
             valpa.app
             www.valpa.app
 
@@ -159,7 +149,7 @@ jobs:
             echo "DEPLOYMENT_URL=${{ steps.deploy.outputs.preview-url }}" >> $GITHUB_OUTPUT
           else
             # Fallback to known production URL
-            echo "DEPLOYMENT_URL=https://valpa-app.vercel.app" >> $GITHUB_OUTPUT
+            echo "DEPLOYMENT_URL=https://saludvalpa-app.vercel.app" >> $GITHUB_OUTPUT
           fi
 
   verify-production:
@@ -180,8 +170,7 @@ jobs:
 
       - name: Run deployment verification
         run: |
-          cd valpa-app
-          DEPLOYMENT_URL="https://valpa-app.vercel.app"
+          DEPLOYMENT_URL="https://saludvalpa-app.vercel.app"
           echo "Verifying deployment at: $DEPLOYMENT_URL"
           
           # Make verification script executable
@@ -197,11 +186,11 @@ jobs:
         run: |
           echo "## Deployment Verification Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Deployment URL:** https://valpa-app.vercel.app" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment URL:** https://saludvalpa-app.vercel.app" >> $GITHUB_STEP_SUMMARY
           echo "**Verification Time:** $(date -u)" >> $GITHUB_STEP_SUMMARY
           echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
-          echo "- Visit https://valpa-app.vercel.app to test the deployment" >> $GITHUB_STEP_SUMMARY
+          echo "- Visit https://saludvalpa-app.vercel.app to test the deployment" >> $GITHUB_STEP_SUMMARY
           echo "- Check Vercel dashboard for detailed deployment logs" >> $GITHUB_STEP_SUMMARY
           echo "- Monitor application performance and errors" >> $GITHUB_STEP_SUMMARY

@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "name": "saludvalpa-app",
+  "alias": ["valpa.app", "www.valpa.app"],
   "builds": [
     {
       "src": "package.json",

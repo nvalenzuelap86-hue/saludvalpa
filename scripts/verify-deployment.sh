@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deployment Verification Script for Valpa App
+# Deployment Verification Script for SaludValpa App
 # This script verifies that a deployment was successful
 
 set -e  # Exit on error
@@ -11,10 +11,10 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}=== Valpa App Deployment Verification ===${NC}"
+echo -e "${GREEN}=== SaludValpa App Deployment Verification ===${NC}"
 
 # Configuration
-DEPLOYMENT_URL="${1:-https://valpa-app.vercel.app}"
+DEPLOYMENT_URL="${1:-https://saludvalpa-app.vercel.app}"
 MAX_RETRIES=5
 RETRY_DELAY=10
 
@@ -49,13 +49,13 @@ check_page_content() {
     local url=$1
     echo -e "${YELLOW}Checking page content for: $url${NC}"
     
-    CONTENT=$(curl -s "$url" | grep -i "valpa" || true)
+    CONTENT=$(curl -s "$url" | grep -i "saludvalpa\|valpa" || true)
     
     if [ -n "$CONTENT" ]; then
-        echo -e "${GREEN}✓ Page contains 'Valpa' content${NC}"
+        echo -e "${GREEN}✓ Page contains 'SaludValpa' or 'Valpa' content${NC}"
         return 0
     else
-        echo -e "${RED}✗ Page does not contain expected 'Valpa' content${NC}"
+        echo -e "${RED}✗ Page does not contain expected 'SaludValpa' content${NC}"
         return 1
     fi
 }
@@ -284,8 +284,8 @@ while [[ $# -gt 0 ]]; do
             echo "  -h, --help              Show this help message"
             echo ""
             echo "Examples:"
-            echo "  $0 --url https://valpa-app.vercel.app"
-            echo "  $0 --url https://valpa-app-git-feature-branch.vercel.app --exit-on-failure"
+            echo "  $0 --url https://saludvalpa-app.vercel.app"
+            echo "  $0 --url https://saludvalpa-app-git-feature-branch.vercel.app --exit-on-failure"
             exit 0
             ;;
         *)
