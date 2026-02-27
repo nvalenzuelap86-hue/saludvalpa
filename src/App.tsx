@@ -1,0 +1,131 @@
+// ============================================================================
+// saludvalpa 3.0 - MAIN APP
+// ============================================================================
+
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { inicializarDB } from './db/database';
+import { useAppStore } from './stores/appStore';
+
+// Páginas
+import LandingPage from './pages/LandingPage';
+import Dashboard from './pages/Dashboard';
+import Pacientes from './pages/Pacientes';
+import PerfilPaciente from './pages/PerfilPaciente';
+import Agenda from './pages/Agenda';
+import Economia from './pages/Economia';
+import Biblioteca from './pages/Biblioteca';
+import Documentos from './pages/Documentos';
+import Configuracion from './pages/Configuracion';
+import ConfiguracionAvanzada from './pages/ConfiguracionAvanzada';
+import ActivarLicencia from './pages/ActivarLicencia';
+import Onboarding from './pages/Onboarding';
+import AcercaDeSaludValpa from './pages/AcercaDeSaludValpa';
+import InstalacionPWA from './pages/InstalacionPWA';
+
+// Módulos de fisioterapia (será reemplazado por sistema dinámico en Fase 2)
+import GestionRutinas from './modules/fisioterapia/rutinas/GestionRutinas';
+
+// Layout y protección
+import Layout from './components/Layout';
+import RequireSetup from './components/RequireSetup';
+
+function App() {
+  const { cargarConfiguracion, isLoading, isInitialized, configuracion } = useAppStore();
+
+  useEffect(() => {
+    // Inicializar la base de datos al montar la app
+    const init = async () => {
+      try {
+        await inicializarDB();
+        await cargarConfiguracion();
+
+        // Inicializar sistema de recordatorios
+        const { inicializarRecordatorios } = await import('./services/recordatoriosService');
+        await inicializarRecordatorios();
+      } catch (error) {
+        console.error('Error al inicializar la aplicación:', error);
+      }
+    };
+
+    init();
+  }, [cargarConfiguracion]);
+
+  // Pantalla de carga mientras se inicializa
+  if (isLoading || !isInitialized) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-saludvalpa-blue via-saludvalpa-teal to-saludvalpa-lime flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="mb-4">
+            <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+          </div>
+          <h2 className="text-2xl font-bold mb-2">saludvalpa</h2>
+          <p className="text-sm opacity-90">Tu movimiento, nuestra ciencia</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Determinar la ruta inicial basada en el estado de onboarding
+  const isOnboardingCompleted = configuracion?.profesion !== undefined;
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Ruta pública: Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* Ruta pública: Onboarding */}
+        <Route path="/onboarding" element={<Onboarding />} />
+        
+        {/* Ruta pública: Acerca de SaludValpa */}
+        <Route path="/acerca-de-saludvalpa" element={<AcercaDeSaludValpa />} />
+        
+        {/* Ruta pública: Instalación PWA */}
+        <Route path="/instalacion-pwa" element={<InstalacionPWA />} />
+
+        {/* Rutas protegidas: Requieren onboarding completo */}
+        <Route element={<RequireSetup />}>
+          <Route path="/app" element={<Layout />}>
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="pacientes" element={<Pacientes />} />
+            <Route path="pacientes/:id" element={<PerfilPaciente />} />
+            <Route path="agenda" element={<Agenda />} />
+            <Route path="economia" element={<Economia />} />
+            <Route path="biblioteca" element={<Biblioteca />} />
+            <Route path="rutinas" element={<GestionRutinas />} />
+            <Route path="documentos" element={<Documentos />} />
+            <Route path="configuracion" element={<Configuracion />} />
+            <Route path="configuracion-avanzada" element={<ConfiguracionAvanzada />} />
+            <Route path="activar-licencia" element={<ActivarLicencia />} />
+          </Route>
+        </Route>
+
+        {/* Redirección para rutas antiguas */}
+        <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+        <Route path="/pacientes" element={<Navigate to="/app/pacientes" replace />} />
+        <Route path="/agenda" element={<Navigate to="/app/agenda" replace />} />
+        <Route path="/economia" element={<Navigate to="/app/economia" replace />} />
+        <Route path="/biblioteca" element={<Navigate to="/app/biblioteca" replace />} />
+        <Route path="/rutinas" element={<Navigate to="/app/rutinas" replace />} />
+        <Route path="/documentos" element={<Navigate to="/app/documentos" replace />} />
+        <Route path="/configuracion" element={<Navigate to="/app/configuracion" replace />} />
+
+        {/* Redirección inteligente basada en estado de onboarding */}
+        <Route
+          path="*"
+          element={
+            isOnboardingCompleted ? (
+              <Navigate to="/app/dashboard" replace />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;

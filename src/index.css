@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colores personalizados de SaludValpa */
+  --color-saludvalpa-blue: #2c5d7d;
+  --color-saludvalpa-teal: #5fb4b4;
+  --color-saludvalpa-lime: #9bcb56;
+  --color-saludvalpa-blue-light: #e8f4f8;
+  --color-saludvalpa-green-light: #f0f8f0;
+  
+  /* Fuente */
+  --font-family-sans: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+@layer base {
+  :root {
+    font-family: var(--font-family-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background-color: white;
+    color: #111827;
+  }
+
+  /* Tour highlight styles */
+  .tour-highlight {
+    position: relative;
+    z-index: 99;
+    box-shadow: 0 0 0 4px rgba(44, 93, 125, 0.3) !important;
+    border-radius: 8px;
+    animation: pulse-highlight 2s infinite;
+  }
+
+  @keyframes pulse-highlight {
+    0% {
+      box-shadow: 0 0 0 4px rgba(44, 93, 125, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(44, 93, 125, 0.2);
+    }
+    100% {
+      box-shadow: 0 0 0 4px rgba(44, 93, 125, 0.3);
+    }
+  }
+}

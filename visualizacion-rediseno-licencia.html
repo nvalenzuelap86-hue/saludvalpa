@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualización Rediseño - Página de Activación de Licencia SaludValpa</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Colores personalizados de SaludValpa */
+        .bg-saludvalpa-blue { background-color: #2563eb; }
+        .text-saludvalpa-blue { color: #2563eb; }
+        .border-saludvalpa-blue { border-color: #2563eb; }
+        .bg-saludvalpa-teal { background-color: #0d9488; }
+        .text-saludvalpa-teal { color: #0d9488; }
+        .bg-saludvalpa-lime { background-color: #84cc16; }
+        .text-saludvalpa-lime { color: #84cc16; }
+        
+        /* Gradientes personalizados */
+        .gradient-saludvalpa {
+            background: linear-gradient(135deg, #2563eb 0%, #0d9488 100%);
+        }
+        
+        .gradient-saludvalpa-light {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(13, 148, 136, 0.1) 100%);
+        }
+        
+        /* Animaciones */
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s infinite;
+        }
+        
+        /* Estilos para scroll suave */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- ============================================================================ -->
+    <!-- VISUALIZACIÓN ESTÁTICA - REDISEÑO PÁGINA DE ACTIVACIÓN DE LICENCIA saludvalpa -->
+    <!-- ============================================================================ -->
+    <!-- Este archivo es una demostración visual del nuevo diseño de la página de -->
+    <!-- activación de licencia. No contiene funcionalidad React, solo HTML/CSS. -->
+    <!-- ============================================================================ -->
+    
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Banner informativo de visualización -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-blue-800 mb-2">📋 Visualización del Rediseño</h2>
+                    <p class="text-blue-700">
+                        Esta es una demostración estática del nuevo diseño de la página de activación de licencia.
+                        <span class="font-medium">No contiene funcionalidad React</span>, solo muestra la apariencia visual.
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <a href="#tarjeta-principal" class="bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg font-medium text-center transition-colors">
+                        Ver tarjeta principal
+                    </a>
+                    <a href="#validacion-codigo" class="bg-white border border-blue-300 hover:bg-blue-50 text-blue-800 px-4 py-2 rounded-lg font-medium text-center transition-colors">
+                        Ver validación de código
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto">
+            <!-- ============================================ -->
+            <!-- SECCIÓN 1: HEADER LIMPIO -->
+            <!-- ============================================ -->
+            <div class="text-center mb-10">
+                <div class="w-24 h-24 gradient-saludvalpa rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
+                    <span class="text-4xl text-white">🔑</span>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-3">
+                    Desbloquea SaludValpa PRO
+                </h1>
+                <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                    Accede a todas las herramientas profesionales para fisioterapeutas, psicólogos, médicos y más profesionales de la salud
+                </p>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- SECCIÓN 2: TARJETA PRINCIPAL DE LICENCIA -->
+            <!-- ============================================ -->
+            <div id="tarjeta-principal" class="bg-gradient-to-br from-saludvalpa-blue to-saludvalpa-teal rounded-2xl shadow-xl overflow-hidden mb-8">
+                <div class="p-8 md:p-10">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                        <!-- Columna izquierda: Información principal -->
+                        <div class="flex-1">
+                            <!-- Badge "Recomendado" -->
+                            <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
+                                <span class="text-lg">🏆</span>
+                                <span>Recomendado</span>
+                            </div>
+                            
+                            <!-- Título de la licencia -->
+                            <h2 class="text-3xl font-bold text-white mb-2">
+                                Licencia Anual Completa
+                            </h2>
+                            
+                            <!-- Precio destacado -->
+                            <div class="flex items-baseline gap-2 mb-6">
+                                <span class="text-5xl font-bold text-white">$999</span>
+                                <span class="text-white/80 text-lg">MXN</span>
+                                <span class="ml-4 px-3 py-1 bg-white/20 text-white text-sm rounded-full">
+                                    IVA incluido
+                                </span>
+                            </div>
+                            
+                            <!-- Lista de beneficios -->
+                            <ul class="space-y-3 mb-8">
+                                <li class="flex items-center gap-3 text-white">
+                                    <span class="text-xl">✓</span>
+                                    <span>Pacientes ilimitados</span>
+                                </li>
+                                <li class="flex items-center gap-3 text-white">
+                                    <span class="text-xl">✓</span>
+                                    <span>Marca blanca personalizable</span>
+                                </li>
+                                <li class="flex items-center gap-3 text-white">
+                                    <span class="text-xl">✓</span>
+                                    <span>Herramientas especializadas para tu profesión</span>
+                                </li>
+                                <li class="flex items-center gap-3 text-white">
+                                    <span class="text-xl">✓</span>
+                                    <span>Soporte prioritario 24/7</span>
+                                </li>
+                                <li class="flex items-center gap-3 text-white">
+                                    <span class="text-xl">✓</span>
+                                    <span>Backup en la nube automático</span>
+                                </li>
+                                <li class="flex items-center gap-3 text-white">
+                                    <span class="text-xl">✓</span>
+                                    <span>Actualizaciones incluidas por 1 año</span>
+                                </li>
+                            </ul>
+                            
+                            <!-- Botón de Mercado Pago -->
+                            <div class="space-y-4">
+                                <a
+                                    href="https://mpago.la/1siypQK"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="block w-full bg-white text-saludvalpa-blue px-6 py-4 rounded-xl hover:bg-gray-50 transition-colors text-center font-bold text-lg shadow-lg animate-pulse-subtle"
+                                >
+                                    Obtener Licencia
+                                </a>
+                                
+                                <p class="text-white/80 text-center text-sm">
+                                    <span class="inline-flex items-center gap-1">
+                                        <span>🔒</span>
+                                        Pago seguro con Mercado Pago
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Columna derecha: Códigos promocionales -->
+                        <div class="md:w-1/3">
+                            <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                        <span class="text-2xl">🎁</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-white">¿Tienes un código promocional?</h3>
+                                        <p class="text-white/80 text-sm">Contacta a soporte antes de realizar el pago</p>
+                                    </div>
+                                </div>
+                                
+                                <a
+                                    href="mailto:contacto@saludvalpa.app?subject=Código promocional SaludValpa"
+                                    class="block w-full bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-lg text-center font-medium transition-colors"
+                                >
+                                    Contactar Soporte
+                                </a>
+                                
+                                <div class="mt-4 pt-4 border-t border-white/20">
+                                    <p class="text-white/70 text-xs text-center">
+                                        También disponible por WhatsApp:
+                                    </p>
+                                    <a
+                                        href="https://wa.me/5215512769504"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="block mt-2 text-white text-sm text-center hover:underline"
+                                    >
+                                        +52 55 1276 9504
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- SECCIÓN 3: VALIDACIÓN DE CÓDIGO EXISTENTE -->
+            <!-- ============================================ -->
+            <div id="validacion-codigo" class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <span class="text-2xl">🔐</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                        ¿Ya tienes un código de licencia?
+                    </h3>
+                    <p class="text-gray-600">
+                        Ingresa tu código para activar SaludValpa PRO inmediatamente
+                    </p>
+                </div>
+                
+                <div class="max-w-md mx-auto">
+                    <div class="space-y-6">
+                        <!-- Campo de entrada de código -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Código de licencia
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="saludvalpa-XXXXX-XXXXX-XXXXX"
+                                class="w-full px-5 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-saludvalpa-blue focus:border-transparent font-mono text-center text-lg shadow-sm"
+                                maxlength="24"
+                                value="saludvalpa-PRO-2024-ABCDE"
+                                readonly
+                            />
+                            <p class="text-xs text-gray-500 mt-2 text-center">
+                                Formato: saludvalpa-XXXXX-XXXXX-XXXXX o BETA-PRO-YYYY-XXXXX
+                            </p>
+                        </div>
+                        
+                        <!-- Mensaje de éxito (ejemplo) -->
+                        <div class="bg-green-50 border border-green-200 text-green-800 p-4 rounded-xl">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">✅</span>
+                                <p class="text-sm font-medium">¡Licencia activada correctamente! Redirigiendo al dashboard...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Botón de validación -->
+                        <button
+                            class="w-full gradient-saludvalpa text-white px-6 py-4 rounded-xl hover:opacity-90 transition-opacity font-bold text-lg shadow-md"
+                        >
+                            Validar Código
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Estado actual del usuario -->
+                <div class="mt-8 pt-8 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-900 mb-4 text-center">Tu estado actual (ejemplo)</h4>
+                    
+                    <!-- Ejemplo 1: Versión gratuita -->
+                    <div class="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-6 mb-4">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <p class="text-orange-800 font-bold text-lg">📦 Versión gratuita</p>
+                                <p class="text-orange-700 mt-1">
+                                    ⏰ 14 días restantes • 
+                                    👥 Máximo 10 pacientes
+                                </p>
+                            </div>
+                            <button class="bg-orange-100 text-orange-700 hover:bg-orange-200 px-4 py-2 rounded-lg font-medium transition-colors">
+                                Ver características premium
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Ejemplo 2: Licencia activa -->
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <p class="text-green-800 font-bold text-lg">✅ Licencia activa</p>
+                                <p class="text-green-700 mt-1">
+                                    📅 Válida hasta: 27/02/2027 • 
+                                    👥 Pacientes ilimitados
+                                </p>
+                            </div>
+                            <span class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-medium">
+                                🎨 Marca blanca activa
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- SECCIÓN 4: FOOTER INFORMATIVO -->
+            <!-- ============================================ -->
+            <div class="text-center text-gray-500 text-sm space-y-2">
+                <p>
+                    SaludValpa PRO • Sistema de gestión profesional para fisioterapeutas, psicólogos, médicos, odontólogos y nutriólogos
+                </p>
+                <p class="flex flex-wrap items-center justify-center gap-4">
+                    <a href="mailto:contacto@saludvalpa.app" class="hover:text-saludvalpa-blue hover:underline">
+                        contacto@saludvalpa.app
+                    </a>
+                    <span>•</span>
+                    <a href="https://saludvalpa.app" target="_blank" rel="noopener noreferrer" class="hover:text-saludvalpa-blue hover:underline">
+                        saludvalpa.app
+                    </a>
+                    <span>•</span>
+                    <span>© 2026 SaludValpa</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECCIÓN 5: NOTAS EXPLICATIVAS -->
+    <!-- ============================================ -->
+    <div class="max-w-4xl mx-auto px-4 py-8 mt-12 border-t border-gray-200">
+        <div class="bg-gray-50 rounded-xl p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">📝 Notas sobre esta visualización</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-2">🎨 Elementos visuales incluidos:</h4>
+                        <ul class="text-gray-600 text-sm space-y-1">
+                            <li>• Tarjeta principal con gradiente azul-verde</li>
+                            <li>• Precio destacado de $999.00 MXN</li>
+                            <li>• Lista de 6 beneficios con checkmarks</li>
+                            <li>• Botón de Mercado Pago con animación sutil</li>
+                            <li>• Sección de códigos promocionales</li>
+                            <li>• Formulario de validación de código</li>
+                            <li>• Estados de licencia (gratuita/activa)</li>
+                            <li>• Diseño completamente responsive</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-2">📱 Responsive Design:</h4>
+                        <p class="text-gray-600 text-sm">
+                            El diseño se adapta a todos los dispositivos:
+                            <br>• <strong>Mobile:</strong> Columna única, padding reducido
+                            <br>• <strong>Tablet:</strong> Layout de 2 columnas en tarjeta principal
+                            <br>• <strong>Desktop:</strong> Layout completo con máximo ancho
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-2">🔧 Características técnicas:</h4>
+                        <ul class="text-gray-600 text-sm space-y-1">
+                            <li>• Tailwind CSS v3.4+ via CDN</li>
+                            <li>• Fuente Inter de Google Fonts</li>
+                            <li>• Gradientes personalizados SaludValpa</li>
+                            <li>• Animaciones CSS personalizadas</li>
+                            <li>• Scroll suave entre secciones</li>
+                            <li>• Compatible con todos los navegadores</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-2">📄 Uso de esta visualización:</h4>
+                        <p class="text-gray-600 text-sm">
+                            Este archivo HTML estático puede abrirse directamente en cualquier navegador.
+                            <br><br>
+                            <strong>Para probar el diseño responsive:</strong>
+                            <br>1. Abre el archivo en Chrome/Firefox
+                            <br>2. Usa las herramientas de desarrollador (F12)
+                            <br>3. Cambia entre dispositivos móviles/tablets/desktop
+                            <br>4. Observa cómo se adapta el layout
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Nota final -->
+        <div class="mt-8 p-6 bg-gradient-to-r from-blue-50 to-teal-50 border border-blue-200 rounded-xl">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-2xl">💡</span>
+                </div>
+                <div>
+                    <h4 class="font-bold text-blue-800 text-lg mb-2">Nota importante sobre esta visualización</h4>
+                    <p class="text-blue-700">
+                        Esta es <strong>solo una demostración visual estática</strong>. El componente React real en
+                        <code class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">saludvalpa-app/src/pages/ActivarLicencia.tsx</code>
+                        contiene toda la funcionalidad completa, incluyendo:
+                    </p>
+                    <ul class="text-blue-700 mt-2 space-y-1 list-disc list-inside">
+                        <li>Validación de códigos de licencia en tiempo real</li>
+                        <li>Integración con el sistema de licencias de SaludValpa</li>
+                        <li>Estado de React y manejo de formularios</li>
+                        <li>Redirección automática al dashboard tras activación</li>
+                        <li>Modal de características premium interactivo</li>
+                    </ul>
+                    <p class="text-blue-700 mt-3">
+                        <strong>Propósito:</strong> Esta visualización permite revisar el diseño visual antes de implementar cambios en el código React.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para mejorar la interactividad -->
+    <script>
+        // Script simple para demostración (no necesario para React)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cambiar entre ejemplos de estado de licencia
+            const toggleButtons = document.querySelectorAll('button.bg-orange-100, button.bg-green-100');
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    alert('En la implementación React, esto abriría el modal de características premium o cambiaría el estado.');
+                });
+            });
+            
+            // Simular validación de código
+            const validateButton = document.querySelector('button.gradient-saludvalpa');
+            if (validateButton) {
+                validateButton.addEventListener('click', function() {
+                    alert('En la implementación React, esto validaría el código con el backend y activaría la licencia.');
+                });
+            }
+            
+            // Mostrar mensaje de que es una visualización
+            console.log('📋 Visualización estática del rediseño de activación de licencia');
+            console.log('📍 Archivo: saludvalpa-app/visualizacion-rediseno-licencia.html');
+            console.log('🚀 Para ver la funcionalidad completa, revisa el componente React: src/pages/ActivarLicencia.tsx');
+        });
+    </script>
+</body>
+</html>
