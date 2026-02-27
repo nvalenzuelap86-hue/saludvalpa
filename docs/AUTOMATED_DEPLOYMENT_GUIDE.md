@@ -117,13 +117,14 @@ For application-specific environment variables, create a `.env.example` file and
 - TypeScript version: 5.9.3
 - Strict mode: Enabled
 - Type checking: Runs before deployment
-- Missing type definitions: Added for html2canvas and jspdf
+- Note: html2canvas v1.4.1 includes bundled TypeScript definitions - @types/html2canvas is deprecated and not required
 
-### Type Definitions Added
+### Type Definitions
 ```json
-"@types/html2canvas": "^1.4.3",
 "@types/jspdf": "^2.5.4"
 ```
+
+**Important**: html2canvas v1.4.1+ provides its own TypeScript definitions. The `@types/html2canvas` package is deprecated and should not be installed.
 
 ### Build Optimization
 To improve build performance and fix warnings:
