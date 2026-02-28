@@ -209,13 +209,58 @@
       "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-JUSJ5-O1PWB-UYBHB",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa"
+    },
+    {
+      "codigo": "SALUDVALPA-YVXCI-CVQH8-ZYE69",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa"
+    },
+    {
+      "codigo": "SALUDVALPA-RTF7V-IN3DP-V5STC",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa"
+    },
+    {
+      "codigo": "SALUDVALPA-58U49-ZNLFM-I7G8O",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa"
+    },
+    {
+      "codigo": "SALUDVALPA-FKY03-JD5BZ-GBRTR",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa"
     }
   ],
   "estadisticas": {
-    "total_generados": 22,
-    "disponibles": 22,
+    "total_generados": 27,
+    "disponibles": 27,
     "usados": 0,
-    "ingreso_potencial": 21978
+    "ingreso_potencial": 26973
   },
   "configuracion_automatizacion": {
     "api_endpoint": "https://api.valpa.app/licencias",
