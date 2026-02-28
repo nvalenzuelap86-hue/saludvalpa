@@ -8,9 +8,16 @@ import { TipoLicencia, EstadoLicencia, type Licencia } from '../types';
 
 // URL del archivo JSON de códigos (en public/)
 // Usar URL absoluta en producción para evitar problemas de ruta
-const LICENSE_CODES_URL = import.meta.env.PROD
-  ? `${window.location.origin}/license-codes.json`
-  : '/license-codes.json';
+// Agregar parámetro de cache-busting para evitar caché obsoleto
+const getLicenseCodesUrl = () => {
+  const baseUrl = import.meta.env.PROD
+    ? `${window.location.origin}/license-codes.json`
+    : '/license-codes.json';
+  
+  // Agregar timestamp para bustear caché (cambia cada 5 minutos)
+  const cacheBuster = Math.floor(Date.now() / (5 * 60 * 1000)); // Cambia cada 5 minutos
+  return `${baseUrl}?v=${cacheBuster}`;
+};
 
 // Cache para códigos válidos
 let cachedValidCodes: Set<string> | null = null;
@@ -74,9 +81,11 @@ async function cargarCodigosValidos(): Promise<{
     return { codes: cachedValidCodes, details: cachedCodeDetails };
   }
   
+  const licenseUrl = getLicenseCodesUrl();
+  
   try {
-    console.log(`🌐 Intentando cargar códigos desde: ${LICENSE_CODES_URL}`);
-    const response = await fetch(LICENSE_CODES_URL);
+    console.log(`🌐 Intentando cargar códigos desde: ${licenseUrl}`);
+    const response = await fetch(licenseUrl);
     
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'No error details');
@@ -118,7 +127,7 @@ async function cargarCodigosValidos(): Promise<{
     cachedCodeDetails = details;
     lastFetchTime = now;
     
-    console.log(`✅ Cargados ${codes.size} códigos válidos desde ${LICENSE_CODES_URL}`);
+    console.log(`✅ Cargados ${codes.size} códigos válidos desde ${licenseUrl}`);
     console.log(`   - Total en archivo: ${data.codigos.length}`);
     console.log(`   - Disponibles (estado="disponible"): ${disponiblesCount + usadosExcluidosCount}`);
     console.log(`   - Excluidos (ya usados): ${usadosExcluidosCount}`);
@@ -127,7 +136,7 @@ async function cargarCodigosValidos(): Promise<{
     return { codes, details };
   } catch (error) {
     console.error('❌ Error al cargar códigos de licencia:', error);
-    console.error(`   URL intentada: ${LICENSE_CODES_URL}`);
+    console.error(`   URL intentada: ${licenseUrl}`);
     console.error(`   Entorno: ${import.meta.env.PROD ? 'PRODUCCIÓN' : 'DESARROLLO'}`);
     console.error(`   Window location: ${window.location.origin}`);
     console.error(`   Import meta env: ${JSON.stringify(import.meta.env)}`);

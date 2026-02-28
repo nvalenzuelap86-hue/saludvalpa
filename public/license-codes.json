@@ -4,8 +4,8 @@
   "descripcion": "Códigos de licencia válidos para SaludValpa 3.0 - Solo licencias anuales (VERSIÓN SANITIZADA PARA REPOSITORIO PÚBLICO)",
   "precio_anual": 999,
   "moneda": "MXN",
-  "formato_codigo": "saludvalpa-XXXXX-XXXXX-XXXXX",
-  "regex_validacion": "^saludvalpa-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$",
+  "formato_codigo": "SALUDVALPA-XXXXX-XXXXX-XXXXX (case-insensitive)",
+  "regex_validacion": "^(saludvalpa|SALUDVALPA)-[A-Z0-9]{4,6}-[A-Z0-9]{4,6}-[A-Z0-9]{4,6}$",
   "contacto": {
     "email": "contacto@valpa.app",
     "whatsapp": "+52 55 1276 9504",
