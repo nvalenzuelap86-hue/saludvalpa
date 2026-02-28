@@ -222,3 +222,11 @@ logs/
 .cache/
 .temp/
 tmp/
+
+# Test and debug files (DO NOT COMMIT TO GIT)
+*-test.html
+*-debug.js
+*-test.js
+*-diagnostic.html
+test-*.html
+check_*.html
