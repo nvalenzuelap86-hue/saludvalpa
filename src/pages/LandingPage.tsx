@@ -2,7 +2,7 @@
 // saludvalpa 3.0 - LANDING PAGE
 // ============================================================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../stores/appStore';
 import Button from '../components/shared/Button';
@@ -18,6 +18,14 @@ const LandingPage = () => {
   const hasCompletedOnboarding = configuracion?.profesion !== undefined;
   // Check if license is active (pagada means paid)
   const isLicenseActive = licencia?.tipo === 'pagada';
+
+  // Redirigir automáticamente al dashboard si ya completó el onboarding
+  useEffect(() => {
+    if (hasCompletedOnboarding) {
+      console.log('🔀 LandingPage: Usuario ya completó onboarding, redirigiendo a /dashboard');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [hasCompletedOnboarding, navigate]);
 
   const benefits = [
     {
@@ -61,11 +69,11 @@ const LandingPage = () => {
   ];
 
   const handleGetStarted = () => {
-    if (hasCompletedOnboarding && isLicenseActive) {
+    if (hasCompletedOnboarding) {
+      // Usuario ya completó onboarding - ir al dashboard independientemente del tipo de licencia
       navigate('/dashboard');
-    } else if (hasCompletedOnboarding) {
-      navigate('/onboarding');
     } else {
+      // Usuario no ha completado onboarding - ir al onboarding
       navigate('/onboarding');
     }
   };

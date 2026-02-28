@@ -3,7 +3,7 @@
 // ============================================================================
 
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { inicializarDB } from './db/database';
 import { useAppStore } from './stores/appStore';
 
@@ -29,6 +29,13 @@ import GestionRutinas from './modules/fisioterapia/rutinas/GestionRutinas';
 // Layout y protección
 import Layout from './components/Layout';
 import RequireSetup from './components/RequireSetup';
+
+// Componente para redirigir pacientes con parámetros
+const RedirectPaciente = () => {
+  const { id } = useParams<{ id: string }>();
+  console.log('🔀 RedirectPaciente: Redirigiendo paciente ID:', id);
+  return <Navigate to={`/app/pacientes/${id}`} replace />;
+};
 
 function App() {
   const { cargarConfiguracion, isLoading, isInitialized, configuracion } = useAppStore();
@@ -67,7 +74,17 @@ function App() {
   }
 
   // Determinar la ruta inicial basada en el estado de onboarding
+  // Usar un enfoque más robusto que maneje mejor el estado de carga
   const isOnboardingCompleted = configuracion?.profesion !== undefined;
+  
+  // Debug logging para diagnóstico
+  console.log('🔍 App.tsx - Estado de redirección:', {
+    isLoading,
+    isInitialized,
+    hasConfig: !!configuracion,
+    configProfesion: configuracion?.profesion,
+    isOnboardingCompleted,
+  });
 
   return (
     <BrowserRouter>
@@ -105,18 +122,32 @@ function App() {
         {/* Redirección para rutas antiguas */}
         <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
         <Route path="/pacientes" element={<Navigate to="/app/pacientes" replace />} />
+        <Route path="/pacientes/:id" element={<RedirectPaciente />} />
         <Route path="/agenda" element={<Navigate to="/app/agenda" replace />} />
         <Route path="/economia" element={<Navigate to="/app/economia" replace />} />
         <Route path="/biblioteca" element={<Navigate to="/app/biblioteca" replace />} />
         <Route path="/rutinas" element={<Navigate to="/app/rutinas" replace />} />
         <Route path="/documentos" element={<Navigate to="/app/documentos" replace />} />
         <Route path="/configuracion" element={<Navigate to="/app/configuracion" replace />} />
+        <Route path="/configuracion-avanzada" element={<Navigate to="/app/configuracion-avanzada" replace />} />
 
         {/* Redirección inteligente basada en estado de onboarding */}
+        {/* Mejorada: Solo redirigir cuando estamos seguros del estado */}
         <Route
           path="*"
           element={
-            isOnboardingCompleted ? (
+            // Si todavía estamos cargando, no redirigir (ya se muestra pantalla de carga)
+            isLoading || !isInitialized ? (
+              <div className="min-h-screen bg-gradient-to-br from-saludvalpa-blue via-saludvalpa-teal to-saludvalpa-lime flex items-center justify-center">
+                <div className="text-center text-white">
+                  <div className="mb-4">
+                    <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  </div>
+                  <h2 className="text-2xl font-bold mb-2">saludvalpa</h2>
+                  <p className="text-sm opacity-90">Cargando redirección...</p>
+                </div>
+              </div>
+            ) : isOnboardingCompleted ? (
               <Navigate to="/app/dashboard" replace />
             ) : (
               <Navigate to="/" replace />

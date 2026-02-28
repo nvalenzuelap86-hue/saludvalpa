@@ -108,7 +108,7 @@ const Onboarding = () => {
   };
 
   const handleComplete = () => {
-    navigate('/dashboard');
+    navigate('/app/dashboard');
   };
 
   // Simple progress indicator

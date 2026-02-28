@@ -22,13 +22,16 @@ const RequireSetup = () => {
   }
 
   // Si no existe configuración O no está completo el onboarding, redirigir
-  if (!configuracion || !configuracion.branding?.nombreProfesional) {
-    console.log('🔀 RequireSetup: Redirigiendo a onboarding');
+  // Usamos la misma lógica que App.tsx: configuracion?.profesion !== undefined
+  if (configuracion?.profesion === undefined) {
+    console.log('🔀 RequireSetup: Redirigiendo a onboarding (profesion no definida)');
+    console.log('🔀 Configuración actual:', configuracion);
     return <Navigate to="/onboarding" replace />;
   }
 
   // Si todo está bien, renderizar las rutas protegidas
   console.log('✅ RequireSetup: Configuración OK, mostrando app');
+  console.log('✅ Profesión configurada:', configuracion.profesion);
   return <Outlet />;
 };
 

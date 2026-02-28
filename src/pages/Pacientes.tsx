@@ -39,7 +39,7 @@ const Pacientes = () => {
         setMostrarFormulario(false);
         // Navegar al perfil del nuevo paciente
         if (resultado.paciente) {
-          navigate(`/pacientes/${resultado.paciente.id}`);
+          navigate(`/app/pacientes/${resultado.paciente.id}`);
         }
       } else {
         alert(resultado.error || 'Error al crear paciente');
@@ -52,7 +52,9 @@ const Pacientes = () => {
   };
 
   const handleClickPaciente = (paciente: Paciente) => {
-    navigate(`/pacientes/${paciente.id}`);
+    console.log('Click en paciente:', paciente.id, paciente.nombre);
+    console.log('Navegando a:', `/app/pacientes/${paciente.id}`);
+    navigate(`/app/pacientes/${paciente.id}`);
   };
 
   return (
