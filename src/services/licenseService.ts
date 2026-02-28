@@ -7,7 +7,10 @@ import { db } from '../db/database';
 import { TipoLicencia, EstadoLicencia, type Licencia } from '../types';
 
 // URL del archivo JSON de códigos (en public/)
-const LICENSE_CODES_URL = '/license-codes.json';
+// Usar URL absoluta en producción para evitar problemas de ruta
+const LICENSE_CODES_URL = import.meta.env.PROD
+  ? `${window.location.origin}/license-codes.json`
+  : '/license-codes.json';
 
 // Cache para códigos válidos
 let cachedValidCodes: Set<string> | null = null;
@@ -67,16 +70,25 @@ async function cargarCodigosValidos(): Promise<{
   
   // Usar cache si está fresco
   if (cachedValidCodes && cachedCodeDetails && (now - lastFetchTime) < CACHE_DURATION) {
+    console.log(`📦 Usando cache de códigos (${cachedValidCodes.size} códigos válidos)`);
     return { codes: cachedValidCodes, details: cachedCodeDetails };
   }
   
   try {
+    console.log(`🌐 Intentando cargar códigos desde: ${LICENSE_CODES_URL}`);
     const response = await fetch(LICENSE_CODES_URL);
+    
     if (!response.ok) {
-      throw new Error(`Error al cargar códigos: ${response.status}`);
+      const errorText = await response.text().catch(() => 'No error details');
+      throw new Error(`HTTP ${response.status}: ${response.statusText}. ${errorText.substring(0, 100)}`);
     }
     
     const data = await response.json();
+    
+    // Validar estructura del JSON
+    if (!data.codigos || !Array.isArray(data.codigos)) {
+      throw new Error('Estructura de JSON inválida: falta propiedad "codigos" o no es un array');
+    }
     
     // Crear sets y maps para búsqueda rápida
     const codes = new Set<string>();
@@ -85,11 +97,19 @@ async function cargarCodigosValidos(): Promise<{
     // Obtener códigos ya usados
     const usedCodes = obtenerCodigosUsados();
     
+    let disponiblesCount = 0;
+    let usadosExcluidosCount = 0;
+    
     data.codigos.forEach((codigoInfo: any) => {
       // Solo incluir códigos que estén disponibles Y no hayan sido usados
-      if (codigoInfo.estado === 'disponible' && !usedCodes.has(codigoInfo.codigo)) {
-        codes.add(codigoInfo.codigo);
-        details.set(codigoInfo.codigo, codigoInfo);
+      if (codigoInfo.estado === 'disponible') {
+        if (!usedCodes.has(codigoInfo.codigo)) {
+          codes.add(codigoInfo.codigo);
+          details.set(codigoInfo.codigo, codigoInfo);
+          disponiblesCount++;
+        } else {
+          usadosExcluidosCount++;
+        }
       }
     });
     
@@ -98,11 +118,19 @@ async function cargarCodigosValidos(): Promise<{
     cachedCodeDetails = details;
     lastFetchTime = now;
     
-    console.log(`✅ Cargados ${codes.size} códigos válidos desde ${LICENSE_CODES_URL} (${usedCodes.size} códigos usados excluidos)`);
+    console.log(`✅ Cargados ${codes.size} códigos válidos desde ${LICENSE_CODES_URL}`);
+    console.log(`   - Total en archivo: ${data.codigos.length}`);
+    console.log(`   - Disponibles (estado="disponible"): ${disponiblesCount + usadosExcluidosCount}`);
+    console.log(`   - Excluidos (ya usados): ${usadosExcluidosCount}`);
+    console.log(`   - Códigos usados en localStorage: ${usedCodes.size}`);
     
     return { codes, details };
   } catch (error) {
     console.error('❌ Error al cargar códigos de licencia:', error);
+    console.error(`   URL intentada: ${LICENSE_CODES_URL}`);
+    console.error(`   Entorno: ${import.meta.env.PROD ? 'PRODUCCIÓN' : 'DESARROLLO'}`);
+    console.error(`   Window location: ${window.location.origin}`);
+    console.error(`   Import meta env: ${JSON.stringify(import.meta.env)}`);
     
     // Fallback a códigos hardcodeados si falla la carga
     const fallbackCodes = new Set([
@@ -115,9 +143,12 @@ async function cargarCodigosValidos(): Promise<{
     fallbackCodes.forEach(code => {
       fallbackDetails.set(code, {
         tipo: 'anual',
-        duracion_dias: 365
+        duracion_dias: 365,
+        es_fallback: true
       });
     });
+    
+    console.warn(`⚠️ Usando códigos de fallback (${fallbackCodes.size} códigos)`);
     
     return { codes: fallbackCodes, details: fallbackDetails };
   }
@@ -132,28 +163,55 @@ export async function validarCodigoLicencia(codigo: string): Promise<{
   detalles?: any;
   mensaje?: string;
 }> {
-  // Formato esperado: saludvalpa-XXXXX-XXXXX-XXXXX
+  console.log(`🔍 Validando código: "${codigo}"`);
+  
+  // Formato esperado:
+  // 1. saludvalpa-XXXXX-XXXXX-XXXXX (segmentos alfanuméricos de longitud variable)
+  // 2. BETA-PRO-YYYY-XXXXX (códigos legacy)
   // Usamos flag 'i' para case-insensitive porque normalizamos a mayúsculas después
-  const regexValpa = /^saludvalpa-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/i;
+  // Los códigos de prueba tienen patrones como: SALUDVALPA-TEST1-00001-00001 (5,5,5)
+  // y SALUDVALPA-TEST10-00010-00010 (6,5,5)
+  const regexValpa = /^(saludvalpa-[A-Z0-9]{4,6}-[A-Z0-9]{4,6}-[A-Z0-9]{4,6}|BETA-PRO-[A-Z0-9]{4,6}-[A-Z0-9]{4,6})$/i;
   
   const codigoNormalizado = codigo.toUpperCase().trim();
+  console.log(`   Normalizado: "${codigoNormalizado}"`);
   
   if (!regexValpa.test(codigo)) {
+    console.log(`❌ Falló validación de formato: "${codigo}" no coincide con regex`);
     return {
       valido: false,
-      mensaje: 'Formato de código inválido. Use: saludvalpa-XXXXX-XXXXX-XXXXX'
+      mensaje: 'Formato de código inválido. Use: saludvalpa-XXXXX-XXXXX-XXXXX o BETA-PRO-YYYY-XXXXX'
     };
   }
+  
+  console.log(`✅ Formato válido`);
   
   // Cargar códigos válidos
   const { codes, details } = await cargarCodigosValidos();
   
+  console.log(`   Total códigos válidos cargados: ${codes.size}`);
+  
   if (!codes.has(codigoNormalizado)) {
-    return {
-      valido: false,
-      mensaje: 'Código no registrado o ya utilizado. Verifica o contacta soporte.'
-    };
+    console.log(`❌ Código no encontrado en códigos válidos: "${codigoNormalizado}"`);
+    
+    // Proporcionar más información de diagnóstico
+    const usedCodes = obtenerCodigosUsados();
+    if (usedCodes.has(codigoNormalizado)) {
+      console.log(`   ⚠️ Código marcado como usado en localStorage`);
+      return {
+        valido: false,
+        mensaje: 'Este código ya ha sido utilizado. Cada código solo puede usarse una vez.'
+      };
+    } else {
+      console.log(`   ℹ️ Código no encontrado en la lista de códigos disponibles`);
+      return {
+        valido: false,
+        mensaje: 'Código no registrado o no disponible. Verifica el código o contacta soporte.'
+      };
+    }
   }
+  
+  console.log(`✅ Código válido encontrado`);
   
   return {
     valido: true,
