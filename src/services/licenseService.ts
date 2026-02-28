@@ -135,12 +135,13 @@ export async function validarCodigoLicencia(codigo: string): Promise<{
   mensaje?: string;
 }> {
   // Formato esperado: saludvalpa-XXXXX-XXXXX-XXXXX o BETA-PRO-YYYY-XXXXX
-  const regexValpa = /^saludvalpa-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/;
-  const regexBeta = /^BETA-PRO-\d{4}-[A-Z0-9]{5}$/;
+  // Usamos flag 'i' para case-insensitive porque normalizamos a mayúsculas después
+  const regexValpa = /^saludvalpa-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/i;
+  const regexBeta = /^BETA-PRO-\d{4}-[A-Z0-9]{5}$/i;
   
   const codigoNormalizado = codigo.toUpperCase().trim();
   
-  if (!regexValpa.test(codigoNormalizado) && !regexBeta.test(codigoNormalizado)) {
+  if (!regexValpa.test(codigo) && !regexBeta.test(codigo)) {
     return {
       valido: false,
       mensaje: 'Formato de código inválido. Use: saludvalpa-XXXXX-XXXXX-XXXXX o BETA-PRO-YYYY-XXXXX'
