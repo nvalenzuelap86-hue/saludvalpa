@@ -104,7 +104,7 @@ const GuiaInstalacionPWA = () => {
                 <div className="flex-shrink-0 w-8 h-8 bg-saludvalpa-blue text-white rounded-full flex items-center justify-center font-bold">1</div>
                 <div>
                   <h4 className="font-bold text-gray-900 mb-2">Abre SaludValpa en Chrome</h4>
-                  <p className="text-gray-600">Ve a <strong>saludvalpa.app</strong> en tu navegador Chrome</p>
+                  <p className="text-gray-600">Ve a <strong>valpa.app</strong> en tu navegador Chrome</p>
                 </div>
               </div>
 
@@ -166,7 +166,7 @@ const GuiaInstalacionPWA = () => {
                 <div className="flex-shrink-0 w-8 h-8 bg-saludvalpa-blue text-white rounded-full flex items-center justify-center font-bold">1</div>
                 <div>
                   <h4 className="font-bold text-gray-900 mb-2">Abre SaludValpa en Safari</h4>
-                  <p className="text-gray-600">Ve a <strong>saludvalpa.app</strong> en Safari (no uses otros navegadores)</p>
+                  <p className="text-gray-600">Ve a <strong>valpa.app</strong> en Safari (no uses otros navegadores)</p>
                 </div>
               </div>
 
@@ -292,7 +292,7 @@ const GuiaInstalacionPWA = () => {
             <p className="text-gray-600">
               • Actualiza tu navegador a la última versión
               <br />
-              • Asegúrate de estar en <strong>saludvalpa.app</strong> (no en localhost)
+              • Asegúrate de estar en <strong>valpa.app</strong> (no en localhost)
               <br />
               • Intenta desde el menú del navegador (tres puntos → "Instalar app")
             </p>
@@ -324,7 +324,7 @@ const GuiaInstalacionPWA = () => {
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h4 className="font-bold text-blue-800 mb-2">¿Necesitas ayuda?</h4>
           <p className="text-blue-700">
-            Si tienes problemas para instalar SaludValpa, contáctanos en <strong>soporte@saludvalpa.app</strong> o por WhatsApp al <strong>52 5512769504</strong>
+            Si tienes problemas para instalar SaludValpa, contáctanos en <strong>soporte@valpa.app</strong> o por WhatsApp al <strong>52 5512769504</strong>
           </p>
         </div>
       </Card>

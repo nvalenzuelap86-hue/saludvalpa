@@ -252,7 +252,7 @@ const ContextualHelp = () => {
         </ol>
         
         <p>💰 <strong>Plan disponible:</strong> Licencia Anual ($999 MXN)</p>
-        <p>❓ <strong>¿Preguntas?</strong> Contacta a soporte@saludvalpa.app para asistencia personalizada.</p>
+        <p>❓ <strong>¿Preguntas?</strong> Contacta a soporte@valpa.app para asistencia personalizada.</p>
       `,
       relatedTopics: ['getting_started']
     }

@@ -153,7 +153,7 @@ const ActivarLicencia = () => {
                   </div>
                   
                   <a
-                    href="mailto:contacto@saludvalpa.app?subject=Código promocional SaludValpa"
+                    href="mailto:contacto@valpa.app?subject=Código promocional SaludValpa"
                     className="block w-full bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-lg text-center font-medium transition-colors"
                   >
                     Contactar Soporte
@@ -293,12 +293,12 @@ const ActivarLicencia = () => {
               configuracion?.profesion === 'nutricion' ? 'nutriólogos' : 'profesionales de la salud'}
           </p>
           <p className="flex items-center justify-center gap-4">
-            <a href="mailto:contacto@saludvalpa.app" className="hover:text-saludvalpa-blue hover:underline">
-              contacto@saludvalpa.app
+            <a href="mailto:contacto@valpa.app" className="hover:text-saludvalpa-blue hover:underline">
+              contacto@valpa.app
             </a>
             <span>•</span>
-            <a href="https://saludvalpa.app" target="_blank" rel="noopener noreferrer" className="hover:text-saludvalpa-blue hover:underline">
-              saludvalpa.app
+            <a href="https://valpa.app" target="_blank" rel="noopener noreferrer" className="hover:text-saludvalpa-blue hover:underline">
+              valpa.app
             </a>
             <span>•</span>
             <span>© {new Date().getFullYear()} SaludValpa</span>

@@ -108,16 +108,14 @@ async function cargarCodigosValidos(): Promise<{
     const fallbackCodes = new Set([
       'saludvalpa-X9K2M-7P4QW-3T8ZN',
       'saludvalpa-B5H3R-9V6YL-2F4GJ',
-      'saludvalpa-C8N1K-4M7PX-6D9WT',
-      'BETA-PRO-2026-A1B2C',
-      'BETA-PRO-2026-D3E4F'
+      'saludvalpa-C8N1K-4M7PX-6D9WT'
     ]);
     
     const fallbackDetails = new Map();
     fallbackCodes.forEach(code => {
       fallbackDetails.set(code, {
-        tipo: code.startsWith('BETA') ? 'beta' : 'anual',
-        duracion_dias: code.startsWith('BETA') ? 180 : 365
+        tipo: 'anual',
+        duracion_dias: 365
       });
     });
     
@@ -134,17 +132,16 @@ export async function validarCodigoLicencia(codigo: string): Promise<{
   detalles?: any;
   mensaje?: string;
 }> {
-  // Formato esperado: saludvalpa-XXXXX-XXXXX-XXXXX o BETA-PRO-YYYY-XXXXX
+  // Formato esperado: saludvalpa-XXXXX-XXXXX-XXXXX
   // Usamos flag 'i' para case-insensitive porque normalizamos a mayúsculas después
   const regexValpa = /^saludvalpa-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/i;
-  const regexBeta = /^BETA-PRO-\d{4}-[A-Z0-9]{5}$/i;
   
   const codigoNormalizado = codigo.toUpperCase().trim();
   
-  if (!regexValpa.test(codigo) && !regexBeta.test(codigo)) {
+  if (!regexValpa.test(codigo)) {
     return {
       valido: false,
-      mensaje: 'Formato de código inválido. Use: saludvalpa-XXXXX-XXXXX-XXXXX o BETA-PRO-YYYY-XXXXX'
+      mensaje: 'Formato de código inválido. Use: saludvalpa-XXXXX-XXXXX-XXXXX'
     };
   }
   
@@ -205,15 +202,11 @@ export async function activarLicencia(codigo: string): Promise<{
     const ahora = new Date();
     const expiracion = new Date(ahora);
     const detalles = validacion.detalles;
-    const esBeta = codigo.startsWith('BETA');
-    const tipoLicencia = detalles?.tipo || (esBeta ? 'beta' : 'anual');
+    const tipoLicencia = detalles?.tipo || 'anual';
     
     // Calcular duración basada en el tipo
     if (detalles?.duracion_dias) {
       expiracion.setDate(expiracion.getDate() + detalles.duracion_dias);
-    } else if (esBeta) {
-      // Códigos beta: 6 meses gratis
-      expiracion.setMonth(expiracion.getMonth() + 6);
     } else {
       // Licencias anuales: 1 año
       expiracion.setFullYear(expiracion.getFullYear() + 1);
@@ -228,8 +221,8 @@ export async function activarLicencia(codigo: string): Promise<{
       limitePacientes: undefined, // Sin límite
       metadata: {
         tipo: tipoLicencia,
-        duracionDias: detalles?.duracion_dias || (esBeta ? 180 : 365),
-        precio: detalles?.precio || (esBeta ? 0 : 800)
+        duracionDias: detalles?.duracion_dias || 365,
+        precio: detalles?.precio || 800
       }
     };
 
@@ -247,7 +240,6 @@ export async function activarLicencia(codigo: string): Promise<{
 
     // Determinar mensaje según tipo
     let tipoMensaje = 'PRO';
-    if (esBeta) tipoMensaje = 'Beta Tester';
     // Solo licencias anuales disponibles
     
     const precio = detalles?.precio ? ` ($${detalles.precio} MXN)` : '';

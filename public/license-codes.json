@@ -1,311 +1,23 @@
 {
   "version": "2.0",
-  "fecha_actualizacion": "2026-02-27",
+  "fecha_actualizacion": "2026-02-28",
   "descripcion": "Códigos de licencia válidos para SaludValpa 3.0 - Solo licencias anuales",
   "precio_anual": 999,
   "moneda": "MXN",
   "formato_codigo": "saludvalpa-XXXXX-XXXXX-XXXXX",
   "regex_validacion": "^saludvalpa-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$",
   "contacto": {
-    "email": "contacto@saludvalpa.app",
+    "email": "contacto@valpa.app",
     "whatsapp": "+52 55 1276 9504",
-    "sitio_web": "https://saludvalpa.app"
+    "sitio_web": "https://valpa.app"
   },
   "codigos": [
-    {
-      "codigo": "saludvalpa-X9K2M-7P4QW-3T8ZN",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-B5H3R-9V6YL-2F4GJ",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-C8N1K-4M7PX-6D9WT",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-Q2L5V-8Z3JR-1Y7HF",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-W6T9S-3K4NB-7M2CX",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-E4P8G-2R5DQ-9A1VY",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-U7H3Z-6L9WK-4J2MT",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-F1X5N-8B4CR-3T7PS",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-R9V2Y-5K8FW-1Q6HJ",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-M3D6L-7G1ZX-4N9TB",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-01-30T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "BETA-PRO-2026-A1B2C",
-      "tipo": "beta",
-      "duracion_dias": 180,
-      "precio": 0,
-      "generado": "2026-01-01T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Código beta tester (6 meses gratis)"
-    },
-    {
-      "codigo": "BETA-PRO-2026-D3E4F",
-      "tipo": "beta",
-      "duracion_dias": 180,
-      "precio": 0,
-      "generado": "2026-01-01T00:00:00Z",
-      "estado": "disponible",
-      "descripcion": "Código beta tester (6 meses gratis)"
-    },
-    {
-      "codigo": "saludvalpa-S6B72-JG5ZH-8SJZ6",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:05:58.601Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-NKUFC-8AJZ1-UQASN",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:05:58.602Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-KTG1C-3W7NH-6VKZ8",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:05:58.602Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-LJC11-JW176-BH8JT",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-SLVSH-XRU8F-R7EC2",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-5ZT4L-WNABM-ABFGS",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-9VGRV-KCF5B-GSKBA",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-ZETW6-1FZUC-5SZ5G",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-UEXM8-KV9G9-58V4J",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-KZZUK-AL8W6-NT2NZ",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-V1A42-UWSGR-EN6ZF",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-MYWR3-AZZ52-SJ43C",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-HD81P-3RB1H-JWPGU",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-1LQDX-BMY77-6QZQZ",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-NML6A-17ND2-6VR6P",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-Y499U-LSERL-Y18GL",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-DNPJK-A253M-3YG5Z",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-VNBAZ-LZK1F-SDEB6",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-NN9CU-3UPRW-9KQCH",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
-    {
-      "codigo": "saludvalpa-4PA8E-KCDWH-KG5QY",
-      "tipo": "anual",
-      "duracion_dias": 365,
-      "precio": 999,
-      "generado": "2026-02-21T02:06:11.628Z",
-      "estado": "disponible",
-      "descripcion": "Licencia anual completa"
-    },
     {
       "codigo": "saludvalpa-VGLSG-XEV39-W585G",
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -314,7 +26,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -323,7 +35,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -332,7 +44,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -341,7 +53,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -350,7 +62,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -359,7 +71,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -368,7 +80,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -377,7 +89,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -386,7 +98,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -395,7 +107,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -404,7 +116,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -413,7 +125,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -422,7 +134,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -431,7 +143,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -440,7 +152,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -449,7 +161,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -458,7 +170,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -467,7 +179,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -476,7 +188,7 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     },
@@ -485,20 +197,20 @@
       "tipo": "anual",
       "duracion_dias": 365,
       "precio": 999,
-      "generado": "2026-02-27T23:35:39.903Z",
+      "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
     }
   ],
   "estadisticas": {
-    "total_generados": 53,
-    "disponibles": 53,
+    "total_generados": 21,
+    "disponibles": 21,
     "usados": 0,
-    "ingreso_potencial": 50949
+    "ingreso_potencial": 20979
   },
   "configuracion_automatizacion": {
-    "api_endpoint": "https://api.saludvalpa.app/licencias",
-    "webhook_activacion": "https://api.saludvalpa.app/webhook/activacion",
+    "api_endpoint": "https://api.valpa.app/licencias",
+    "webhook_activacion": "https://api.valpa.app/webhook/activacion",
     "version_sistema": "manual_v2"
   }
 }

@@ -88,7 +88,7 @@ const Onboarding = () => {
             acento: '#9BCB56',
           },
           tema: 'saludvalpa',
-          piePagina: 'Creado en saludvalpa.app - versión gratuita',
+          piePagina: 'Creado en valpa.app - versión gratuita',
           mostrarMarcaDeAgua: true,
           formatoDocumentos: 'formal',
         },

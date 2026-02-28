@@ -233,7 +233,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 text-center text-gray-600">
           <p className="mb-2">© 2025 SaludValpa.app - Tu movimiento, nuestra ciencia</p>
           <p className="mb-2 text-sm">
-            <a href="mailto:contacto@saludvalpa.app" className="text-saludvalpa-blue hover:underline">contacto@saludvalpa.app</a>
+            <a href="mailto:contacto@valpa.app" className="text-saludvalpa-blue hover:underline">contacto@valpa.app</a>
           </p>
           <p className="text-sm">
             <a href="/acerca-de-saludvalpa" className="hover:text-saludvalpa-blue">Acerca de</a> •
