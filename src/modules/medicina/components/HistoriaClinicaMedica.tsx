@@ -2,24 +2,38 @@ import { useState } from 'react';
 import type { DatosMedicinaGeneral } from '../../../types';
 
 interface HistoriaClinicaMedicaProps {
-  datos: DatosMedicinaGeneral;
+  datos?: DatosMedicinaGeneral;
   onChange: (datos: DatosMedicinaGeneral) => void;
 }
 
-export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClinicaMedicaProps) {
+const defaultDatos: DatosMedicinaGeneral = {
+  diagnostico: [],
+  tratamiento: {
+    medicamentos: [],
+    indicaciones: [],
+    estudiosSolicitados: [],
+    interconsultas: [],
+  },
+  recomendaciones: [],
+};
+
+export default function HistoriaClinicaMedica({ datos = defaultDatos, onChange }: HistoriaClinicaMedicaProps) {
   const [motivoConsulta, setMotivoConsulta] = useState('');
   const [enfermedadActual, setEnfermedadActual] = useState('');
   const [revisionPorSistemas, setRevisionPorSistemas] = useState('');
 
+  // Safe datos access - ensure datos is never undefined
+  const safeDatos = datos || defaultDatos;
+
   const handleChange = (campo: keyof DatosMedicinaGeneral, valor: any) => {
     onChange({
-      ...datos,
+      ...safeDatos,
       [campo]: valor,
     });
   };
 
   const handleAntecedentesChange = (tipo: keyof NonNullable<DatosMedicinaGeneral['antecedentesPersonales']>, valor: string[]) => {
-    const antecedentesActuales = datos.antecedentesPersonales || {
+    const antecedentesActuales = safeDatos.antecedentesPersonales || {
       patologicos: [],
       quirurgicos: [],
       alergicos: [],
@@ -34,7 +48,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
   };
 
   const handleExploracionChange = (sistema: keyof NonNullable<DatosMedicinaGeneral['exploracionFisica']>, valor: string) => {
-    const exploracionActual = datos.exploracionFisica || {
+    const exploracionActual = safeDatos.exploracionFisica || {
       cabezaCuello: '',
       torax: '',
       abdomen: '',
@@ -51,7 +65,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
   const agregarAntecedente = (tipo: keyof NonNullable<DatosMedicinaGeneral['antecedentesPersonales']>, valor: string) => {
     if (!valor.trim()) return;
     
-    const antecedentesActuales = datos.antecedentesPersonales || {
+    const antecedentesActuales = safeDatos.antecedentesPersonales || {
       patologicos: [],
       quirurgicos: [],
       alergicos: [],
@@ -64,7 +78,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
   };
 
   const eliminarAntecedente = (tipo: keyof NonNullable<DatosMedicinaGeneral['antecedentesPersonales']>, indice: number) => {
-    const antecedentesActuales = datos.antecedentesPersonales || {
+    const antecedentesActuales = safeDatos.antecedentesPersonales || {
       patologicos: [],
       quirurgicos: [],
       alergicos: [],
@@ -169,7 +183,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
                 </button>
               </div>
               <div className="space-y-1">
-                {(datos.antecedentesPersonales?.patologicos || []).map((antecedente, idx) => (
+                {(safeDatos.antecedentesPersonales?.patologicos || []).map((antecedente, idx) => (
                   <div key={idx} className="flex items-center justify-between bg-white p-2 rounded border">
                     <span className="text-sm">{antecedente}</span>
                     <button
@@ -218,7 +232,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
                 </button>
               </div>
               <div className="space-y-1">
-                {(datos.antecedentesPersonales?.quirurgicos || []).map((antecedente, idx) => (
+                {(safeDatos.antecedentesPersonales?.quirurgicos || []).map((antecedente, idx) => (
                   <div key={idx} className="flex items-center justify-between bg-white p-2 rounded border">
                     <span className="text-sm">{antecedente}</span>
                     <button
@@ -267,7 +281,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
                 </button>
               </div>
               <div className="space-y-1">
-                {(datos.antecedentesPersonales?.alergicos || []).map((antecedente, idx) => (
+                {(safeDatos.antecedentesPersonales?.alergicos || []).map((antecedente, idx) => (
                   <div key={idx} className="flex items-center justify-between bg-white p-2 rounded border">
                     <span className="text-sm">{antecedente}</span>
                     <button
@@ -316,7 +330,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
                 </button>
               </div>
               <div className="space-y-1">
-                {(datos.antecedentesPersonales?.toxicos || []).map((antecedente, idx) => (
+                {(safeDatos.antecedentesPersonales?.toxicos || []).map((antecedente, idx) => (
                   <div key={idx} className="flex items-center justify-between bg-white p-2 rounded border">
                     <span className="text-sm">{antecedente}</span>
                     <button
@@ -344,7 +358,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
               Cabeza y Cuello
             </label>
             <textarea
-              value={datos.exploracionFisica?.cabezaCuello || ''}
+              value={safeDatos.exploracionFisica?.cabezaCuello || ''}
               onChange={(e) => handleExploracionChange('cabezaCuello', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               rows={2}
@@ -357,7 +371,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
               Tórax
             </label>
             <textarea
-              value={datos.exploracionFisica?.torax || ''}
+              value={safeDatos.exploracionFisica?.torax || ''}
               onChange={(e) => handleExploracionChange('torax', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               rows={2}
@@ -370,7 +384,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
               Abdomen
             </label>
             <textarea
-              value={datos.exploracionFisica?.abdomen || ''}
+              value={safeDatos.exploracionFisica?.abdomen || ''}
               onChange={(e) => handleExploracionChange('abdomen', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               rows={2}
@@ -383,7 +397,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
               Extremidades
             </label>
             <textarea
-              value={datos.exploracionFisica?.extremidades || ''}
+              value={safeDatos.exploracionFisica?.extremidades || ''}
               onChange={(e) => handleExploracionChange('extremidades', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               rows={2}
@@ -396,7 +410,7 @@ export default function HistoriaClinicaMedica({ datos, onChange }: HistoriaClini
               Examen Neurológico
             </label>
             <textarea
-              value={datos.exploracionFisica?.neurologico || ''}
+              value={safeDatos.exploracionFisica?.neurologico || ''}
               onChange={(e) => handleExploracionChange('neurologico', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               rows={2}

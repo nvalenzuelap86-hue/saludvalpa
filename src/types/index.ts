@@ -96,6 +96,404 @@ export const TipoDocumento = {
 } as const;
 export type TipoDocumento = typeof TipoDocumento[keyof typeof TipoDocumento];
 
+// Categorización de documentos para filtrado y organización
+export const DocumentCategory = {
+  ADMINISTRATIVO: 'administrativo',
+  MEDICO: 'medico',
+} as const;
+export type DocumentCategory = typeof DocumentCategory[keyof typeof DocumentCategory];
+
+// ----------------------------------------------------------------------------
+// SISTEMA DE DOCUMENTOS POR ESPECIALIDAD
+// ----------------------------------------------------------------------------
+
+/**
+ * Documento especializado por profesión con configuración para generación
+ */
+export interface DocumentoEspecialidad {
+  id: string;
+  tipoDocumento: TipoDocumento;
+  nombre: string;
+  descripcion: string;
+  icono: string;
+  especialidad: TipoProfesion;
+  categoria: DocumentCategory;
+  componenteGenerador: string; // Nombre del componente React
+  requiereSesion?: boolean;
+}
+
+/**
+ * Configuración completa de documentos disponibles por especialidad
+ */
+export const DOCUMENTOS_POR_ESPECIALIDAD: Record<TipoProfesion, DocumentoEspecialidad[]> = {
+  [TipoProfesion.FISIOTERAPIA]: [
+    {
+      id: 'eval-fisio',
+      tipoDocumento: TipoDocumento.EVALUACION_FISIOTERAPEUTICA,
+      nombre: 'Evaluación Fisioterapéutica',
+      descripcion: 'Evaluación inicial completa del paciente',
+      icono: '📋',
+      especialidad: TipoProfesion.FISIOTERAPIA,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'GenerarEvaluacionFisioterapeutica'
+    },
+    {
+      id: 'plan-tratamiento',
+      tipoDocumento: TipoDocumento.PLAN_TRATAMIENTO,
+      nombre: 'Plan de Tratamiento',
+      descripcion: 'Plan personalizado de ejercicios y terapias',
+      icono: '📝',
+      especialidad: TipoProfesion.FISIOTERAPIA,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'GenerarPlanTratamiento'
+    },
+    {
+      id: 'nota-evolucion',
+      tipoDocumento: TipoDocumento.NOTA_EVOLUCION_MEDICA,
+      nombre: 'Nota de Evolución',
+      descripcion: 'Seguimiento del progreso del paciente',
+      icono: '📈',
+      especialidad: TipoProfesion.FISIOTERAPIA,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'GenerarNotaEvolucion'
+    },
+    {
+      id: 'consentimiento',
+      tipoDocumento: TipoDocumento.CONSENTIMIENTO_INFORMADO,
+      nombre: 'Consentimiento Informado',
+      descripcion: 'Autorización para tratamiento',
+      icono: '✍️',
+      especialidad: TipoProfesion.FISIOTERAPIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarConsentimiento'
+    },
+    {
+      id: 'confirmacion-cita',
+      tipoDocumento: TipoDocumento.CONFIRMACION_CITA,
+      nombre: 'Confirmación de Cita',
+      descripcion: 'Documento para confirmar citas médicas programadas',
+      icono: '📅',
+      especialidad: TipoProfesion.FISIOTERAPIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'comprobante-pago',
+      tipoDocumento: TipoDocumento.RECIBO_PAGO,
+      nombre: 'Comprobante de Pago',
+      descripcion: 'Documento para registrar pagos y facturación',
+      icono: '💰',
+      especialidad: TipoProfesion.FISIOTERAPIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'hoja-blanca',
+      tipoDocumento: TipoDocumento.HOJA_BLANCO,
+      nombre: 'Hoja en Blanco',
+      descripcion: 'Documento genérico en blanco para notas personalizadas',
+      icono: '📄',
+      especialidad: TipoProfesion.FISIOTERAPIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    }
+  ],
+  [TipoProfesion.PSICOLOGIA]: [
+    {
+      id: 'eval-psico',
+      tipoDocumento: TipoDocumento.HISTORIA_CLINICA_PSICOLOGICA,
+      nombre: 'Evaluación Psicológica',
+      descripcion: 'Evaluación psicológica inicial',
+      icono: '🧠',
+      especialidad: TipoProfesion.PSICOLOGIA,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'EvaluacionPsicologica'
+    },
+    {
+      id: 'informe-psico',
+      tipoDocumento: TipoDocumento.NOTA_SESION_PSICOLOGICA,
+      nombre: 'Informe Psicológico',
+      descripcion: 'Informe detallado de evaluación',
+      icono: '📊',
+      especialidad: TipoProfesion.PSICOLOGIA,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'InformePsicologico'
+    },
+    {
+      id: 'plan-terapeutico',
+      tipoDocumento: TipoDocumento.PLAN_TERAPEUTICO,
+      nombre: 'Plan Terapéutico',
+      descripcion: 'Plan de intervención psicológica',
+      icono: '🎯',
+      especialidad: TipoProfesion.PSICOLOGIA,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'PlanTerapeutico'
+    },
+    {
+      id: 'confirmacion-cita-psico',
+      tipoDocumento: TipoDocumento.CONFIRMACION_CITA,
+      nombre: 'Confirmación de Cita',
+      descripcion: 'Documento para confirmar citas psicológicas programadas',
+      icono: '📅',
+      especialidad: TipoProfesion.PSICOLOGIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'comprobante-pago-psico',
+      tipoDocumento: TipoDocumento.RECIBO_PAGO,
+      nombre: 'Comprobante de Pago',
+      descripcion: 'Documento para registrar pagos de sesiones psicológicas',
+      icono: '💰',
+      especialidad: TipoProfesion.PSICOLOGIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'hoja-blanca-psico',
+      tipoDocumento: TipoDocumento.HOJA_BLANCO,
+      nombre: 'Hoja en Blanco',
+      descripcion: 'Documento genérico en blanco para notas psicológicas',
+      icono: '📄',
+      especialidad: TipoProfesion.PSICOLOGIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    }
+  ],
+  [TipoProfesion.NUTRICION]: [
+    {
+      id: 'eval-nutri',
+      tipoDocumento: TipoDocumento.VALORACION_NUTRICIONAL,
+      nombre: 'Evaluación Nutricional',
+      descripcion: 'Evaluación completa del estado nutricional',
+      icono: '🍎',
+      especialidad: TipoProfesion.NUTRICION,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'EvaluacionNutricional'
+    },
+    {
+      id: 'plan-nutri',
+      tipoDocumento: TipoDocumento.PLAN_NUTRICIONAL,
+      nombre: 'Plan Nutricional',
+      descripcion: 'Plan de alimentación personalizado',
+      icono: '🥗',
+      especialidad: TipoProfesion.NUTRICION,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'PlanNutricional'
+    },
+    {
+      id: 'ficha-cliente',
+      tipoDocumento: TipoDocumento.HOJA_BLANCO,
+      nombre: 'Ficha de Cliente',
+      descripcion: 'Ficha de registro del paciente',
+      icono: '📋',
+      especialidad: TipoProfesion.NUTRICION,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarFichaCliente'
+    },
+    {
+      id: 'confirmacion-cita-nutri',
+      tipoDocumento: TipoDocumento.CONFIRMACION_CITA,
+      nombre: 'Confirmación de Cita',
+      descripcion: 'Documento para confirmar citas nutricionales programadas',
+      icono: '📅',
+      especialidad: TipoProfesion.NUTRICION,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'comprobante-pago-nutri',
+      tipoDocumento: TipoDocumento.RECIBO_PAGO,
+      nombre: 'Comprobante de Pago',
+      descripcion: 'Documento para registrar pagos de consultas nutricionales',
+      icono: '💰',
+      especialidad: TipoProfesion.NUTRICION,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    }
+  ],
+  [TipoProfesion.MEDICINA_GENERAL]: [
+    {
+      id: 'receta-medica',
+      tipoDocumento: TipoDocumento.RECETA_MEDICA,
+      nombre: 'Receta Médica',
+      descripcion: 'Prescripción de medicamentos',
+      icono: '💊',
+      especialidad: TipoProfesion.MEDICINA_GENERAL,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'GenerarRecetaMedica'
+    },
+    {
+      id: 'examen-medico',
+      tipoDocumento: TipoDocumento.HISTORIA_CLINICA_MEDICA,
+      nombre: 'Examen Médico',
+      descripcion: 'Examen médico completo',
+      icono: '🩺',
+      especialidad: TipoProfesion.MEDICINA_GENERAL,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'HistoriaClinicaMedica'
+    },
+    {
+      id: 'certificado-medico',
+      tipoDocumento: TipoDocumento.CERTIFICADO_MEDICO,
+      nombre: 'Certificado Médico',
+      descripcion: 'Certificado de salud o incapacidad',
+      icono: '📜',
+      especialidad: TipoProfesion.MEDICINA_GENERAL,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'historia-clinica',
+      tipoDocumento: TipoDocumento.HISTORIA_CLINICA,
+      nombre: 'Historia Clínica',
+      descripcion: 'Historial médico completo',
+      icono: '📋',
+      especialidad: TipoProfesion.MEDICINA_GENERAL,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'HistoriaClinicaMedica'
+    },
+    {
+      id: 'confirmacion-cita-medica',
+      tipoDocumento: TipoDocumento.CONFIRMACION_CITA,
+      nombre: 'Confirmación de Cita',
+      descripcion: 'Documento para confirmar citas médicas programadas',
+      icono: '📅',
+      especialidad: TipoProfesion.MEDICINA_GENERAL,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'comprobante-pago-medico',
+      tipoDocumento: TipoDocumento.RECIBO_PAGO,
+      nombre: 'Comprobante de Pago',
+      descripcion: 'Documento para registrar pagos de consultas médicas',
+      icono: '💰',
+      especialidad: TipoProfesion.MEDICINA_GENERAL,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'hoja-blanca-medica',
+      tipoDocumento: TipoDocumento.HOJA_BLANCO,
+      nombre: 'Hoja en Blanco',
+      descripcion: 'Documento genérico en blanco para notas médicas',
+      icono: '📄',
+      especialidad: TipoProfesion.MEDICINA_GENERAL,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    }
+  ],
+  [TipoProfesion.ODONTOLOGIA]: [
+    {
+      id: 'historia-odonto',
+      tipoDocumento: TipoDocumento.HISTORIA_CLINICA_ODONTOLOGICA,
+      nombre: 'Historia Odontológica',
+      descripcion: 'Historial dental completo',
+      icono: '🦷',
+      especialidad: TipoProfesion.ODONTOLOGIA,
+      categoria: DocumentCategory.MEDICO,
+      componenteGenerador: 'HistoriaClinicaOdontologica'
+    },
+    {
+      id: 'presupuesto-dental',
+      tipoDocumento: TipoDocumento.PRESUPUESTO_ODONTOLOGICO,
+      nombre: 'Presupuesto Dental',
+      descripcion: 'Presupuesto de tratamientos dentales',
+      icono: '💰',
+      especialidad: TipoProfesion.ODONTOLOGIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'consentimiento-odonto',
+      tipoDocumento: TipoDocumento.CONSENTIMIENTO_INFORMADO,
+      nombre: 'Consentimiento Informado',
+      descripcion: 'Autorización para tratamiento dental',
+      icono: '✍️',
+      especialidad: TipoProfesion.ODONTOLOGIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarConsentimiento'
+    },
+    {
+      id: 'confirmacion-cita-odonto',
+      tipoDocumento: TipoDocumento.CONFIRMACION_CITA,
+      nombre: 'Confirmación de Cita',
+      descripcion: 'Documento para confirmar citas dentales programadas',
+      icono: '📅',
+      especialidad: TipoProfesion.ODONTOLOGIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'comprobante-pago-odonto',
+      tipoDocumento: TipoDocumento.RECIBO_PAGO,
+      nombre: 'Comprobante de Pago',
+      descripcion: 'Documento para registrar pagos de tratamientos dentales',
+      icono: '💰',
+      especialidad: TipoProfesion.ODONTOLOGIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    },
+    {
+      id: 'hoja-blanca-odonto',
+      tipoDocumento: TipoDocumento.HOJA_BLANCO,
+      nombre: 'Hoja en Blanco',
+      descripcion: 'Documento genérico en blanco para notas dentales',
+      icono: '📄',
+      especialidad: TipoProfesion.ODONTOLOGIA,
+      categoria: DocumentCategory.ADMINISTRATIVO,
+      componenteGenerador: 'GenerarHojaBlanco'
+    }
+  ]
+};
+
+/**
+ * Determina la categoría de un documento basado en su tipo
+ */
+export function obtenerCategoriaDocumento(tipo: TipoDocumento): DocumentCategory {
+  // Documentos administrativos
+  const administrativos: TipoDocumento[] = [
+    TipoDocumento.RECIBO_PAGO,
+    TipoDocumento.CONSENTIMIENTO_INFORMADO,
+    TipoDocumento.HOJA_BLANCO,
+    TipoDocumento.CONFIRMACION_CITA,
+    TipoDocumento.PRESUPUESTO_ODONTOLOGICO
+  ];
+
+  // Documentos médicos (todos los demás)
+  const medicos: TipoDocumento[] = [
+    TipoDocumento.EVALUACION_FISIOTERAPEUTICA,
+    TipoDocumento.PLAN_TRATAMIENTO,
+    TipoDocumento.HISTORIA_CLINICA_PSICOLOGICA,
+    TipoDocumento.NOTA_SESION_PSICOLOGICA,
+    TipoDocumento.PLAN_TERAPEUTICO,
+    TipoDocumento.PLAN_NUTRICIONAL,
+    TipoDocumento.VALORACION_NUTRICIONAL,
+    TipoDocumento.HISTORIA_CLINICA_MEDICA,
+    TipoDocumento.RECETA_MEDICA,
+    TipoDocumento.CERTIFICADO_MEDICO,
+    TipoDocumento.NOTA_EVOLUCION_MEDICA,
+    TipoDocumento.HISTORIA_CLINICA_ODONTOLOGICA,
+    TipoDocumento.ODONTOGRAMA,
+    TipoDocumento.PLAN_TRATAMIENTO_ODONTOLOGICO,
+    TipoDocumento.HISTORIA_CLINICA,
+    TipoDocumento.NOTA_SESION,
+    TipoDocumento.REPORTE_SESION
+  ];
+
+  if (administrativos.includes(tipo)) {
+    return DocumentCategory.ADMINISTRATIVO;
+  }
+  
+  if (medicos.includes(tipo)) {
+    return DocumentCategory.MEDICO;
+  }
+
+  // Por defecto, considerar como médico
+  return DocumentCategory.MEDICO;
+}
+
 export const Genero = {
   MASCULINO: 'masculino',
   FEMENINO: 'femenino',
@@ -159,6 +557,7 @@ export interface Sesion {
   documentosGenerados: string[];
   costo?: number;
   estadoPago?: EstadoPago;
+  conMarcadorTiempo?: boolean; // Indica si la sesión/consulta usó marcador de tiempo
   fechaCreacion: Date;
   fechaActualizacion: Date;
 }
@@ -195,6 +594,7 @@ export interface Documento {
   fechaCreacion: Date; // Fecha de generación
   contenidoBase64: string; // PDF en base64 para almacenar en IndexedDB
   firmado: boolean; // Si tiene firma digital
+  categoria?: DocumentCategory; // Categoría del documento (administrativo/médico)
   metadata: {
     folio?: string;
     numeroConsecutivo?: number;
@@ -529,6 +929,345 @@ export type DatosEspecificosProfesion =
 // MEDICINA GENERAL - Interfaces específicas
 // ----------------------------------------------------------------------------
 
+// Tipos enumerados para medicina
+export const TipoAntecedente = {
+  PATOLOGICO: 'patologico',
+  QUIRURGICO: 'quirurgico',
+  ALERGICO: 'alergico',
+  TOXICO: 'toxico',
+  GINECOLOGICO: 'ginecologico',
+  FAMILIAR: 'familiar',
+  TRAUMATICO: 'traumatico',
+  HOSPITALARIO: 'hospitalario',
+} as const;
+export type TipoAntecedente = typeof TipoAntecedente[keyof typeof TipoAntecedente];
+
+export const ViaAdministracion = {
+  ORAL: 'oral',
+  INTRAVENOSA: 'intravenosa',
+  INTRAMUSCULAR: 'intramuscular',
+  SUBCUTANEA: 'subcutanea',
+  TOPICA: 'topica',
+  INHALATORIA: 'inhalatoria',
+  OFTALMICA: 'oftalmica',
+  OTICA: 'otica',
+  RECTAL: 'rectal',
+  VAGINAL: 'vaginal',
+  TRANSDERMICA: 'transdermica',
+} as const;
+export type ViaAdministracion = typeof ViaAdministracion[keyof typeof ViaAdministracion];
+
+export const FrecuenciaMedicacion = {
+  UNA_VEZ_DIA: 'una_vez_dia',
+  DOS_VECES_DIA: 'dos_veces_dia',
+  TRES_VECES_DIA: 'tres_veces_dia',
+  CADA_4_HORAS: 'cada_4_horas',
+  CADA_6_HORAS: 'cada_6_horas',
+  CADA_8_HORAS: 'cada_8_horas',
+  CADA_12_HORAS: 'cada_12_horas',
+  CADA_24_HORAS: 'cada_24_horas',
+  SEMANAL: 'semanal',
+  MENSUAL: 'mensual',
+  SEGUN_NECESIDAD: 'segun_necesidad',
+  ANTES_COMIDA: 'antes_comida',
+  DESPUES_COMIDA: 'despues_comida',
+  CON_COMIDA: 'con_comida',
+} as const;
+export type FrecuenciaMedicacion = typeof FrecuenciaMedicacion[keyof typeof FrecuenciaMedicacion];
+
+export const UnidadDosis = {
+  MG: 'mg',
+  G: 'g',
+  ML: 'ml',
+  MCG: 'mcg',
+  UI: 'UI',
+  MG_KG: 'mg_kg',
+  MCG_KG: 'mcg_kg',
+  GOTAS: 'gotas',
+  COMPRIMIDOS: 'comprimidos',
+  CÁPSULAS: 'capsulas',
+  SOBRES: 'sobres',
+  INHALACIONES: 'inhalaciones',
+  APLICACIONES: 'aplicaciones',
+} as const;
+export type UnidadDosis = typeof UnidadDosis[keyof typeof UnidadDosis];
+
+// Interfaces para historia clínica médica completa
+export interface AntecedenteMedico {
+  tipo: TipoAntecedente;
+  descripcion: string;
+  fechaInicio?: Date;
+  fechaFin?: Date;
+  tratamiento?: string;
+  estado: 'activo' | 'resuelto' | 'cronico';
+  notas?: string;
+}
+
+export interface AlergiaMedica {
+  sustancia: string;
+  tipoReaccion: 'cutanea' | 'respiratoria' | 'anafilaxia' | 'gastrointestinal' | 'otra';
+  severidad: 'leve' | 'moderada' | 'grave';
+  fechaDiagnostico?: Date;
+  tratamiento?: string;
+  notas?: string;
+}
+
+export interface MedicamentoActual {
+  nombre: string;
+  principioActivo?: string;
+  dosis: string;
+  frecuencia: string;
+  via: ViaAdministracion;
+  fechaInicio: Date;
+  fechaFin?: Date;
+  indicacion: string;
+  prescritoPor?: string;
+  notas?: string;
+}
+
+export interface SignosVitales {
+  id: string;
+  pacienteId: string;
+  notaSOAPId?: string;
+  fecha: Date;
+  presionArterialSistolica: number;
+  presionArterialDiastolica: number;
+  frecuenciaCardiaca: number;
+  frecuenciaRespiratoria: number;
+  temperatura: number;
+  saturacionOxigeno: number;
+  peso: number;
+  talla: number;
+  imc?: number;
+  glucemia?: number;
+  otros?: Record<string, any>;
+}
+
+export interface ExamenFisicoPorSistema {
+  sistema: string;
+  normal: boolean;
+  hallazgos?: string;
+  detalles?: Record<string, any>;
+}
+
+export interface ExamenFisicoCompleto {
+  id: string;
+  pacienteId: string;
+  notaSOAPId?: string;
+  fecha: Date;
+  general?: {
+    aspecto: string;
+    estadoConciencia: string;
+    hidratacion: string;
+    nutricion: string;
+  };
+  cabezaCuello?: {
+    cabeza: string;
+    ojos: string;
+    oidos: string;
+    nariz: string;
+    boca: string;
+    cuello: string;
+  };
+  torax?: {
+    inspeccion: string;
+    palpacion: string;
+    percusion: string;
+    auscultacion: string;
+  };
+  abdomen?: {
+    inspeccion: string;
+    palpacion: string;
+    percusion: string;
+    auscultacion: string;
+    organomegalias?: string;
+  };
+  extremidades?: {
+    superiores: string;
+    inferiores: string;
+    pulsos: string;
+    edema?: string;
+  };
+  neurologico?: {
+    estadoMental: string;
+    paresCraneales: string;
+    fuerzaMuscular: string;
+    sensibilidad: string;
+    reflejos: string;
+    coordinacion: string;
+  };
+  pielFaneras?: {
+    piel: string;
+    faneras: string;
+    mucosas: string;
+  };
+  sistemas: ExamenFisicoPorSistema[];
+  notas?: string;
+}
+
+export interface DiagnosticoCIE10 {
+  id: string;
+  pacienteId: string;
+  notaSOAPId?: string;
+  codigo: string;
+  descripcion: string;
+  tipo: 'principal' | 'secundario' | 'comorbilidad' | 'complicacion';
+  certeza: 'confirmado' | 'probable' | 'sospecha' | 'resuelto';
+  fechaDiagnostico: Date;
+  notas?: string;
+}
+
+export interface MedicamentoPrescritoDetallado {
+  id: string;
+  pacienteId: string;
+  notaSOAPId?: string;
+  nombre: string;
+  principioActivo?: string;
+  presentacion: string;
+  concentracion: number;
+  unidadConcentracion: UnidadDosis;
+  dosis: number;
+  unidadDosis: UnidadDosis;
+  frecuencia: FrecuenciaMedicacion;
+  duracionDias: number;
+  via: ViaAdministracion;
+  indicacionesEspeciales?: string;
+  justificacion?: string;
+  contraindicaciones?: string[];
+  monitorizacion?: string[];
+  costoAproximado?: number;
+}
+
+export interface EstudioSolicitado {
+  id: string;
+  pacienteId: string;
+  notaSOAPId?: string;
+  tipo: 'laboratorio' | 'imagenologia' | 'gabinete' | 'especializado';
+  nombre: string;
+  codigo?: string;
+  indicacion: string;
+  urgencia: 'rutina' | 'urgente' | 'emergencia';
+  preparacion?: string;
+  fechaSolicitud: Date;
+  fechaRealizacion?: Date;
+  resultados?: string;
+  interpretacion?: string;
+}
+
+export interface TratamientoCompleto {
+  medicamentos: MedicamentoPrescritoDetallado[];
+  estudiosSolicitados: EstudioSolicitado[];
+  procedimientos?: string[];
+  recomendacionesGenerales: string[];
+  objetivosTerapeuticos: string[];
+  seguimiento: {
+    frecuencia: string;
+    proximaCita?: Date;
+    parametrosMonitorizar: string[];
+    criteriosExito: string[];
+  };
+  educacionPaciente: string[];
+}
+
+export interface NotaSOAP {
+  id: string;
+  pacienteId: string;
+  subjetivo: {
+    motivoConsulta: string;
+    historiaEnfermedadActual: string;
+    sintomasAsociados: string[];
+    revisionPorSistemas: Record<string, string>;
+  };
+  objetivo: {
+    signosVitales: SignosVitales;
+    examenFisico: ExamenFisicoCompleto;
+    resultadosEstudios: string[];
+  };
+  analisis: {
+    impresionDiagnostica: string;
+    diagnosticoDiferencial: string[];
+    justificacion: string;
+  };
+  plan: TratamientoCompleto;
+  fecha: Date;
+  profesionalId?: string;
+}
+
+export interface HistoriaClinicaMedicaCompleta {
+  // Identificador único
+  id: string;
+  
+  // Información básica del paciente
+  pacienteId: string;
+  
+  // Antecedentes estructurados
+  antecedentes: {
+    personales: AntecedenteMedico[];
+    familiares: AntecedenteMedico[];
+    alergicos: AlergiaMedica[];
+    quirurgicos: AntecedenteMedico[];
+    ginecoObstetricos?: {
+      menarca?: number;
+      ciclos?: string;
+      gestas?: number;
+      partos?: number;
+      abortos?: number;
+      cesareas?: number;
+      fum?: Date;
+      pap?: string;
+      mamografia?: string;
+    };
+    toxicos: {
+      tabaco: { activo: boolean; cantidad?: string; anos?: number };
+      alcohol: { activo: boolean; cantidad?: string; anos?: number };
+      otrasDrogas: { sustancia: string; cantidad?: string; frecuencia?: string }[];
+    };
+  };
+  
+  // Medicamentos actuales
+  medicamentosActuales: MedicamentoActual[];
+  
+  // Historial de consultas
+  consultas: NotaSOAP[];
+  
+  // Diagnósticos activos
+  diagnosticosActivos: DiagnosticoCIE10[];
+  
+  // Estudios y resultados
+  estudios: {
+    laboratorio: EstudioSolicitado[];
+    imagenologia: EstudioSolicitado[];
+    otros: EstudioSolicitado[];
+  };
+  
+  // Seguimiento de condiciones crónicas
+  condicionesCronicas: {
+    diagnostico: DiagnosticoCIE10;
+    inicio: Date;
+    ultimaEvaluacion: Date;
+    control: 'optimo' | 'suboptimo' | 'descontrolado';
+    complicaciones: string[];
+    tratamientoActual: string;
+  }[];
+  
+  // Inmunizaciones
+  inmunizaciones: {
+    vacuna: string;
+    fecha: Date;
+    lote?: string;
+    lugar?: string;
+    proximaDosis?: Date;
+  }[];
+  
+  metadata: {
+    fechaCreacion: Date;
+    fechaActualizacion: Date;
+    profesionalResponsable?: string;
+    version: number;
+  };
+}
+
+// Interface original mantenida para compatibilidad
 export interface DatosMedicinaGeneral {
   // Signos vitales
   signosVitales?: {

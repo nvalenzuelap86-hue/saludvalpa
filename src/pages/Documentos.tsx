@@ -6,13 +6,14 @@
 import { useState, lazy, Suspense } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
-import type { Documento } from '../types';
-import { TipoDocumento } from '../types';
+import type { Documento, DocumentCategory } from '../types';
+import { TipoDocumento, DocumentCategory as DocumentCategoryConst } from '../types';
 import { formatearFecha } from '../utils/helpers';
 import { descargarDocumento, eliminarDocumento } from '../services/pdfService';
 import Card from '../components/shared/Card';
 import Button from '../components/shared/Button';
 import Modal from '../components/shared/Modal';
+import DocumentCategoryBadge from '../components/shared/DocumentCategoryBadge';
 import { useAppStore } from '../stores/appStore';
 
 // Documentos comunes (siempre cargados)
@@ -26,6 +27,9 @@ const GenerarEvaluacionFisioterapeutica = lazy(() => import('../modules/fisioter
 const GenerarPlanTratamiento = lazy(() => import('../modules/fisioterapia/components/GenerarPlanTratamiento'));
 const GenerarNotaEvolucion = lazy(() => import('../modules/fisioterapia/components/GenerarNotaEvolucion'));
 
+// Componentes de medicina con lazy loading
+const GenerarRecetaMedica = lazy(() => import('../modules/medicina/components/GenerarRecetaMedica'));
+
 // Componente de loading
 const LoadingDocumento = () => (
   <div className="flex items-center justify-center py-12">
@@ -36,10 +40,11 @@ const LoadingDocumento = () => (
 
 const Documentos = () => {
   const { configuracion: config } = useAppStore();
-  const [modalActivo, setModalActivo] = useState<'recibo' | 'consentimiento' | 'hoja' | 'evaluacion' | 'plan' | 'nota' | null>(null);
+  const [modalActivo, setModalActivo] = useState<'recibo' | 'consentimiento' | 'hoja' | 'evaluacion' | 'plan' | 'nota' | 'receta_medica' | null>(null);
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState<any>(null);
   const [busqueda, setBusqueda] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState<typeof TipoDocumento[keyof typeof TipoDocumento] | 'todos'>('todos');
+  const [categoriaFiltro, setCategoriaFiltro] = useState<DocumentCategory | 'todos'>('todos');
   
   // Estado para el visor de PDF
   const [visorAbierto, setVisorAbierto] = useState(false);
@@ -53,18 +58,53 @@ const Documentos = () => {
       query = db.documentos.where('tipo').equals(tipoFiltro);
     }
 
-    const docs = await query.reverse().toArray(); // Más recientes primero
+    let docs = await query.reverse().toArray(); // Más recientes primero
+
+    // Filtrar por categoría
+    if (categoriaFiltro !== 'todos') {
+      docs = docs.filter(doc => {
+        // Si el documento tiene categoría definida, filtrar por ella
+        if (doc.categoria) {
+          return doc.categoria === categoriaFiltro;
+        }
+        // Si no tiene categoría definida, inferirla basada en el tipo de documento
+        const tipo = doc.tipo;
+        const tiposMedicos = [
+          TipoDocumento.HISTORIA_CLINICA_MEDICA,
+          TipoDocumento.RECETA_MEDICA,
+          TipoDocumento.CERTIFICADO_MEDICO,
+          TipoDocumento.EVALUACION_FISIOTERAPEUTICA,
+          TipoDocumento.PLAN_TRATAMIENTO,
+          TipoDocumento.NOTA_SESION
+        ];
+        const tiposAdministrativos = [
+          TipoDocumento.RECIBO_PAGO,
+          TipoDocumento.CONSENTIMIENTO_INFORMADO,
+          TipoDocumento.HOJA_BLANCO,
+          TipoDocumento.REPORTE_SESION,
+          TipoDocumento.CONFIRMACION_CITA
+        ];
+        
+        if (categoriaFiltro === DocumentCategoryConst.MEDICO && tiposMedicos.includes(tipo as any)) {
+          return true;
+        }
+        if (categoriaFiltro === DocumentCategoryConst.ADMINISTRATIVO && tiposAdministrativos.includes(tipo as any)) {
+          return true;
+        }
+        return false;
+      });
+    }
 
     // Filtrar por búsqueda
     if (busqueda) {
-      return docs.filter(doc => 
+      return docs.filter(doc =>
         doc.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
         doc.id.toLowerCase().includes(busqueda.toLowerCase())
       );
     }
 
     return docs;
-  }, [tipoFiltro, busqueda]);
+  }, [tipoFiltro, categoriaFiltro, busqueda]);
 
   // Cargar pacientes para el selector
   const pacientes = useLiveQuery(() => db.pacientes.toArray());
@@ -97,7 +137,7 @@ const Documentos = () => {
     setDocumentoViendoId(null);
   };
 
-  const handleNuevoDocumento = (tipo: 'recibo' | 'consentimiento' | 'hoja' | 'evaluacion' | 'plan' | 'nota') => {
+  const handleNuevoDocumento = (tipo: 'recibo' | 'consentimiento' | 'hoja' | 'evaluacion' | 'plan' | 'nota' | 'receta_medica') => {
     setModalActivo(tipo);
   };
 
@@ -115,6 +155,9 @@ const Documentos = () => {
       case TipoDocumento.EVALUACION_FISIOTERAPEUTICA: return '🩺';
       case TipoDocumento.PLAN_TRATAMIENTO: return '📝';
       case TipoDocumento.NOTA_SESION: return '📈';
+      case TipoDocumento.HISTORIA_CLINICA_MEDICA: return '🏥';
+      case TipoDocumento.RECETA_MEDICA: return '💊';
+      case TipoDocumento.CERTIFICADO_MEDICO: return '📜';
       default: return '📄';
     }
   };
@@ -128,6 +171,9 @@ const Documentos = () => {
       case TipoDocumento.EVALUACION_FISIOTERAPEUTICA: return 'bg-purple-50 text-purple-700 border-purple-200';
       case TipoDocumento.PLAN_TRATAMIENTO: return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       case TipoDocumento.NOTA_SESION: return 'bg-teal-50 text-teal-700 border-teal-200';
+      case TipoDocumento.HISTORIA_CLINICA_MEDICA: return 'bg-red-50 text-red-700 border-red-200';
+      case TipoDocumento.RECETA_MEDICA: return 'bg-amber-50 text-amber-700 border-amber-200';
+      case TipoDocumento.CERTIFICADO_MEDICO: return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       default: return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
@@ -194,6 +240,19 @@ const Documentos = () => {
                     </button>
                   </>
                 )}
+                
+                {config?.profesion === 'medicina_general' && (
+                  <>
+                    <div className="border-t-2 border-gray-300 my-1"></div>
+                    <button
+                      onClick={() => handleNuevoDocumento('receta_medica')}
+                      className="w-full text-left px-4 py-3 hover:bg-amber-50 flex items-center gap-3 transition-colors"
+                    >
+                      <span className="text-xl">💊</span>
+                      <span className="font-medium">Receta Médica</span>
+                    </button>
+                  </>
+                )}
               </div>
             </details>
           </div>
@@ -226,6 +285,23 @@ const Documentos = () => {
                 <option value={TipoDocumento.NOTA_SESION}>Notas de Evolución</option>
               </>
             )}
+            {config?.profesion === 'medicina_general' && (
+              <>
+                <option value={TipoDocumento.HISTORIA_CLINICA_MEDICA}>Historias Clínicas Médicas</option>
+                <option value={TipoDocumento.RECETA_MEDICA}>Recetas Médicas</option>
+                <option value={TipoDocumento.CERTIFICADO_MEDICO}>Certificados Médicos</option>
+              </>
+            )}
+          </select>
+          
+          <select
+            value={categoriaFiltro}
+            onChange={(e) => setCategoriaFiltro(e.target.value as DocumentCategory | 'todos')}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saludvalpa-blue focus:border-transparent"
+          >
+            <option value="todos">Todas las categorías</option>
+            <option value={DocumentCategoryConst.ADMINISTRATIVO}>Administrativo</option>
+            <option value={DocumentCategoryConst.MEDICO}>Médico</option>
           </select>
         </div>
       </div>
@@ -412,6 +488,65 @@ const Documentos = () => {
         </Suspense>
       </Modal>
 
+      {/* Modal para receta médica */}
+      <Modal
+        isOpen={modalActivo === 'receta_medica'}
+        onClose={cerrarModal}
+        title="Generar receta médica"
+        size="xl"
+      >
+        <Suspense fallback={<LoadingDocumento />}>
+          {pacienteSeleccionado ? (
+            <GenerarRecetaMedica
+              paciente={pacienteSeleccionado}
+              datosMedicina={{
+                diagnostico: [],
+                tratamiento: {
+                  medicamentos: [],
+                  indicaciones: [],
+                  estudiosSolicitados: [],
+                  interconsultas: []
+                },
+                signosVitales: {
+                  presionArterial: '',
+                  frecuenciaCardiaca: 0,
+                  frecuenciaRespiratoria: 0,
+                  temperatura: 0,
+                  saturacionOxigeno: 0,
+                  peso: 0,
+                  talla: 0
+                },
+                exploracionFisica: {
+                  cabezaCuello: '',
+                  torax: '',
+                  abdomen: '',
+                  extremidades: '',
+                  neurologico: ''
+                },
+                antecedentesPersonales: {
+                  patologicos: [],
+                  quirurgicos: [],
+                  alergicos: [],
+                  toxicos: [],
+                  ginecologicos: []
+                },
+                recomendaciones: [],
+                cie10: [],
+                proximaCita: undefined
+              }}
+              onExito={cerrarModal}
+              onCancelar={cerrarModal}
+            />
+          ) : (
+            <SelectorPaciente
+              pacientes={pacientes || []}
+              onSeleccionar={(p) => setPacienteSeleccionado(p)}
+              onCancelar={cerrarModal}
+            />
+          )}
+        </Suspense>
+      </Modal>
+
       {/* Modal para visualizar PDF */}
       <Modal
         isOpen={visorAbierto}
@@ -458,6 +593,42 @@ const DocumentoCard = ({
     return p;
   }, [documento.pacienteId]);
 
+  // Determinar la categoría del documento (si no está definida, inferirla)
+  const determinarCategoria = (): DocumentCategory | undefined => {
+    if (documento.categoria) {
+      return documento.categoria;
+    }
+    
+    // Inferir categoría basada en el tipo de documento
+    const tipo = documento.tipo;
+    const tiposMedicos = [
+      TipoDocumento.HISTORIA_CLINICA_MEDICA,
+      TipoDocumento.RECETA_MEDICA,
+      TipoDocumento.CERTIFICADO_MEDICO,
+      TipoDocumento.EVALUACION_FISIOTERAPEUTICA,
+      TipoDocumento.PLAN_TRATAMIENTO,
+      TipoDocumento.NOTA_SESION
+    ];
+    const tiposAdministrativos = [
+      TipoDocumento.RECIBO_PAGO,
+      TipoDocumento.CONSENTIMIENTO_INFORMADO,
+      TipoDocumento.HOJA_BLANCO,
+      TipoDocumento.REPORTE_SESION,
+      TipoDocumento.CONFIRMACION_CITA
+    ];
+    
+    if (tiposMedicos.includes(tipo as any)) {
+      return DocumentCategoryConst.MEDICO;
+    }
+    if (tiposAdministrativos.includes(tipo as any)) {
+      return DocumentCategoryConst.ADMINISTRATIVO;
+    }
+    
+    return undefined;
+  };
+
+  const categoria = determinarCategoria();
+
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start gap-4">
@@ -472,9 +643,19 @@ const DocumentoCard = ({
             <h3 className="font-semibold text-gray-900 truncate">
               {documento.nombre}
             </h3>
-            <span className={`text-xs px-2 py-1 rounded border ${obtenerColorTipo(documento.tipo)}`}>
-              {documento.tipo}
-            </span>
+            <div className="flex items-center gap-2">
+              {categoria && (
+                <DocumentCategoryBadge
+                  categoria={categoria}
+                  size="sm"
+                  showIcon={true}
+                  className="mr-2"
+                />
+              )}
+              <span className={`text-xs px-2 py-1 rounded border ${obtenerColorTipo(documento.tipo)}`}>
+                {documento.tipo}
+              </span>
+            </div>
           </div>
 
           <div className="space-y-1 text-sm text-gray-600">

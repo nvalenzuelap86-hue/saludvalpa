@@ -19,6 +19,14 @@ import type {
   Ejercicio,
   RutinaEjercicios,
   SeguimientoRutina,
+  // Nuevos tipos para medicina
+  HistoriaClinicaMedicaCompleta,
+  NotaSOAP,
+  DiagnosticoCIE10,
+  MedicamentoPrescritoDetallado,
+  EstudioSolicitado,
+  SignosVitales,
+  ExamenFisicoCompleto,
 } from '../types';
 
 export class SaludValpaDatabase extends Dexie {
@@ -37,6 +45,15 @@ export class SaludValpaDatabase extends Dexie {
   ejercicios!: Table<Ejercicio, string>;
   rutinas!: Table<RutinaEjercicios, string>;
   seguimientoRutinas!: Table<SeguimientoRutina, string>;
+  
+  // Tablas específicas para medicina
+  historiasClinicasMedicas!: Table<HistoriaClinicaMedicaCompleta, string>;
+  notasSOAP!: Table<NotaSOAP, string>;
+  diagnosticosCIE10!: Table<DiagnosticoCIE10, string>;
+  medicamentosPrescritos!: Table<MedicamentoPrescritoDetallado, string>;
+  estudiosSolicitados!: Table<EstudioSolicitado, string>;
+  signosVitales!: Table<SignosVitales, string>;
+  examenesFisicos!: Table<ExamenFisicoCompleto, string>;
 
   constructor() {
     super('SaludValpaDB');
@@ -138,6 +155,37 @@ export class SaludValpaDatabase extends Dexie {
       });
       
       console.log('✅ Migración v2 → v3 completada');
+    });
+
+    // Versión 4: Agregar tablas específicas para medicina
+    this.version(4).stores({
+      pacientes: 'id, nombre, apellidos, fechaNacimiento, fechaCreacion, ultimaConsulta, activo, profesionPrincipal',
+      sesiones: 'id, pacienteId, profesionalId, fecha, fechaCreacion, profesion',
+      citas: 'id, pacienteId, profesionalId, fechaHora, estado, fechaCreacion, profesion',
+      documentos: 'id, tipo, pacienteId, profesionalId, fechaGeneracion, profesion',
+      configuracion: 'id',
+      usuarios: 'id, email, activo, profesion',
+      servicios: 'id, nombre, profesion, activo',
+      cotizaciones: 'id, pacienteId, fecha, estado, profesion',
+      recibos: 'id, numero, pacienteId, fecha, estadoPago, profesion',
+      biblioteca: 'id, profesion, categoria, titulo, favorito',
+      ejercicios: 'id, nombre, categoria, precargado, favorito, usuarioCreadorId, fechaCreacion, profesion',
+      rutinas: 'id, nombre, pacienteId, esPlantilla, activa, usuarioCreadorId, fechaCreacion, fechaActualizacion, profesion',
+      seguimientoRutinas: 'id, rutinaId, pacienteId, fecha, fechaCreacion, profesion',
+      // Nuevas tablas para medicina
+      historiasClinicasMedicas: 'id, pacienteId, fechaCreacion, fechaActualizacion, profesionalResponsable',
+      notasSOAP: 'id, pacienteId, fecha, profesionalId',
+      diagnosticosCIE10: 'id, pacienteId, codigo, fechaDiagnostico, tipo',
+      medicamentosPrescritos: 'id, pacienteId, notaSOAPId, fechaPrescripcion',
+      estudiosSolicitados: 'id, pacienteId, tipo, fechaSolicitud, urgencia',
+      signosVitales: 'id, pacienteId, fecha',
+      examenesFisicos: 'id, pacienteId, fecha',
+    }).upgrade(async (tx) => {
+      // Función de migración que se ejecuta automáticamente al actualizar de v3 a v4
+      console.log('🔧 Ejecutando migración v3 → v4: agregando tablas médicas...');
+      
+      // No hay migración de datos necesaria, solo se crean tablas vacías
+      console.log('✅ Migración v3 → v4 completada - Tablas médicas creadas');
     });
   }
 }

@@ -110,3 +110,94 @@ export function descargarArchivo(blob: Blob, nombreArchivo: string): void {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Normalizar y validar especialidad médica
+ * Convierte valores como "medicina" a "medicina_general" y valida contra TipoProfesion
+ */
+export function normalizarEspecialidad(
+  especialidad: string | undefined | null,
+  fallback: string = 'fisioterapia'
+): string {
+  if (!especialidad) {
+    return fallback;
+  }
+
+  // Mapeo de valores comunes a valores válidos de TipoProfesion
+  const mapeoEspecialidades: Record<string, string> = {
+    'medicina': 'medicina_general',
+    'medico': 'medicina_general',
+    'doctor': 'medicina_general',
+    'fisio': 'fisioterapia',
+    'fisioterapeuta': 'fisioterapia',
+    'psicologo': 'psicologia',
+    'psicóloga': 'psicologia',
+    'psicólogo': 'psicologia',
+    'nutriologo': 'nutricion',
+    'nutriólogo': 'nutricion',
+    'nutricionista': 'nutricion',
+    'odontologo': 'odontologia',
+    'odontólogo': 'odontologia',
+    'dentista': 'odontologia',
+  };
+
+  // Convertir a minúsculas y quitar espacios
+  const especialidadNormalizada = especialidad.toLowerCase().trim();
+  
+  // Aplicar mapeo si existe
+  const especialidadMapeada = mapeoEspecialidades[especialidadNormalizada] || especialidadNormalizada;
+
+  // Validar que sea una especialidad válida
+  const especialidadesValidas = [
+    'fisioterapia',
+    'psicologia',
+    'nutricion',
+    'medicina_general',
+    'odontologia'
+  ];
+
+  if (especialidadesValidas.includes(especialidadMapeada)) {
+    return especialidadMapeada;
+  }
+
+  // Si no es válida, usar el fallback
+  console.warn(`Especialidad "${especialidad}" no válida. Usando fallback: ${fallback}`);
+  return fallback;
+}
+
+/**
+ * Obtener especialidad con fallback a configuración del sistema
+ */
+export function obtenerEspecialidadConFallback(
+  especialidadPrincipal: string | undefined | null,
+  especialidadConfiguracion: string | undefined | null
+): string {
+  const especialidad = normalizarEspecialidad(especialidadPrincipal);
+  
+  // Si la especialidad principal es válida y no es el fallback por defecto, usarla
+  if (especialidad && especialidad !== 'fisioterapia') {
+    return especialidad;
+  }
+  
+  // Si la especialidad es 'fisioterapia', necesitamos verificar si fue:
+  // 1. Especificada explícitamente (ej: 'fisioterapia', 'fisio') → devolver 'fisioterapia'
+  // 2. Resultado de fallback por valor inválido (ej: 'invalid') → usar configuración
+  if (especialidad === 'fisioterapia') {
+    // Verificar si el valor original se mapea directamente a 'fisioterapia'
+    const mapeoDirecto: Record<string, boolean> = {
+      'fisioterapia': true,
+      'fisio': true,
+      'fisioterapeuta': true
+    };
+    
+    if (especialidadPrincipal && mapeoDirecto[especialidadPrincipal.toLowerCase().trim()]) {
+      return 'fisioterapia';
+    }
+    
+    // Si no es un mapeo directo, es un fallback por valor inválido
+    // Usar la configuración
+  }
+  
+  // Si no, usar la especialidad de configuración
+  return normalizarEspecialidad(especialidadConfiguracion);
+}

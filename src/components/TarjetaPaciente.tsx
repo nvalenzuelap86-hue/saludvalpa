@@ -1,15 +1,16 @@
 // ============================================================================
 // saludvalpa 3.0 - TARJETA DE PACIENTE
-// Componente con modo dual: Revisión / Ejecución
+// Componente con modo dual: Revisión / Consulta
 // ============================================================================
 
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
-import type { Paciente } from '../types';
+import type { Paciente, DocumentoEspecialidad } from '../types';
 import { TipoDocumento, TipoProfesion } from '../types';
-import { formatearFecha, obtenerIniciales } from '../utils/helpers';
+import { formatearFecha, obtenerIniciales, normalizarEspecialidad, obtenerEspecialidadConFallback } from '../utils/helpers';
 import { descargarDocumento } from '../services/pdfService';
+import { ejecutarGeneracionDocumento } from '../utils/moduleLoader';
 import Card from './shared/Card';
 import Button from './shared/Button';
 import Modal from './shared/Modal';
@@ -18,6 +19,9 @@ import GenerarConsentimiento from './common/GenerarConsentimiento';
 import GenerarHojaBlanco from './common/GenerarHojaBlanco';
 import VisorPDF from './common/VisorPDF';
 import SesionEnVivo from './SesionEnVivo';
+import DocumentosOrganizados from './DocumentosOrganizados';
+import ModalDocumentosEspecialidad from './shared/ModalDocumentosEspecialidad';
+import GeneradorDocumentoModal from './shared/GeneradorDocumentoModal';
 import { useAppStore } from '../stores/appStore';
 import { useSesiones } from '../hooks/useSesiones';
 
@@ -31,16 +35,35 @@ interface TarjetaPacienteProps {
   onActualizar?: () => void;
 }
 
-type Modo = 'revision' | 'ejecucion';
+type Modo = 'revision' | 'consulta';
 
 const TarjetaPaciente = ({ paciente, onEditar, onEliminar, onActualizar }: TarjetaPacienteProps) => {
   const [modo, setModo] = useState<Modo>('revision');
   const [sesionActiva, setSesionActiva] = useState(false);
+  const [modalDocumentosEspecialidadAbierto, setModalDocumentosEspecialidadAbierto] = useState(false);
+  const [generadorDocumentoModalAbierto, setGeneradorDocumentoModalAbierto] = useState(false);
+  const [documentoSeleccionado, setDocumentoSeleccionado] = useState<DocumentoEspecialidad | null>(null);
   const { configuracion } = useAppStore();
 
-  const iniciarSesionEnVivo = () => {
-    setModo('ejecucion');
+  // Calcular especialidad con fallback y normalización
+  const especialidad = useMemo((): TipoProfesion => {
+    const especialidadCalculada = obtenerEspecialidadConFallback(
+      paciente.profesionPrincipal,
+      configuracion?.profesion
+    );
+    console.log('ESPECIALIDAD CALCULADA:', {
+      pacienteProfesion: paciente.profesionPrincipal,
+      configuracionProfesion: configuracion?.profesion,
+      especialidadFinal: especialidadCalculada
+    });
+    return especialidadCalculada as TipoProfesion;
+  }, [paciente.profesionPrincipal, configuracion?.profesion]);
+
+  const iniciarSesionEnVivo = (conMarcadorTiempo: boolean = true) => {
+    setModo('consulta');
     setSesionActiva(true);
+    // Aquí se podría guardar la preferencia de marcador de tiempo
+    // para usarla en el componente SesionEnVivo
   };
 
   const cerrarSesion = () => {
@@ -48,8 +71,8 @@ const TarjetaPaciente = ({ paciente, onEditar, onEliminar, onActualizar }: Tarje
     setModo('revision');
   };
 
-  // Si hay una sesión activa en modo ejecución, mostrar SesionEnVivo
-  if (sesionActiva && modo === 'ejecucion') {
+  // Si hay una sesión activa en modo consulta, mostrar SesionEnVivo
+  if (sesionActiva && modo === 'consulta') {
     return (
       <SesionEnVivo
         paciente={paciente}
@@ -126,14 +149,14 @@ const TarjetaPaciente = ({ paciente, onEditar, onEliminar, onActualizar }: Tarje
               📋 Revisión
             </button>
             <button
-              onClick={() => setModo('ejecucion')}
+              onClick={() => setModo('consulta')}
               className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-                modo === 'ejecucion'
+                modo === 'consulta'
                   ? 'bg-white text-saludvalpa-blue shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              🏃 Ejecución
+              🏥 Consulta
             </button>
           </div>
         </div>
@@ -141,16 +164,58 @@ const TarjetaPaciente = ({ paciente, onEditar, onEliminar, onActualizar }: Tarje
 
       {/* Contenido según modo */}
       {modo === 'revision' ? (
-        <ModoRevision 
-          paciente={paciente} 
-          onIniciarSesion={iniciarSesionEnVivo} 
+        <ModoRevision
+          paciente={paciente}
+          onIniciarConsultaConMarcador={() => iniciarSesionEnVivo(true)}
+          onIniciarConsultaSinMarcador={() => setModalDocumentosEspecialidadAbierto(true)}
           onEliminar={onEliminar}
           onActualizar={onActualizar}
         />
       ) : (
-        <ModoEjecucion 
+        <ModoConsulta
           onVolverRevision={() => setModo('revision')}
-          onIniciarSesion={iniciarSesionEnVivo}
+          onIniciarConsultaConMarcador={() => iniciarSesionEnVivo(true)}
+          onIniciarConsultaSinMarcador={() => setModalDocumentosEspecialidadAbierto(true)}
+        />
+      )}
+
+      {/* Modal para generar documentos por especialidad */}
+      <ModalDocumentosEspecialidad
+        isOpen={modalDocumentosEspecialidadAbierto}
+        onClose={() => setModalDocumentosEspecialidadAbierto(false)}
+        especialidad={especialidad}
+        pacienteId={paciente.id}
+        onSeleccionarDocumento={(documento) => {
+          console.log('Documento seleccionado:', documento);
+          // Cerrar el modal de selección
+          setModalDocumentosEspecialidadAbierto(false);
+          
+          // Guardar el documento seleccionado y abrir el modal generador
+          setDocumentoSeleccionado(documento);
+          setGeneradorDocumentoModalAbierto(true);
+        }}
+        titulo="Generar documento médico"
+      />
+
+      {/* Modal para generar documento específico */}
+      {documentoSeleccionado && (
+        <GeneradorDocumentoModal
+          isOpen={generadorDocumentoModalAbierto}
+          onClose={() => {
+            setGeneradorDocumentoModalAbierto(false);
+            setDocumentoSeleccionado(null);
+          }}
+          documento={documentoSeleccionado}
+          pacienteId={paciente.id}
+          especialidad={especialidad}
+          onDocumentoGenerado={(documentoData) => {
+            console.log('Documento generado exitosamente:', documentoData);
+            // Aquí se podría actualizar la lista de documentos del paciente
+            // o mostrar una notificación de éxito
+            if (onActualizar) {
+              onActualizar();
+            }
+          }}
         />
       )}
     </div>
@@ -161,14 +226,16 @@ const TarjetaPaciente = ({ paciente, onEditar, onEliminar, onActualizar }: Tarje
 // MODO REVISIÓN
 // ============================================================================
 
-const ModoRevision = ({ 
-  paciente, 
-  onIniciarSesion,
+const ModoRevision = ({
+  paciente,
+  onIniciarConsultaConMarcador,
+  onIniciarConsultaSinMarcador,
   onEliminar,
   onActualizar
-}: { 
-  paciente: Paciente; 
-  onIniciarSesion?: () => void;
+}: {
+  paciente: Paciente;
+  onIniciarConsultaConMarcador?: () => void;
+  onIniciarConsultaSinMarcador?: () => void;
   onEliminar?: () => void;
   onActualizar?: () => void;
 }) => {
@@ -178,6 +245,7 @@ const ModoRevision = ({
   // Estado para el visor de PDF
   const [visorAbierto, setVisorAbierto] = useState(false);
   const [documentoViendoId, setDocumentoViendoId] = useState<string | null>(null);
+
 
   // Cargar documentos del paciente con live query
   const documentos = useLiveQuery(
@@ -320,152 +388,86 @@ const ModoRevision = ({
         </Suspense>
       )}
 
-      {/* Documentos generados */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Documentos generados</h3>
-          <details className="relative">
-            <summary className="bg-saludvalpa-blue text-white px-3 py-1 rounded-lg cursor-pointer list-none text-sm">
-              ➕ Nuevo
-            </summary>
-            <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-lg border border-gray-200 z-10 min-w-48">
-              <button
-                onClick={() => setModalDocumento('recibo')}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-sm"
-              >
-                💵 Recibo
-              </button>
-              <button
-                onClick={() => setModalDocumento('consentimiento')}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 border-t text-sm"
-              >
-                📋 Consentimiento
-              </button>
-              <button
-                onClick={() => setModalDocumento('hoja')}
-                className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 border-t text-sm"
-              >
-                📄 Hoja
-              </button>
-            </div>
-          </details>
-        </div>
+      {/* Documentos organizados */}
+      <DocumentosOrganizados
+        pacienteId={paciente.id}
+        especialidad={paciente.profesionPrincipal}
+        onGenerarDocumento={onIniciarConsultaSinMarcador}
+        modoCompacto={false}
+      />
 
-        {!documentos || documentos.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <span className="text-4xl block mb-2">📄</span>
-            <p className="text-sm">No hay documentos generados</p>
-            <p className="text-xs mt-2">Click en "➕ Nuevo" para generar un documento</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {documentos.map((doc) => (
-              <div
-                key={doc.id}
-                className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-saludvalpa-blue transition-colors"
-              >
-                <span className="text-2xl">{obtenerIconoTipo(doc.tipo)}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 text-sm truncate">
-                    {doc.nombre}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {formatearFecha(doc.fechaCreacion)}
-                    {doc.firmado && <span className="ml-2 text-green-600">✍️ Firmado</span>}
-                  </p>
-                </div>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => handleVerDocumento(doc.id)}
-                    className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition-colors text-sm"
-                    title="Ver PDF"
-                  >
-                    👁️
-                  </button>
-                  <button
-                    onClick={() => handleDescargar(doc.id)}
-                    className="text-saludvalpa-blue hover:bg-saludvalpa-blue-light p-2 rounded-lg transition-colors text-sm"
-                    title="Descargar"
-                  >
-                    ⬇️
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
-        {/* Modales para generar documentos */}
-        <Modal
-          isOpen={modalDocumento === 'recibo'}
-          onClose={cerrarModal}
-          title="Generar recibo de pago"
-          size="lg"
-        >
-          <GenerarRecibo
-            paciente={paciente}
-            onExito={cerrarModal}
-            onCancelar={cerrarModal}
-          />
-        </Modal>
+      {/* Modales para generar documentos (mantenidos para compatibilidad) */}
+      <Modal
+        isOpen={modalDocumento === 'recibo'}
+        onClose={cerrarModal}
+        title="Generar recibo de pago"
+        size="lg"
+      >
+        <GenerarRecibo
+          paciente={paciente}
+          onExito={cerrarModal}
+          onCancelar={cerrarModal}
+        />
+      </Modal>
 
-        <Modal
-          isOpen={modalDocumento === 'consentimiento'}
-          onClose={cerrarModal}
-          title="Generar consentimiento informado"
-          size="xl"
-        >
-          <GenerarConsentimiento
-            paciente={paciente}
-            onExito={cerrarModal}
-            onCancelar={cerrarModal}
-          />
-        </Modal>
+      <Modal
+        isOpen={modalDocumento === 'consentimiento'}
+        onClose={cerrarModal}
+        title="Generar consentimiento informado"
+        size="xl"
+      >
+        <GenerarConsentimiento
+          paciente={paciente}
+          onExito={cerrarModal}
+          onCancelar={cerrarModal}
+        />
+      </Modal>
 
-        <Modal
-          isOpen={modalDocumento === 'hoja'}
-          onClose={cerrarModal}
-          title="Generar documento personalizado"
-          size="lg"
-        >
-          <GenerarHojaBlanco
-            paciente={paciente}
-            onExito={cerrarModal}
-            onCancelar={cerrarModal}
-          />
-        </Modal>
-
-        {/* Modal para visualizar PDF */}
-        <Modal
-          isOpen={visorAbierto}
-          onClose={cerrarVisor}
-          title=""
-          size="xl"
-        >
-          {documentoViendoId && (
-            <VisorPDF
-              documentoId={documentoViendoId}
-              onCerrar={cerrarVisor}
-              permitirDescarga={true}
-              permitirImpresion={true}
-            />
-          )}
-        </Modal>
-      </Card>
+      <Modal
+        isOpen={modalDocumento === 'hoja'}
+        onClose={cerrarModal}
+        title="Generar documento personalizado"
+        size="lg"
+      >
+        <GenerarHojaBlanco
+          paciente={paciente}
+          onExito={cerrarModal}
+          onCancelar={cerrarModal}
+        />
+      </Modal>
 
       {/* Acciones */}
       <Card className="p-6">
-        <div className="flex flex-col md:flex-row gap-3">
-          {onIniciarSesion && (
-            <Button variant="primary" onClick={onIniciarSesion} className="flex-1">
-              🏃 Iniciar sesión/consulta
-            </Button>
-          )}
-          {onEliminar && (
-            <Button variant="danger" onClick={onEliminar}>
-              🗑️ Eliminar paciente
-            </Button>
-          )}
+        <div className="space-y-3">
+          <div className="flex flex-col md:flex-row gap-3">
+            {(onIniciarConsultaConMarcador || onIniciarConsultaSinMarcador) && (
+              <div className="flex-1 space-y-2">
+                <Button
+                  variant="primary"
+                  onClick={onIniciarConsultaConMarcador}
+                  className="w-full"
+                >
+                  ⏱️ Consulta con marcador de tiempo
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={onIniciarConsultaSinMarcador}
+                  className="w-full"
+                >
+                  📝 Consulta sin marcador de tiempo
+                </Button>
+              </div>
+            )}
+            {onEliminar && (
+              <Button variant="danger" onClick={onEliminar}>
+                🗑️ Eliminar paciente
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 text-center mt-2">
+            Selecciona el tipo de consulta que deseas iniciar
+          </p>
         </div>
       </Card>
     </div>
@@ -473,86 +475,184 @@ const ModoRevision = ({
 };
 
 // ============================================================================
-// MODO EJECUCIÓN
+// MODO CONSULTA
 // ============================================================================
 
-const ModoEjecucion = ({ 
+const ModoConsulta = ({
   onVolverRevision,
-  onIniciarSesion
-}: { 
+  onIniciarConsultaConMarcador,
+  onIniciarConsultaSinMarcador
+}: {
   onVolverRevision: () => void;
-  onIniciarSesion: () => void;
+  onIniciarConsultaConMarcador?: () => void;
+  onIniciarConsultaSinMarcador?: () => void;
 }) => {
   return (
-    <div className="space-y-4">
-      <Card className="p-6 bg-gradient-to-r from-saludvalpa-blue-light to-saludvalpa-green-light border-2 border-saludvalpa-blue">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-3xl">🏃</span>
+    <div className="space-y-6">
+      {/* Header limpio y profesional */}
+      <Card className="p-6 bg-gradient-to-br from-saludvalpa-blue/5 to-saludvalpa-teal/5 border border-gray-200">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 bg-gradient-to-br from-saludvalpa-blue to-saludvalpa-teal rounded-lg flex items-center justify-center">
+            <span className="text-2xl text-white">🏥</span>
+          </div>
           <div className="flex-1">
-            <h3 className="font-bold text-saludvalpa-blue text-xl">Modo Ejecución - Sesión en vivo</h3>
-            <p className="text-sm text-gray-700">
-              Interfaz optimizada para registrar consulta en tiempo real
+            <h3 className="font-bold text-gray-900 text-xl">Modo Consulta</h3>
+            <p className="text-sm text-gray-600">
+              Interfaz profesional para registrar consultas en tiempo real
             </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="text-center">
-            <div className="inline-block p-4 bg-saludvalpa-blue-light rounded-full mb-4">
-              <span className="text-4xl">⏱️</span>
-            </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">
-              ¿Listo para iniciar la sesión?
-            </h4>
-            <p className="text-gray-600 text-sm mb-6">
-              Al iniciar, se activará el temporizador y podrás registrar:
-            </p>
-            
-            <div className="grid grid-cols-2 gap-3 mb-6 text-left">
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-lg">✏️</span>
-                <span>Notas clínicas</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-lg">💊</span>
-                <span>Materiales</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-lg">🔧</span>
-                <span>Medios físicos</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-lg">📊</span>
-                <span>Datos específicos</span>
-              </div>
-            </div>
+        {/* Explicación principal */}
+        <div className="mb-8">
+          <h4 className="font-semibold text-gray-900 mb-3 text-lg">Selecciona el tipo de consulta</h4>
+          <p className="text-gray-600 text-sm mb-4">
+            Elige entre una consulta con temporizador para sesiones cronometradas o una consulta
+            simple para registros rápidos sin seguimiento de tiempo.
+          </p>
+        </div>
 
-            <button
-              onClick={onIniciarSesion}
-              className="w-full bg-saludvalpa-lime text-white px-8 py-4 rounded-lg hover:bg-saludvalpa-lime/90 font-bold text-lg shadow-lg hover:shadow-xl transition-all"
-            >
-              ▶️ Iniciar sesión ahora
+        {/* Opciones de consulta - Diseño limpio */}
+        <div className="space-y-4">
+          {/* Consulta con marcador de tiempo */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 hover:border-saludvalpa-blue transition-colors">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-saludvalpa-lime to-saludvalpa-green rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-xl text-white">⏱️</span>
+              </div>
+              <div className="flex-1">
+                <h5 className="font-bold text-gray-900 mb-1">Consulta con marcador de tiempo</h5>
+                <p className="text-sm text-gray-600 mb-3">
+                  Ideal para sesiones que requieren seguimiento de duración, facturación por tiempo
+                  o evaluación de progreso. Incluye temporizador integrado y registro automático de duración.
+                </p>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-saludvalpa-lime rounded-full"></span>
+                    Temporizador visual
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-saludvalpa-lime rounded-full"></span>
+                    Registro automático
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-saludvalpa-lime rounded-full"></span>
+                    Facturación por tiempo
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={onIniciarConsultaConMarcador}
+                className="bg-gradient-to-r from-saludvalpa-lime to-saludvalpa-green text-white px-5 py-2.5 rounded-lg hover:opacity-90 font-medium transition-all shadow-sm hover:shadow"
+              >
+                Iniciar
+              </button>
+            </div>
+          </div>
+
+          {/* Consulta sin marcador de tiempo */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 hover:border-saludvalpa-blue transition-colors">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-saludvalpa-blue to-saludvalpa-teal rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-xl text-white">📝</span>
+              </div>
+              <div className="flex-1">
+                <h5 className="font-bold text-gray-900 mb-1">Consulta sin marcador de tiempo</h5>
+                <p className="text-sm text-gray-600 mb-3">
+                  Perfecta para consultas rápidas, seguimientos breves o registros donde el tiempo
+                  no es un factor crítico. Mantiene todas las funcionalidades excepto el temporizador.
+                </p>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-saludvalpa-blue rounded-full"></span>
+                    Notas clínicas completas
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-saludvalpa-blue rounded-full"></span>
+                    Materiales y medios
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-saludvalpa-blue rounded-full"></span>
+                    Datos específicos
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={onIniciarConsultaSinMarcador}
+                className="bg-gradient-to-r from-saludvalpa-blue to-saludvalpa-teal text-white px-5 py-2.5 rounded-lg hover:opacity-90 font-medium transition-all shadow-sm hover:shadow"
+              >
+                Iniciar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Características comunes */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <h6 className="font-medium text-gray-700 mb-3 text-sm">Ambas opciones incluyen:</h6>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+              <span className="text-saludvalpa-blue">✏️</span>
+              <span className="text-xs font-medium">Notas SOAP</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+              <span className="text-saludvalpa-blue">💊</span>
+              <span className="text-xs font-medium">Materiales</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+              <span className="text-saludvalpa-blue">🔧</span>
+              <span className="text-xs font-medium">Medios físicos</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+              <span className="text-saludvalpa-blue">📊</span>
+              <span className="text-xs font-medium">Datos específicos</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Sección de historial mejorada */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="font-bold text-gray-900 text-lg">📚 Historial de consultas</h3>
+            <p className="text-sm text-gray-600">Consulta sesiones anteriores y genera reportes</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+              Ver todas
+            </button>
+            <button className="text-xs px-3 py-1.5 bg-saludvalpa-blue/10 text-saludvalpa-blue rounded-lg hover:bg-saludvalpa-blue/20">
+              Exportar
             </button>
           </div>
         </div>
-      </Card>
-
-      {/* Vista rápida del historial */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">📚 Últimas sesiones</h3>
-        <div className="text-center py-8 text-gray-500">
-          <span className="text-4xl block mb-2">📋</span>
-          <p className="text-sm">No hay sesiones registradas aún</p>
-          <p className="text-xs mt-1 text-gray-400">Inicia tu primera sesión arriba</p>
+        
+        <div className="text-center py-10">
+          <div className="inline-block p-4 bg-gray-100 rounded-full mb-4">
+            <span className="text-3xl text-gray-400">📋</span>
+          </div>
+          <h4 className="font-medium text-gray-700 mb-2">No hay consultas registradas</h4>
+          <p className="text-sm text-gray-500 max-w-md mx-auto">
+            Inicia tu primera consulta para comenzar a construir el historial médico del paciente.
+            Todas las consultas se guardarán automáticamente y podrán exportarse como PDF.
+          </p>
         </div>
       </Card>
 
-      {/* Botón volver */}
-      <Card className="p-6">
-        <Button variant="outline" onClick={onVolverRevision} className="w-full">
+      {/* Botón volver - diseño mejorado */}
+      <div className="flex gap-3">
+        <Button
+          variant="outline"
+          onClick={onVolverRevision}
+          className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
           ← Volver a modo revisión
         </Button>
-      </Card>
+        <button className="px-4 py-2.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+          🆘 Ayuda
+        </button>
+      </div>
     </div>
   );
 };

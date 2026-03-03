@@ -102,6 +102,53 @@ Para usuarios existentes de Valpa:
 
 ---
 
+## [3.1.0] - 2026-03-03
+
+### 🎨 Fase 3: Rediseño de Interfaz del Paciente - Extensión a Todas las Especialidades
+
+Esta fase completa el rediseño de la interfaz del paciente, extendiendo las mejoras visuales y funcionales a todas las especialidades del sistema.
+
+#### 🚀 Características Nuevas
+
+##### 🔧 Correcciones Técnicas
+- **Corregido import en SesionEnVivo.tsx**: Reemplazado `CamposManicurista` por `CamposNutricion` para la especialidad de nutrición
+- **Componente CamposNutricion creado**: Nuevo componente específico para formularios de nutrición
+- **Importaciones actualizadas**: Todos los imports de componentes de especialidad verificados y corregidos
+
+##### 🏥 Extensión a Todas las Especialidades
+- **Fisioterapia**: Verificada compatibilidad con `CamposFisioterapia.tsx`
+- **Psicología**: Verificada compatibilidad con `CamposPsicologia.tsx`
+- **Nutrición**: Nuevo componente `CamposNutricion.tsx` creado e integrado
+- **Medicina General**: Verificada compatibilidad con `CamposMedicina.tsx`
+- **Odontología**: Verificada compatibilidad con `CamposOdontologia.tsx`
+
+##### 🧪 Pruebas de Integración
+- **Script de pruebas creado**: `test-phase3-integration.js` para verificar todas las especialidades
+- **8 pruebas completas**: Verificación de componentes, imports, TypeScript, flujos y documentos
+- **Validación TypeScript**: 0 errores confirmados con `npx tsc --noEmit`
+
+##### 🔄 ProfessionRouter Actualizado
+- **Carga dinámica verificada**: Todos los módulos de especialidad cargan correctamente
+- **Compatibilidad confirmada**: Router maneja correctamente todas las especialidades
+- **Documentos por especialidad**: 15 tipos de documento soportados en total
+
+##### 📱 Mejoras de Interfaz
+- **Botones unificados**: Diseño consistente en todas las especialidades
+- **Flujo Revisión → Consulta → PDF**: Verificado para todas las especialidades
+- **Integración con visor PDF**: Funcionalidad confirmada
+
+#### 🐛 Correcciones de Bugs
+- **Import incorrecto**: `CamposManicurista` siendo usado para nutrición - corregido
+- **Consistencia de tipos**: Todos los componentes usan interfaces TypeScript correctas
+- **Renderizado condicional**: Verificado para todas las profesiones en `SesionEnVivo.tsx`
+
+#### 📚 Documentación
+- **CHANGELOG actualizado**: Esta entrada
+- **CAMBIOS_PARA_COMMIT.md actualizado**: Lista de cambios para commit
+- **Resumen ejecutivo creado**: `RESUMEN_FASE3_REDISEÑO.md`
+
+---
+
 ## Formato de Versionado
 
 Este proyecto usa [Versionado Semántico](https://semver.org/). Dado el estado actual:

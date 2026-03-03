@@ -1251,3 +1251,402 @@ export const generarFolio = (tipo: typeof TipoDocumento[keyof typeof TipoDocumen
 // DOCUMENTOS DE PSICOLOGÍA
 // ============================================================================
 
+// ============================================================================
+// FASE 2: GENERACIÓN MEJORADA DE PDFs PARA SESIONES
+// ============================================================================
+
+/**
+ * Genera un reporte de sesión profesional con diseño mejorado
+ * Incluye metadatos completos, plantilla profesional y preparación para historial
+ */
+export const generarReporteSesionProfesional = async (
+  sesion: Sesion,
+  paciente: Paciente,
+  profesion: TipoProfesion,
+  opciones?: {
+    incluirSOAP?: boolean;
+    notasSOAP?: {
+      subjetivo?: string;
+      objetivo?: string;
+      evaluacion?: string;
+      plan?: string;
+    };
+    incluirFirma?: boolean;
+    firmaBase64?: string;
+  }
+): Promise<Blob> => {
+  const config = await db.configuracion.get('1');
+  if (!config) throw new Error('Configuración no encontrada');
+
+  const pdf = new jsPDF();
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  
+  // ========================================================================
+  // ENCABEZADO PROFESIONAL
+  // ========================================================================
+  let currentY = MARGENES.top;
+  
+  // Logo y encabezado
+  if (config.branding?.logo) {
+    try {
+      pdf.addImage(config.branding.logo, 'PNG', MARGENES.left, currentY, 40, 40);
+    } catch (error) {
+      console.error('Error al agregar logo:', error);
+    }
+  }
+  
+  // Título principal
+  pdf.setFontSize(16);
+  pdf.setTextColor(COLORES.primario);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('REPORTE DE CONSULTA PROFESIONAL', pageWidth / 2, currentY + 15, { align: 'center' });
+  
+  // Subtítulo
+  pdf.setFontSize(10);
+  pdf.setTextColor(COLORES.gris);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Documento oficial del historial médico', pageWidth / 2, currentY + 22, { align: 'center' });
+  
+  currentY = 60;
+
+  // ========================================================================
+  // INFORMACIÓN DE LA SESIÓN - DISEÑO MEJORADO
+  // ========================================================================
+  
+  // Fondo para sección de información
+  pdf.setFillColor(245, 247, 250);
+  pdf.rect(MARGENES.left, currentY, pageWidth - MARGENES.left - MARGENES.right, 40, 'F');
+  
+  // Borde
+  pdf.setDrawColor(COLORES.primario);
+  pdf.setLineWidth(0.5);
+  pdf.rect(MARGENES.left, currentY, pageWidth - MARGENES.left - MARGENES.right, 40);
+  
+  // Contenido en 2 columnas
+  const col1X = MARGENES.left + 10;
+  const col2X = pageWidth / 2;
+  
+  pdf.setFontSize(11);
+  pdf.setTextColor(COLORES.primario);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('INFORMACIÓN DE LA CONSULTA', MARGENES.left + 5, currentY + 12);
+  
+  pdf.setFontSize(9);
+  pdf.setTextColor(COLORES.texto);
+  pdf.setFont('helvetica', 'normal');
+  
+  // Columna 1
+  pdf.text(`Paciente: ${paciente.nombre} ${paciente.apellidos}`, col1X, currentY + 22);
+  pdf.text(`Fecha: ${formatearFecha(sesion.fecha)}`, col1X, currentY + 28);
+  pdf.text(`Profesión: ${profesion}`, col1X, currentY + 34);
+  
+  // Columna 2
+  pdf.text(`Tipo: ${sesion.tipo}`, col2X, currentY + 22);
+  if (sesion.duracion) {
+    pdf.text(`Duración: ${sesion.duracion} minutos`, col2X, currentY + 28);
+  }
+  if (sesion.costo && sesion.costo > 0) {
+    pdf.text(`Costo: ${formatearMoneda(sesion.costo)}`, col2X, currentY + 34);
+  }
+  
+  currentY += 50;
+
+  // ========================================================================
+  // NOTAS CLÍNICAS CON FORMATO MEJORADO
+  // ========================================================================
+  if (sesion.notas) {
+    pdf.setFontSize(12);
+    pdf.setTextColor(COLORES.primario);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('NOTAS CLÍNICAS', MARGENES.left, currentY);
+    currentY += 8;
+    
+    // Línea decorativa
+  pdf.setDrawColor(COLORES.secundario);
+  pdf.setLineWidth(1);
+  pdf.line(MARGENES.left, currentY - 2, MARGENES.left + 50, currentY - 2);
+  
+    pdf.setFontSize(10);
+    pdf.setTextColor(COLORES.texto);
+    pdf.setFont('helvetica', 'normal');
+    
+    const notasLineas = pdf.splitTextToSize(sesion.notas, pageWidth - MARGENES.left - MARGENES.right - 10);
+    notasLineas.forEach((linea: string, index: number) => {
+      if (currentY > pageHeight - MARGENES.bottom - 10) {
+        pdf.addPage();
+        currentY = MARGENES.top;
+      }
+      pdf.text(linea, MARGENES.left + 5, currentY);
+      currentY += 5;
+    });
+    
+    currentY += 10;
+  }
+
+  // ========================================================================
+  // NOTAS SOAP (SI SE PROPORCIONAN)
+  // ========================================================================
+  if (opciones?.incluirSOAP && opciones.notasSOAP) {
+    const soap = opciones.notasSOAP;
+    
+    pdf.setFontSize(12);
+    pdf.setTextColor(COLORES.primario);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('NOTAS SOAP', MARGENES.left, currentY);
+    currentY += 15;
+    
+    // Subjetivo
+    if (soap.subjetivo) {
+      pdf.setFontSize(10);
+      pdf.setTextColor(COLORES.primario);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('S - Subjetivo:', MARGENES.left, currentY);
+      currentY += 6;
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(COLORES.texto);
+      pdf.setFont('helvetica', 'normal');
+      const subjetivoLineas = pdf.splitTextToSize(soap.subjetivo, pageWidth - MARGENES.left - MARGENES.right - 10);
+      subjetivoLineas.forEach((linea: string) => {
+        if (currentY > pageHeight - MARGENES.bottom - 10) {
+          pdf.addPage();
+          currentY = MARGENES.top;
+        }
+        pdf.text(linea, MARGENES.left + 10, currentY);
+        currentY += 5;
+      });
+      currentY += 5;
+    }
+    
+    // Objetivo
+    if (soap.objetivo) {
+      pdf.setFontSize(10);
+      pdf.setTextColor(COLORES.primario);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('O - Objetivo:', MARGENES.left, currentY);
+      currentY += 6;
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(COLORES.texto);
+      pdf.setFont('helvetica', 'normal');
+      const objetivoLineas = pdf.splitTextToSize(soap.objetivo, pageWidth - MARGENES.left - MARGENES.right - 10);
+      objetivoLineas.forEach((linea: string) => {
+        if (currentY > pageHeight - MARGENES.bottom - 10) {
+          pdf.addPage();
+          currentY = MARGENES.top;
+        }
+        pdf.text(linea, MARGENES.left + 10, currentY);
+        currentY += 5;
+      });
+      currentY += 5;
+    }
+    
+    // Evaluación
+    if (soap.evaluacion) {
+      pdf.setFontSize(10);
+      pdf.setTextColor(COLORES.primario);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('A - Evaluación:', MARGENES.left, currentY);
+      currentY += 6;
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(COLORES.texto);
+      pdf.setFont('helvetica', 'normal');
+      const evaluacionLineas = pdf.splitTextToSize(soap.evaluacion, pageWidth - MARGENES.left - MARGENES.right - 10);
+      evaluacionLineas.forEach((linea: string) => {
+        if (currentY > pageHeight - MARGENES.bottom - 10) {
+          pdf.addPage();
+          currentY = MARGENES.top;
+        }
+        pdf.text(linea, MARGENES.left + 10, currentY);
+        currentY += 5;
+      });
+      currentY += 5;
+    }
+    
+    // Plan
+    if (soap.plan) {
+      pdf.setFontSize(10);
+      pdf.setTextColor(COLORES.primario);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('P - Plan:', MARGENES.left, currentY);
+      currentY += 6;
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(COLORES.texto);
+      pdf.setFont('helvetica', 'normal');
+      const planLineas = pdf.splitTextToSize(soap.plan, pageWidth - MARGENES.left - MARGENES.right - 10);
+      planLineas.forEach((linea: string) => {
+        if (currentY > pageHeight - MARGENES.bottom - 10) {
+          pdf.addPage();
+          currentY = MARGENES.top;
+        }
+        pdf.text(linea, MARGENES.left + 10, currentY);
+        currentY += 5;
+      });
+      currentY += 10;
+    }
+  }
+
+  // ========================================================================
+  // MATERIALES Y MEDIOS
+  // ========================================================================
+  if (sesion.materialesUtilizados && sesion.materialesUtilizados.length > 0) {
+    pdf.setFontSize(11);
+    pdf.setTextColor(COLORES.primario);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('MATERIALES UTILIZADOS', MARGENES.left, currentY);
+    currentY += 10;
+    
+    pdf.setFontSize(9);
+    pdf.setTextColor(COLORES.texto);
+    pdf.setFont('helvetica', 'normal');
+    
+    // Tabla simple
+    sesion.materialesUtilizados.forEach((material: any, index: number) => {
+      if (currentY > pageHeight - MARGENES.bottom - 10) {
+        pdf.addPage();
+        currentY = MARGENES.top;
+      }
+      
+      const yPos = currentY;
+      pdf.text(`${index + 1}.`, MARGENES.left, yPos);
+      pdf.text(material.nombre, MARGENES.left + 10, yPos);
+      
+      if (material.cantidad > 1) {
+        pdf.text(`x${material.cantidad}`, pageWidth - MARGENES.right - 30, yPos);
+      }
+      
+      if (material.costo > 0) {
+        pdf.text(formatearMoneda(material.costo), pageWidth - MARGENES.right - 10, yPos, { align: 'right' });
+      }
+      
+      currentY += 6;
+    });
+    
+    currentY += 10;
+  }
+
+  // ========================================================================
+  // PIE DE PÁGINA CON METADATOS
+  // ========================================================================
+  const paginaActual = pdf.getNumberOfPages();
+  
+  for (let i = 1; i <= paginaActual; i++) {
+    pdf.setPage(i);
+    
+    // Línea separadora
+    pdf.setDrawColor(COLORES.gris);
+    pdf.setLineWidth(0.3);
+    pdf.line(MARGENES.left, pageHeight - MARGENES.bottom + 5, pageWidth - MARGENES.right, pageHeight - MARGENES.bottom + 5);
+    
+    // Metadatos
+    pdf.setFontSize(8);
+    pdf.setTextColor(COLORES.gris);
+    pdf.setFont('helvetica', 'normal');
+    
+    const folio = generarFolio(TipoDocumento.REPORTE_SESION);
+    const fechaGeneracion = new Date().toLocaleDateString('es-MX');
+    
+    pdf.text(`Folio: ${folio}`, MARGENES.left, pageHeight - MARGENES.bottom + 10);
+    pdf.text(`Generado: ${fechaGeneracion}`, pageWidth / 2, pageHeight - MARGENES.bottom + 10, { align: 'center' });
+    pdf.text(`Página ${i} de ${paginaActual}`, pageWidth - MARGENES.right, pageHeight - MARGENES.bottom + 10, { align: 'right' });
+    
+    // Información de licencia si existe
+    if (config.licencia?.tipo) {
+      pdf.text(`Licencia: ${config.licencia.tipo}`, MARGENES.left, pageHeight - MARGENES.bottom + 15);
+    }
+  }
+
+  // ========================================================================
+  // GUARDAR DOCUMENTO EN LA BASE DE DATOS
+  // ========================================================================
+  const pdfBlob = pdf.output('blob');
+  const folio = generarFolio(TipoDocumento.REPORTE_SESION);
+  
+  // Convertir a base64 para almacenamiento
+  const reader = new FileReader();
+  const base64Promise = new Promise<string>((resolve) => {
+    reader.onloadend = () => {
+      const base64data = reader.result as string;
+      resolve(base64data);
+    };
+  });
+  reader.readAsDataURL(pdfBlob);
+  const contenidoBase64 = await base64Promise;
+
+  const documento: Documento = {
+    id: crypto.randomUUID(),
+    pacienteId: paciente.id,
+    tipo: TipoDocumento.REPORTE_SESION,
+    nombre: `Reporte de sesión - ${paciente.apellidos} - ${formatearFecha(sesion.fecha)}`,
+    profesion: profesion,
+    contenidoBase64,
+    fechaCreacion: new Date(),
+    firmado: opciones?.incluirFirma || false,
+    metadata: {
+      folio,
+      sesionId: sesion.id,
+      duracion: sesion.duracion,
+      costo: sesion.costo,
+      tipoSesion: sesion.tipo,
+      licenciaTipo: config.licencia?.tipo,
+      version: '2.0', // Versión mejorada de Fase 2
+    },
+  };
+
+  await db.documentos.add(documento);
+
+  // Actualizar sesión con el documento generado
+  await db.sesiones.update(sesion.id, {
+    documentosGenerados: [...(sesion.documentosGenerados || []), documento.id],
+  });
+
+  // Actualizar paciente con el nuevo documento
+  const pacienteDB = await db.pacientes.get(paciente.id);
+  if (pacienteDB) {
+    await db.pacientes.update(paciente.id, {
+      documentosIds: [...pacienteDB.documentosIds, documento.id],
+    });
+  }
+
+  return pdfBlob;
+};
+
+/**
+ * Función de conveniencia para generar y descargar reporte profesional
+ */
+export const generarYDescargarReporteProfesional = async (
+  sesion: Sesion,
+  paciente: Paciente,
+  profesion: TipoProfesion,
+  opciones?: {
+    incluirSOAP?: boolean;
+    notasSOAP?: {
+      subjetivo?: string;
+      objetivo?: string;
+      evaluacion?: string;
+      plan?: string;
+    };
+    incluirFirma?: boolean;
+    firmaBase64?: string;
+  }
+): Promise<void> => {
+  try {
+    const pdfBlob = await generarReporteSesionProfesional(sesion, paciente, profesion, opciones);
+    
+    // Descargar automáticamente
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(pdfBlob);
+    link.download = `Reporte_Profesional_${paciente.apellidos}_${new Date().toISOString().split('T')[0]}.pdf`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    console.log('Reporte profesional generado y descargado exitosamente');
+  } catch (error) {
+    console.error('Error al generar reporte profesional:', error);
+    throw error;
+  }
+};
+

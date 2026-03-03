@@ -18,6 +18,10 @@ const GenerarEvaluacionFisioterapeutica = lazy(() => import('../modules/fisioter
 const GenerarPlanTratamiento = lazy(() => import('../modules/fisioterapia/components/GenerarPlanTratamiento'));
 const GenerarNotaEvolucion = lazy(() => import('../modules/fisioterapia/components/GenerarNotaEvolucion'));
 
+// Lazy load de componentes de medicina
+const GenerarRecetaMedica = lazy(() => import('../modules/medicina/components/GenerarRecetaMedica'));
+const HistoriaClinicaMedica = lazy(() => import('../modules/medicina/components/HistoriaClinicaMedica'));
+
 type TipoSesion = 'general' | 'evaluacion' | 'plan' | 'nota' | null;
 
 const PerfilPaciente = () => {
@@ -138,23 +142,14 @@ const PerfilPaciente = () => {
         onEliminar={handleEliminar}
       />
 
-      {/* Botón para iniciar sesión */}
-      {!tipoSesionActiva && (
-        <div className="mt-6">
-          <button
-            onClick={() => setModalSesionAbierto(true)}
-            className="w-full md:w-auto bg-saludvalpa-blue text-white px-8 py-4 rounded-lg hover:bg-opacity-90 transition-colors font-medium text-lg shadow-lg"
-          >
-            ▶️ Iniciar sesión
-          </button>
-        </div>
-      )}
+      {/* Nota: La tarjeta de paciente ahora incluye los botones unificados de consulta */}
+      {/* El botón adicional "Iniciar sesión" ha sido removido para simplificar la interfaz */}
 
-      {/* Modal selector de tipo de sesión */}
+      {/* Modal selector de tipo de documento (para generación de documentos específicos) */}
       <Modal
         isOpen={modalSesionAbierto}
         onClose={() => setModalSesionAbierto(false)}
-        title="Seleccionar tipo de sesión"
+        title="Generar documento específico"
         size="md"
       >
         <div className="space-y-3">
@@ -166,7 +161,7 @@ const PerfilPaciente = () => {
               <span className="text-2xl">🏥</span>
               <div>
                 <div className="font-medium text-gray-900">Consulta General</div>
-                <div className="text-sm text-gray-600">Sesión estándar sin documento específico</div>
+                <div className="text-sm text-gray-600">Para consultas sin documento específico</div>
               </div>
             </div>
           </button>

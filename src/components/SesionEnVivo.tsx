@@ -3,14 +3,16 @@
 // ============================================================================
 
 import { useState, useEffect, useRef } from 'react';
-import type { Paciente, Material, TipoProfesion } from '../types';
+import type { Paciente, Material, TipoProfesion, Sesion } from '../types';
 import { useSesiones } from '../hooks/useSesiones';
 import { db } from '../db/database';
+import VisorPDF from './common/VisorPDF';
+import Modal from './shared/Modal';
 
 // Importaremos los componentes específicos de cada profesión
 import CamposFisioterapia from '../modules/fisioterapia/components/CamposFisioterapia';
 import CamposPsicologia from './CamposPsicologia';
-import CamposManicurista from './CamposManicurista';
+import CamposNutricion from './CamposNutricion';
 import CamposMedicina from '../modules/medicina/components/CamposMedicina';
 import CamposOdontologia from '../modules/odontologia/components/CamposOdontologia';
 
@@ -54,6 +56,13 @@ export default function SesionEnVivo({
   const [nuevoMaterial, setNuevoMaterial] = useState({ nombre: '', cantidad: 1, costo: 0 });
   const [nuevoMedio, setNuevoMedio] = useState('');
   const [generandoPDF, setGenerandoPDF] = useState(false);
+
+  // Estado para PDF y historial
+  const [sesionesAnteriores, setSesionesAnteriores] = useState<Sesion[]>([]);
+  const [cargandoHistorial, setCargandoHistorial] = useState(false);
+  const [visorPDFAbierto, setVisorPDFAbierto] = useState(false);
+  const [documentoPDFId, setDocumentoPDFId] = useState<string | null>(null);
+  const [guardandoComoPDF, setGuardandoComoPDF] = useState(false);
 
   // -------------------------------------------------------------------------
   // CARGAR SESIÓN EXISTENTE SI ES EDICIÓN
@@ -173,6 +182,95 @@ export default function SesionEnVivo({
       iniciarSesion();
     }
   }, []);
+
+  // -------------------------------------------------------------------------
+  // CARGAR SESIONES ANTERIORES DEL PACIENTE
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    const cargarSesionesAnteriores = async () => {
+      try {
+        setCargandoHistorial(true);
+        const sesiones = await db.sesiones
+          .where('pacienteId')
+          .equals(paciente.id)
+          .reverse()
+          .limit(5)
+          .toArray();
+        setSesionesAnteriores(sesiones);
+      } catch (error) {
+        console.error('Error al cargar sesiones anteriores:', error);
+      } finally {
+        setCargandoHistorial(false);
+      }
+    };
+
+    cargarSesionesAnteriores();
+  }, [paciente.id]);
+
+  // -------------------------------------------------------------------------
+  // FUNCIONES PARA PDF
+  // -------------------------------------------------------------------------
+
+  /**
+   * Guardar la sesión actual como PDF sin finalizar
+   */
+  const guardarComoPDF = async () => {
+    if (!sesionId) {
+      alert('No hay sesión activa para guardar como PDF');
+      return;
+    }
+
+    try {
+      setGuardandoComoPDF(true);
+
+      // Guardar una última vez antes de generar PDF
+      await actualizarSesion(sesionId, {
+        tipo: tipoSesion,
+        notas,
+        materialesUtilizados: materiales,
+        mediosFisicos,
+        datosEspecificosProfesion: datosEspecificos,
+        costo,
+        duracion: Math.floor(segundosTranscurridos / 60),
+      });
+
+      // Generar PDF de la sesión actual
+      const { generarReporteSesion } = await import('../services/pdfService');
+      const sesion = await obtenerSesion(sesionId);
+      if (sesion) {
+        await generarReporteSesion(sesion, paciente, profesion);
+        alert('Sesión guardada como PDF exitosamente');
+      }
+    } catch (error) {
+      console.error('Error al guardar como PDF:', error);
+      alert('Error al guardar la sesión como PDF');
+    } finally {
+      setGuardandoComoPDF(false);
+    }
+  };
+
+  /**
+   * Ver documento PDF de una sesión anterior
+   */
+  const verDocumentoPDF = async (sesion: Sesion) => {
+    if (!sesion.documentosGenerados || sesion.documentosGenerados.length === 0) {
+      alert('Esta sesión no tiene documentos PDF generados');
+      return;
+    }
+
+    // Tomar el primer documento de la sesión
+    const documentoId = sesion.documentosGenerados[0];
+    setDocumentoPDFId(documentoId);
+    setVisorPDFAbierto(true);
+  };
+
+  /**
+   * Cerrar visor PDF
+   */
+  const cerrarVisorPDF = () => {
+    setVisorPDFAbierto(false);
+    setDocumentoPDFId(null);
+  };
 
   // -------------------------------------------------------------------------
   // AGREGAR MATERIAL
@@ -358,7 +456,14 @@ export default function SesionEnVivo({
               )}
             </div>
 
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-end gap-2">
+              <button
+                onClick={guardarComoPDF}
+                disabled={guardandoComoPDF || !sesionId}
+                className="bg-saludvalpa-blue text-white px-4 py-2 rounded-lg hover:bg-saludvalpa-blue/90 font-medium disabled:opacity-50 text-sm"
+              >
+                {guardandoComoPDF ? '💾 Guardando...' : '📄 Guardar como PDF'}
+              </button>
               <button
                 onClick={finalizarSesion}
                 disabled={generandoPDF}
@@ -521,7 +626,7 @@ export default function SesionEnVivo({
           )}
 
           {profesion === 'nutricion' && (
-            <CamposManicurista
+            <CamposNutricion
               datos={datosEspecificos}
               onChange={setDatosEspecificos}
             />
@@ -539,6 +644,76 @@ export default function SesionEnVivo({
               datos={datosEspecificos}
               onChange={setDatosEspecificos}
             />
+          )}
+        </div>
+
+        {/* Historial como PDF */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700">📚 Historial como PDF</h3>
+              <p className="text-xs text-gray-500">Sesiones anteriores con documentos generados</p>
+            </div>
+            <button
+              onClick={guardarComoPDF}
+              disabled={guardandoComoPDF || !sesionId}
+              className="text-xs px-3 py-1.5 bg-saludvalpa-blue/10 text-saludvalpa-blue rounded-lg hover:bg-saludvalpa-blue/20 disabled:opacity-50"
+            >
+              {guardandoComoPDF ? 'Guardando...' : '+ Guardar actual'}
+            </button>
+          </div>
+
+          {cargandoHistorial ? (
+            <div className="text-center py-6">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-saludvalpa-blue mb-2"></div>
+              <p className="text-sm text-gray-500">Cargando historial...</p>
+            </div>
+          ) : sesionesAnteriores.length === 0 ? (
+            <div className="text-center py-6 bg-gray-50 rounded-lg">
+              <span className="text-3xl text-gray-400 block mb-2">📋</span>
+              <p className="text-sm text-gray-600">No hay sesiones anteriores</p>
+              <p className="text-xs text-gray-500 mt-1">Las sesiones que finalices aparecerán aquí</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sesionesAnteriores.map((sesion) => (
+                <div
+                  key={sesion.id}
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-saludvalpa-blue transition-colors"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-sm text-gray-900">{sesion.tipo}</span>
+                      {sesion.duracion && (
+                        <span className="text-xs text-gray-500">• {sesion.duracion} min</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      {new Date(sesion.fecha).toLocaleDateString('es-MX')}
+                      {sesion.costo && sesion.costo > 0 && (
+                        <span className="ml-2 text-saludvalpa-blue font-medium">
+                          ${sesion.costo.toFixed(2)}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {sesion.documentosGenerados && sesion.documentosGenerados.length > 0 ? (
+                      <button
+                        onClick={() => verDocumentoPDF(sesion)}
+                        className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
+                      >
+                        Ver PDF
+                      </button>
+                    ) : (
+                      <span className="text-xs px-3 py-1.5 bg-gray-100 text-gray-500 rounded-lg">
+                        Sin PDF
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -577,14 +752,39 @@ export default function SesionEnVivo({
             {guardando ? '💾 Guardando...' : '💾 Guardar borrador'}
           </button>
           <button
+            onClick={guardarComoPDF}
+            disabled={guardandoComoPDF || !sesionId}
+            className="flex-1 px-6 py-3 bg-saludvalpa-blue text-white rounded-lg hover:bg-saludvalpa-blue/90 font-medium disabled:opacity-50"
+          >
+            {guardandoComoPDF ? '📄 Guardando...' : '📄 Guardar como PDF'}
+          </button>
+          <button
             onClick={finalizarSesion}
             disabled={generandoPDF || !sesionId}
             className="flex-1 px-6 py-3 bg-saludvalpa-lime text-white rounded-lg hover:bg-saludvalpa-lime/90 font-semibold disabled:opacity-50"
           >
-            {generandoPDF ? '⏳ Finalizando...' : '✅ Finalizar y generar reporte'}
+            {generandoPDF ? '⏳ Finalizando...' : '✅ Finalizar'}
           </button>
         </div>
       </div>
+
+      {/* Modal para visor PDF */}
+      <Modal
+        isOpen={visorPDFAbierto}
+        onClose={cerrarVisorPDF}
+        title="Visor de PDF - Historial de Sesión"
+        size="xl"
+      >
+        {documentoPDFId && (
+          <VisorPDF
+            documentoId={documentoPDFId}
+            onCerrar={cerrarVisorPDF}
+            permitirDescarga={true}
+            permitirImpresion={true}
+            nombreArchivo={`sesion-${paciente.nombre}-${new Date().toISOString().split('T')[0]}.pdf`}
+          />
+        )}
+      </Modal>
     </div>
   );
 }

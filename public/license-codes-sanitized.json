@@ -1,0 +1,225 @@
+{
+  "version": "2.0",
+  "fecha_actualizacion": "2026-02-28",
+  "descripcion": "Códigos de licencia válidos para SaludValpa 3.0 - Solo licencias anuales (VERSIÓN SANITIZADA PARA REPOSITORIO PÚBLICO)",
+  "precio_anual": 999,
+  "moneda": "MXN",
+  "formato_codigo": "saludvalpa-XXXXX-XXXXX-XXXXX",
+  "regex_validacion": "^saludvalpa-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$",
+  "contacto": {
+    "email": "contacto@valpa.app",
+    "whatsapp": "+52 55 1276 9504",
+    "sitio_web": "https://valpa.app"
+  },
+  "codigos": [
+    {
+      "codigo": "SALUDVALPA-TEST1-00001-00001",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST2-00002-00002",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST3-00003-00003",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST4-00004-00004",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST5-00005-00005",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST6-00006-00006",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST7-00007-00007",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST8-00008-00008",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST9-00009-00009",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST10-00010-00010",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST11-00011-00011",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST12-00012-00012",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST13-00013-00013",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST14-00014-00014",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST15-00015-00015",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST16-00016-00016",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST17-00017-00017",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST18-00018-00018",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST19-00019-00019",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST20-00020-00020",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST21-00021-00021",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    },
+    {
+      "codigo": "SALUDVALPA-TEST22-00022-00022",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-02-28T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual completa (CÓDIGO DE PRUEBA)"
+    }
+  ],
+  "estadisticas": {
+    "total_generados": 22,
+    "disponibles": 22,
+    "usados": 0,
+    "ingreso_potencial": 21978
+  },
+  "configuracion_automatizacion": {
+    "api_endpoint": "https://api.valpa.app/licencias",
+    "webhook_activacion": "https://api.valpa.app/webhook/activacion",
+    "version_sistema": "manual_v2"
+  }
+}
