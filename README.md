@@ -46,16 +46,34 @@ Sistema de gestión profesional completo para Fisioterapeutas, Psicólogos, Mani
 - Firmas digitales integradas
 - Almacenamiento local seguro
 
-### ⚙️ Configuración Avanzada
-- 6 pestañas de configuración:
-  - General (perfil, horarios)
-  - Económica (moneda, impuestos)
-  - Documentos (plantillas, firmas)
-  - Seguridad (contraseña, respaldos)
-  - Apariencia (temas, colores)
-  - Sistema (avanzado, limpieza)
-- Temas y colores personalizables
-- Sistema de respaldos automáticos
+### ⚙️ Sistema de Configuración Unificado (SaludValpa 3.0)
+- **14 pestañas organizadas por funcionalidad:**
+  - **General**: Perfil profesional, datos de contacto
+  - **Branding**: Logo, colores, temas personalizables
+  - **Preferencias**: Formato fecha, moneda, zona horaria
+  - **Recordatorios**: Configuración de notificaciones
+  - **Documentos**: Plantillas, firmas, formatos
+  - **Respaldos**: Sistema automático de copias de seguridad
+  - **Sincronización**: Integración con servicios en la nube
+  - **Usuarios**: Gestión multi-usuario con permisos granulares
+  - **Integraciones**: APIs, webhooks, servicios externos
+  - **Seguridad**: 2FA, políticas de retención, encriptación
+  - **Analíticas**: Métricas, dashboards, reportes
+  - **Personalización Avanzada**: Temas personalizados, flujos de trabajo
+  - **Instalación**: Guía PWA, optimizaciones
+  - **Avanzado**: Operaciones del sistema, limpieza
+
+- **Sistema de permisos por licencia:**
+  - **Gratuita**: Funcionalidades básicas
+  - **Pagada**: Branding completo, temas personalizados
+  - **Enterprise**: Multi-usuario, analíticas avanzadas, integraciones
+
+- **Características avanzadas:**
+  - Migración automática de configuraciones existentes
+  - Backup automático pre-migración
+  - Sistema de rollback en caso de errores
+  - Lazy loading para optimización de rendimiento
+  - Caché inteligente para configuraciones frecuentes
 
 ### 📱 PWA (Progressive Web App)
 - Instalable en desktop y móvil

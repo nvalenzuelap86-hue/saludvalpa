@@ -18,10 +18,14 @@ import Biblioteca from './pages/Biblioteca';
 import Documentos from './pages/Documentos';
 import Configuracion from './pages/Configuracion';
 import ConfiguracionAvanzada from './pages/ConfiguracionAvanzada';
+import ConfiguracionUnificada from './pages/ConfiguracionUnificada';
 import ActivarLicencia from './pages/ActivarLicencia';
 import Onboarding from './pages/Onboarding';
 import AcercaDeSaludValpa from './pages/AcercaDeSaludValpa';
 import InstalacionPWA from './pages/InstalacionPWA';
+
+// Componentes de redirección
+import { ConfigRedirection, OldConfigRedirect } from './components/configuracion/ConfigRedirection';
 
 // Módulos de fisioterapia (será reemplazado por sistema dinámico en Fase 2)
 import GestionRutinas from './modules/fisioterapia/rutinas/GestionRutinas';
@@ -113,8 +117,19 @@ function App() {
             <Route path="biblioteca" element={<Biblioteca />} />
             <Route path="rutinas" element={<GestionRutinas />} />
             <Route path="documentos" element={<Documentos />} />
-            <Route path="configuracion" element={<Configuracion />} />
-            <Route path="configuracion-avanzada" element={<ConfiguracionAvanzada />} />
+            
+            {/* Rutas de configuración con redirección automática basada en feature flags */}
+            <Route path="configuracion" element={
+              <ConfigRedirection>
+                <Configuracion />
+              </ConfigRedirection>
+            } />
+            <Route path="configuracion-avanzada" element={
+              <ConfigRedirection>
+                <ConfiguracionAvanzada />
+              </ConfigRedirection>
+            } />
+            <Route path="configuracion-unificada" element={<ConfiguracionUnificada />} />
             <Route path="activar-licencia" element={<ActivarLicencia />} />
           </Route>
         </Route>
@@ -128,8 +143,18 @@ function App() {
         <Route path="/biblioteca" element={<Navigate to="/app/biblioteca" replace />} />
         <Route path="/rutinas" element={<Navigate to="/app/rutinas" replace />} />
         <Route path="/documentos" element={<Navigate to="/app/documentos" replace />} />
-        <Route path="/configuracion" element={<Navigate to="/app/configuracion" replace />} />
-        <Route path="/configuracion-avanzada" element={<Navigate to="/app/configuracion-avanzada" replace />} />
+        
+        {/* Redirección externa de configuración con soporte para feature flags */}
+        <Route path="/configuracion" element={
+          <ConfigRedirection>
+            <Navigate to="/app/configuracion" replace />
+          </ConfigRedirection>
+        } />
+        <Route path="/configuracion-avanzada" element={
+          <ConfigRedirection>
+            <Navigate to="/app/configuracion-avanzada" replace />
+          </ConfigRedirection>
+        } />
 
         {/* Redirección inteligente basada en estado de onboarding */}
         {/* Mejorada: Solo redirigir cuando estamos seguros del estado */}

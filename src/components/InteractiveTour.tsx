@@ -18,7 +18,7 @@ type TourStep = {
   completed?: boolean;
 };
 
-type TourStage = 'welcome' | 'dashboard' | 'patients' | 'appointments' | 'documents' | 'finances' | 'complete';
+type TourStage = 'welcome' | 'dashboard' | 'patients' | 'appointments' | 'documents' | 'finances' | 'configuration' | 'complete';
 
 interface InteractiveTourProps {
   open?: boolean;
@@ -44,7 +44,7 @@ const InteractiveTour: React.FC<InteractiveTourProps> = ({ open = false, onClose
   const onboardingCompleted = !!configuracion;
 
   // Tour steps configuration
-  const stages: TourStage[] = ['welcome', 'dashboard', 'patients', 'appointments', 'documents', 'finances', 'complete'];
+  const stages: TourStage[] = ['welcome', 'dashboard', 'patients', 'appointments', 'documents', 'finances', 'configuration', 'complete'];
   
   const tourSteps: Record<TourStage, TourStep[]> = {
     welcome: [
@@ -149,6 +149,39 @@ const InteractiveTour: React.FC<InteractiveTourProps> = ({ open = false, onClose
         id: 'finances-2',
         title: 'Reportes Automáticos',
         description: 'Obtén reportes detallados de tu desempeño financiero con gráficos y análisis.',
+        position: 'bottom'
+      }
+    ],
+    configuration: [
+      {
+        id: 'configuration-1',
+        title: 'Configuración Unificada',
+        description: 'Gestiona toda tu configuración desde un solo lugar con nuestro nuevo sistema unificado de 9 pestañas.',
+        position: 'bottom',
+        action: () => navigate('/configuracion-unificada')
+      },
+      {
+        id: 'configuration-2',
+        title: 'Preferencias Avanzadas',
+        description: 'Personaliza formato de fechas, economía, agenda y recordatorios según tus necesidades.',
+        position: 'bottom'
+      },
+      {
+        id: 'configuration-3',
+        title: 'Documentos y Branding',
+        description: 'Configura el formato de tus documentos, marca de agua y pie de página profesional.',
+        position: 'bottom'
+      },
+      {
+        id: 'configuration-4',
+        title: 'Personalización Completa',
+        description: 'Elige temas, colores y ajusta la apariencia de la plataforma a tu estilo.',
+        position: 'bottom'
+      },
+      {
+        id: 'configuration-5',
+        title: 'Sincronización en la Nube',
+        description: 'Conecta con Google Drive para respaldos automáticos y acceso desde cualquier dispositivo.',
         position: 'bottom'
       }
     ],
@@ -301,6 +334,7 @@ const InteractiveTour: React.FC<InteractiveTourProps> = ({ open = false, onClose
     appointments: 'Citas',
     documents: 'Documentos',
     finances: 'Finanzas',
+    configuration: 'Configuración',
     complete: 'Completado'
   };
 

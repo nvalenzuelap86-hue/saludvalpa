@@ -255,6 +255,49 @@ const ContextualHelp = () => {
         <p>❓ <strong>¿Preguntas?</strong> Contacta a soporte@valpa.app para asistencia personalizada.</p>
       `,
       relatedTopics: ['getting_started']
+    },
+    {
+      id: 'unified_configuration',
+      title: 'Configuración Unificada',
+      description: 'Guía completa del nuevo sistema de configuración con 9 pestañas',
+      keywords: ['configuración', 'unificada', 'preferencias', 'documentos', 'personalización', 'sincronización', 'respaldos', 'instalación'],
+      content: `
+        <h3>Configuración Unificada de SaludValpa</h3>
+        <p>Gestiona toda tu configuración desde un solo lugar con nuestro nuevo sistema unificado de 9 pestañas:</p>
+        
+        <h4>Pestañas disponibles:</h4>
+        <ul>
+          <li><strong>👤 General:</strong> Información profesional y datos de contacto</li>
+          <li><strong>⚙️ Preferencias:</strong> Formato de fechas, economía, agenda y recordatorios</li>
+          <li><strong>🔔 Recordatorios:</strong> Configuración de notificaciones y plantillas</li>
+          <li><strong>📄 Documentos:</strong> Formato PDF, marca de agua y pie de página</li>
+          <li><strong>🎨 Personalización:</strong> Temas, colores y apariencia avanzada</li>
+          <li><strong>☁️ Sincronización:</strong> Google Drive y respaldos en la nube</li>
+          <li><strong>💾 Respaldos:</strong> Exportar e importar datos de forma segura</li>
+          <li><strong>📱 Instalación:</strong> Guía para instalar como aplicación PWA</li>
+          <li><strong>⚡ Avanzada:</strong> Funcionalidades de sistema y migración</li>
+        </ul>
+        
+        <h4>Características principales:</h4>
+        <ul>
+          <li><strong>Interfaz unificada:</strong> Todas las configuraciones en un solo lugar</li>
+          <li><strong>Control por licencia:</strong> Funcionalidades desbloqueadas según tu plan</li>
+          <li><strong>Migración automática:</strong> Sistema que detecta y migra configuraciones antiguas</li>
+          <li><strong>Ayuda contextual:</strong> Explicaciones detalladas en cada sección</li>
+        </ul>
+        
+        <h4>Acceso rápido:</h4>
+        <ol>
+          <li>Haz clic en tu avatar en la esquina superior derecha</li>
+          <li>Selecciona <strong>Configuración Unificada</strong></li>
+          <li>Explora las 9 pestañas para personalizar tu experiencia</li>
+          <li>Usa el botón <strong>Guardar cambios</strong> en cada sección</li>
+        </ol>
+        
+        <p>🎯 <strong>Consejo:</strong> Usa el tour interactivo para una guía visual del nuevo sistema.</p>
+        <p>🔄 <strong>Migración:</strong> Si venías de versiones anteriores, el sistema detectará automáticamente y migrará tus configuraciones.</p>
+      `,
+      relatedTopics: ['getting_started', 'license_upgrade', 'documents']
     }
   ];
 
@@ -266,6 +309,7 @@ const ContextualHelp = () => {
     '/app/agenda': 'appointments',
     '/app/documentos': 'documents',
     '/app/configuracion': 'getting_started',
+    '/app/configuracion-unificada': 'unified_configuration',
     '/activar-licencia': 'license_upgrade',
     '/app/biblioteca': 'specialty_tools',
     '/app/economia': 'getting_started'

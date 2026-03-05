@@ -293,3 +293,252 @@ export async function obtenerEstadisticasRespaldo(): Promise<{
     documentos: cantidadDocumentos,
   };
 }
+
+// ============================================================================
+// SISTEMA DE BACKUP AUTOMÁTICO PARA MIGRACIONES (Fase 4)
+// ============================================================================
+
+/**
+ * Crear backup automático antes de migración
+ * Guarda el backup en localStorage con timestamp
+ */
+export async function crearBackupAutomaticoMigracion(): Promise<{
+  success: boolean;
+  backupId: string;
+  timestamp: Date;
+  size: number;
+  error?: string;
+}> {
+  try {
+    const timestamp = new Date();
+    const backupId = `migration-backup-${timestamp.getTime()}`;
+    
+    // Exportar todos los datos
+    const datos = await exportarDatos();
+    
+    // Convertir a JSON
+    const jsonData = JSON.stringify(datos);
+    const size = new Blob([jsonData]).size;
+    
+    // Guardar en localStorage (temporal para migración)
+    localStorage.setItem(backupId, jsonData);
+    
+    // También guardar metadata del backup
+    const metadata = {
+      backupId,
+      timestamp: timestamp.toISOString(),
+      size,
+      type: 'migration',
+      version: VERSION_RESPALDO
+    };
+    
+    localStorage.setItem(`${backupId}-metadata`, JSON.stringify(metadata));
+    
+    // Limpiar backups antiguos (mantener solo los últimos 3)
+    limpiarBackupsAntiguos();
+    
+    return {
+      success: true,
+      backupId,
+      timestamp,
+      size
+    };
+    
+  } catch (error) {
+    console.error('Error creando backup automático:', error);
+    return {
+      success: false,
+      backupId: '',
+      timestamp: new Date(),
+      size: 0,
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    };
+  }
+}
+
+/**
+ * Restaurar desde backup automático de migración
+ */
+export async function restaurarDesdeBackupMigracion(backupId: string): Promise<{
+  success: boolean;
+  message: string;
+  restoredItems?: number;
+}> {
+  try {
+    // Obtener datos del backup
+    const jsonData = localStorage.getItem(backupId);
+    
+    if (!jsonData) {
+      return {
+        success: false,
+        message: `Backup ${backupId} no encontrado`
+      };
+    }
+    
+    const datos = JSON.parse(jsonData);
+    
+    // Importar datos
+    const resultado = await importarRespaldo(datos);
+    
+    if (resultado.success) {
+      return {
+        success: true,
+        message: `Backup restaurado exitosamente: ${backupId}`,
+        restoredItems: calcularItemsRestaurados(datos)
+      };
+    } else {
+      return resultado;
+    }
+    
+  } catch (error) {
+    console.error('Error restaurando backup:', error);
+    return {
+      success: false,
+      message: `Error restaurando backup: ${error instanceof Error ? error.message : 'Error desconocido'}`
+    };
+  }
+}
+
+/**
+ * Listar backups automáticos disponibles
+ */
+export function listarBackupsAutomaticos(): Array<{
+  backupId: string;
+  timestamp: string;
+  size: number;
+  type: string;
+  version: string;
+}> {
+  const backups = [];
+  
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.includes('migration-backup-') && key.includes('-metadata')) {
+      try {
+        const metadata = JSON.parse(localStorage.getItem(key) || '{}');
+        backups.push(metadata);
+      } catch (error) {
+        console.warn(`Error parseando metadata de backup ${key}:`, error);
+      }
+    }
+  }
+  
+  // Ordenar por timestamp (más reciente primero)
+  return backups.sort((a, b) =>
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+}
+
+/**
+ * Eliminar backup automático específico
+ */
+export function eliminarBackupAutomatico(backupId: string): boolean {
+  try {
+    localStorage.removeItem(backupId);
+    localStorage.removeItem(`${backupId}-metadata`);
+    return true;
+  } catch (error) {
+    console.error(`Error eliminando backup ${backupId}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Limpiar backups antiguos (mantiene solo los últimos 3)
+ */
+function limpiarBackupsAntiguos(): void {
+  const backups = listarBackupsAutomaticos();
+  
+  if (backups.length > 3) {
+    const backupsAEliminar = backups.slice(3);
+    
+    backupsAEliminar.forEach(backup => {
+      eliminarBackupAutomatico(backup.backupId);
+    });
+    
+    console.log(`Eliminados ${backupsAEliminar.length} backups antiguos`);
+  }
+}
+
+/**
+ * Calcular número de items restaurados
+ */
+function calcularItemsRestaurados(datos: any): number {
+  let total = 0;
+  
+  if (datos.pacientes) total += datos.pacientes.length;
+  if (datos.sesiones) total += datos.sesiones.length;
+  if (datos.citas) total += datos.citas.length;
+  if (datos.documentos) total += datos.documentos.length;
+  if (datos.servicios) total += datos.servicios.length;
+  if (datos.cotizaciones) total += datos.cotizaciones.length;
+  if (datos.recibos) total += datos.recibos.length;
+  if (datos.biblioteca) total += datos.biblioteca.length;
+  if (datos.usuarios) total += datos.usuarios.length;
+  
+  return total;
+}
+
+/**
+ * Verificar integridad de backup automático
+ */
+export async function verificarIntegridadBackup(backupId: string): Promise<{
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+  metadata: any;
+}> {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  
+  try {
+    // Obtener metadata
+    const metadataJson = localStorage.getItem(`${backupId}-metadata`);
+    if (!metadataJson) {
+      errors.push(`Metadata no encontrada para backup ${backupId}`);
+      return { valid: false, errors, warnings, metadata: null };
+    }
+    
+    const metadata = JSON.parse(metadataJson);
+    
+    // Obtener datos
+    const datosJson = localStorage.getItem(backupId);
+    if (!datosJson) {
+      errors.push(`Datos no encontrados para backup ${backupId}`);
+      return { valid: false, errors, warnings, metadata };
+    }
+    
+    const datos = JSON.parse(datosJson);
+    
+    // Verificar estructura básica
+    if (!datos.version) {
+      errors.push('Backup no tiene versión');
+    }
+    
+    if (!datos.configuracion) {
+      errors.push('Backup no tiene configuración');
+    }
+    
+    if (!datos.fechaRespaldo) {
+      warnings.push('Backup no tiene fecha de respaldo');
+    }
+    
+    // Verificar que los datos sean parseables
+    try {
+      JSON.stringify(datos);
+    } catch (error) {
+      errors.push(`Error serializando datos: ${error}`);
+    }
+    
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+      metadata
+    };
+    
+  } catch (error) {
+    errors.push(`Error verificando backup: ${error}`);
+    return { valid: false, errors, warnings, metadata: null };
+  }
+}

@@ -7,6 +7,8 @@ import { create } from 'zustand';
 import type { Configuracion, Licencia, TipoProfesion } from '../types';
 import { TipoLicencia, EstadoLicencia } from '../types';
 import { db } from '../db/database';
+import { featureFlagsService, type FeatureFlagsConfig } from '../services/featureFlagsService';
+import { ConfigurationCache } from '../services/cacheService';
 
 interface OnboardingData {
   profesion: TipoProfesion;
@@ -43,6 +45,10 @@ interface AppState {
   onboardingStep: 'landing' | 'welcome' | 'specialty' | 'profile' | 'complete';
   onboardingProgress: number; // 0-100
   
+  // Feature flags
+  featureFlags: Record<string, boolean>;
+  featureFlagsContext: any;
+  
   // Acciones
   cargarConfiguracion: () => Promise<void>;
   actualizarConfiguracion: (config: Partial<Configuracion>) => Promise<void>;
@@ -52,6 +58,12 @@ interface AppState {
   setOnboardingStep: (step: 'landing' | 'welcome' | 'specialty' | 'profile' | 'complete') => void;
   updateOnboardingProgress: (progress: number) => void;
   resetOnboarding: () => void;
+  
+  // Feature flags actions
+  cargarFeatureFlags: () => void;
+  isFeatureEnabled: (flagId: keyof FeatureFlagsConfig['flags']) => boolean;
+  actualizarFeatureFlag: (flagId: keyof FeatureFlagsConfig['flags'], enabled: boolean) => void;
+  obtenerTodosFeatureFlags: () => Record<string, boolean>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -61,11 +73,18 @@ export const useAppStore = create<AppState>((set, get) => ({
   isInitialized: false,
   onboardingStep: 'landing',
   onboardingProgress: 0,
+  featureFlags: {},
+  featureFlagsContext: null,
 
   cargarConfiguracion: async () => {
     try {
       set({ isLoading: true });
-      const config = await db.configuracion.get('1');
+      
+      // Usar caché para mejorar rendimiento
+      const config = await ConfigurationCache.getConfig(async () => {
+        const result = await db.configuracion.get('1');
+        return result || null; // Convertir undefined a null
+      });
       
       if (config) {
         // Usuario ya completó onboarding
@@ -110,6 +129,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       };
 
       await db.configuracion.update('1', nuevaConfig);
+      
+      // Actualizar caché
+      ConfigurationCache.setConfig(nuevaConfig);
+      
       set({ configuracion: nuevaConfig });
     } catch (error) {
       console.error('Error al actualizar configuración:', error);
@@ -227,6 +250,66 @@ export const useAppStore = create<AppState>((set, get) => ({
       onboardingProgress: 0,
       configuracion: null,
       licencia: null,
+      featureFlags: {},
+      featureFlagsContext: null,
     });
+  },
+  
+  // Feature flags actions
+  cargarFeatureFlags: () => {
+    const { configuracion } = get();
+    const context = featureFlagsService.createContextFromConfig(configuracion);
+    const flags = featureFlagsService.getAllFlags(context);
+    
+    set({
+      featureFlags: flags,
+      featureFlagsContext: context
+    });
+  },
+  
+  isFeatureEnabled: (flagId: keyof FeatureFlagsConfig['flags']) => {
+    const { configuracion, featureFlags } = get();
+    
+    // Si ya tenemos los flags cargados, usarlos
+    if (featureFlags[flagId] !== undefined) {
+      return featureFlags[flagId];
+    }
+    
+    // Si no, evaluar en tiempo real
+    const context = featureFlagsService.createContextFromConfig(configuracion);
+    return featureFlagsService.isEnabled(flagId, context);
+  },
+  
+  actualizarFeatureFlag: (flagId: keyof FeatureFlagsConfig['flags'], enabled: boolean) => {
+    featureFlagsService.setFlagEnabled(flagId, enabled);
+    
+    // Recargar flags
+    const { configuracion } = get();
+    const context = featureFlagsService.createContextFromConfig(configuracion);
+    const flags = featureFlagsService.getAllFlags(context);
+    
+    set({
+      featureFlags: flags
+    });
+  },
+  
+  obtenerTodosFeatureFlags: () => {
+    const { configuracion, featureFlags } = get();
+    
+    // Si ya están cargados, devolverlos
+    if (Object.keys(featureFlags).length > 0) {
+      return featureFlags;
+    }
+    
+    // Si no, cargarlos
+    const context = featureFlagsService.createContextFromConfig(configuracion);
+    const flags = featureFlagsService.getAllFlags(context);
+    
+    set({
+      featureFlags: flags,
+      featureFlagsContext: context
+    });
+    
+    return flags;
   },
 }));

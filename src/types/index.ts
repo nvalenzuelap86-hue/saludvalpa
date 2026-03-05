@@ -9,6 +9,7 @@
 export const TipoLicencia = {
   GRATUITA: 'gratuita',
   PAGADA: 'pagada',
+  ENTERPRISE: 'enterprise',
 } as const;
 export type TipoLicencia = typeof TipoLicencia[keyof typeof TipoLicencia];
 
