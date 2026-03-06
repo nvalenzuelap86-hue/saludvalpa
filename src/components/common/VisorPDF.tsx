@@ -3,7 +3,7 @@
 // Componente para visualizar PDFs sin necesidad de descargar
 // ============================================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { db } from '../../db/database';
 import type { Documento } from '../../types';
@@ -155,28 +155,28 @@ const VisorPDF = ({
   // FASE 2: CONTROLES DE NAVEGACIÓN Y ZOOM
   // ========================================================================
 
-  const irAPaginaAnterior = () => {
+  const irAPaginaAnterior = useCallback(() => {
     if (paginaActual > 1) {
       const nuevaPagina = paginaActual - 1;
       setPaginaActual(nuevaPagina);
       setInputPagina(String(nuevaPagina));
     }
-  };
+  }, [paginaActual]);
 
-  const irAPaginaSiguiente = () => {
+  const irAPaginaSiguiente = useCallback(() => {
     if (paginaActual < numPaginas) {
       const nuevaPagina = paginaActual + 1;
       setPaginaActual(nuevaPagina);
       setInputPagina(String(nuevaPagina));
     }
-  };
+  }, [paginaActual, numPaginas]);
 
-  const irAPagina = (pagina: number) => {
+  const irAPagina = useCallback((pagina: number) => {
     if (pagina >= 1 && pagina <= numPaginas) {
       setPaginaActual(pagina);
       setInputPagina(String(pagina));
     }
-  };
+  }, [numPaginas]);
 
   const handleInputPaginaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputPagina(e.target.value);
@@ -192,19 +192,19 @@ const VisorPDF = ({
     }
   };
 
-  const zoomIn = () => {
+  const zoomIn = useCallback(() => {
     setZoom((prevZoom) => Math.min(prevZoom + 0.25, 3.0)); // Máximo 300%
-  };
+  }, []);
 
-  const zoomOut = () => {
+  const zoomOut = useCallback(() => {
     setZoom((prevZoom) => Math.max(prevZoom - 0.25, 0.5)); // Mínimo 50%
-  };
+  }, []);
 
-  const resetZoom = () => {
+  const resetZoom = useCallback(() => {
     setZoom(1.0);
-  };
+  }, []);
 
-  // Atajos de teclado
+  // Atajos de teclado - con cleanup mejorado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Evitar atajos si hay inputs enfocados
@@ -253,8 +253,22 @@ const VisorPDF = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [paginaActual, numPaginas, onCerrar]);
+    
+    // Cleanup function que se ejecuta siempre
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [
+    paginaActual,
+    numPaginas,
+    onCerrar,
+    irAPaginaAnterior,
+    irAPaginaSiguiente,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    irAPagina
+  ]);
 
   if (cargando) {
     return (
