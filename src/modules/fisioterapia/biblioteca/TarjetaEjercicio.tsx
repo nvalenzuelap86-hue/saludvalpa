@@ -102,6 +102,13 @@ export default function TarjetaEjercicio({
               Personalizado
             </span>
           )}
+
+          {/* Badge de video */}
+          {ejercicio.videosUrls && ejercicio.videosUrls.length > 0 && (
+            <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+              🎬 Tiene video
+            </span>
+          )}
         </div>
 
         {/* Información adicional */}

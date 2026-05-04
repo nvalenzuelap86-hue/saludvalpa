@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import Modal from '../../../components/shared/Modal';
+import { useBiblioteca } from '../hooks/useBiblioteca';
 import type { Ejercicio } from '../../../types';
 
 interface DetalleEjercicioProps {
@@ -27,6 +28,11 @@ export default function DetalleEjercicio({
   onAgregarARutina,
 }: DetalleEjercicioProps) {
   const [mostrandoConfirmacion, setMostrandoConfirmacion] = useState(false);
+  const [nuevaUrl, setNuevaUrl] = useState('');
+  const [errorUrl, setErrorUrl] = useState('');
+  const [actualizandoVideos, setActualizandoVideos] = useState(false);
+
+  const { actualizarEjercicio } = useBiblioteca();
 
   if (!ejercicio) return null;
 
@@ -197,6 +203,110 @@ export default function DetalleEjercicio({
             </ul>
           </div>
         )}
+
+        {/* Videos de referencia */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            🎬 Videos de referencia
+          </h3>
+
+          {/* Lista de videos existentes */}
+          {ejercicio.videosUrls && ejercicio.videosUrls.length > 0 && (
+            <ul className="space-y-2 mb-3">
+              {ejercicio.videosUrls.map((url, index) => (
+                <li key={index} className="flex items-center gap-2">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center gap-2 text-saludvalpa-blue hover:text-saludvalpa-blue-dark underline truncate"
+                  >
+                    🎬 {url}
+                  </a>
+                  <button
+                    onClick={async () => {
+                      if (actualizandoVideos) return;
+                      setActualizandoVideos(true);
+                      try {
+                        const nuevasUrls = (ejercicio.videosUrls || []).filter((_, i) => i !== index);
+                        await actualizarEjercicio(ejercicio.id, { videosUrls: nuevasUrls });
+                      } catch (err: any) {
+                        alert(err.message || 'Error al eliminar el video');
+                      } finally {
+                        setActualizandoVideos(false);
+                      }
+                    }}
+                    disabled={actualizandoVideos}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors disabled:opacity-50"
+                    title="Eliminar video"
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Mensaje cuando no hay videos */}
+          {(!ejercicio.videosUrls || ejercicio.videosUrls.length === 0) && (
+            <p className="text-sm text-gray-500 mb-3">
+              No hay videos de referencia. Agrega URLs de video a continuación.
+            </p>
+          )}
+
+          {/* Input para agregar nueva URL */}
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <input
+                type="url"
+                value={nuevaUrl}
+                onChange={(e) => {
+                  setNuevaUrl(e.target.value);
+                  setErrorUrl('');
+                }}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-saludvalpa-blue ${
+                  errorUrl ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errorUrl && (
+                <p className="text-xs text-red-500 mt-1">{errorUrl}</p>
+              )}
+            </div>
+            <button
+              onClick={async () => {
+                const url = nuevaUrl.trim();
+                
+                // Validar URL
+                if (!url) {
+                  setErrorUrl('Ingresa una URL');
+                  return;
+                }
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                  setErrorUrl('La URL debe comenzar con http:// o https://');
+                  return;
+                }
+
+                if (actualizandoVideos) return;
+                setActualizandoVideos(true);
+                try {
+                  const nuevasUrls = [...(ejercicio.videosUrls || []), url];
+                  await actualizarEjercicio(ejercicio.id, { videosUrls: nuevasUrls });
+                  setNuevaUrl('');
+                  setErrorUrl('');
+                } catch (err: any) {
+                  alert(err.message || 'Error al agregar el video');
+                } finally {
+                  setActualizandoVideos(false);
+                }
+              }}
+              disabled={actualizandoVideos}
+              className="px-4 py-2 bg-saludvalpa-blue text-white rounded-lg hover:bg-saludvalpa-blue-dark transition-colors text-sm whitespace-nowrap disabled:opacity-50"
+            >
+              {actualizandoVideos ? 'Agregando...' : 'Agregar URL de video'}
+            </button>
+          </div>
+        </div>
 
         {/* Notas personales */}
         {ejercicio.notasPersonales && (

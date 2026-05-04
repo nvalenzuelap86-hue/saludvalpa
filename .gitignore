@@ -230,3 +230,6 @@ tmp/
 *-diagnostic.html
 test-*.html
 check_*.html
+
+# Vite PWA dev output
+dev-dist/

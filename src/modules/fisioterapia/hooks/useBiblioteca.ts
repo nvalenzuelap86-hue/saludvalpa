@@ -101,6 +101,7 @@ export function useBiblioteca() {
 
   /**
    * Actualizar ejercicio personalizado
+   * Para ejercicios precargados, solo se permite actualizar videosUrls
    */
   const actualizarEjercicio = async (id: string, cambios: Partial<Ejercicio>): Promise<void> => {
     const ejercicio = await db.ejercicios.get(id);
@@ -110,7 +111,17 @@ export function useBiblioteca() {
     }
 
     if (ejercicio.precargado) {
-      throw new Error('No se pueden editar ejercicios precargados');
+      // Para precargados, solo permitir actualizar videosUrls
+      const camposPermitidos = ['videosUrls'];
+      const camposNoPermitidos = Object.keys(cambios).filter(
+        key => !camposPermitidos.includes(key)
+      );
+      
+      if (camposNoPermitidos.length > 0) {
+        throw new Error(
+          `No se pueden editar ejercicios precargados. Campos no permitidos: ${camposNoPermitidos.join(', ')}`
+        );
+      }
     }
 
     await db.ejercicios.update(id, {

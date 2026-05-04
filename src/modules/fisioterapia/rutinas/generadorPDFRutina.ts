@@ -390,6 +390,39 @@ export async function generarPDFRutina(
       });
     }
 
+    // Videos de referencia
+    if (ejercicioInfo.videosUrls && ejercicioInfo.videosUrls.length > 0) {
+      y += 3;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 100, 200);
+      doc.setFontSize(9);
+
+      if (ejercicioInfo.videosUrls.length === 1) {
+        doc.text('🎬 Ver video:', margen, y);
+        const videoUrl = ejercicioInfo.videosUrls[0];
+        const urlWidth = doc.getTextWidth(videoUrl);
+        doc.textWithLink(videoUrl, margen + 28, y, { url: videoUrl });
+        y += 5;
+      } else {
+        ejercicioInfo.videosUrls.forEach((videoUrl, idx) => {
+          // Nueva página si no hay espacio
+          if (y > 270) {
+            doc.addPage();
+            agregarMarcaDeAgua();
+            y = margen;
+          }
+          doc.text(`🎬 Video ${idx + 1}:`, margen, y);
+          const urlWidth = doc.getTextWidth(videoUrl);
+          doc.textWithLink(videoUrl, margen + 28, y, { url: videoUrl });
+          y += 5;
+        });
+      }
+
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+    }
+
     y += 8; // Espacio antes del siguiente ejercicio
   }
 

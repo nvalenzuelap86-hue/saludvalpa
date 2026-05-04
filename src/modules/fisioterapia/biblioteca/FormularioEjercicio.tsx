@@ -38,6 +38,8 @@ export default function FormularioEjercicio({
   const [nuevoEquipo, setNuevoEquipo] = useState('');
   const [contraindicaciones, setContraindicaciones] = useState<string[]>([]);
   const [nuevaContraindicacion, setNuevaContraindicacion] = useState('');
+  const [videosUrls, setVideosUrls] = useState<string[]>([]);
+  const [nuevaUrlVideo, setNuevaUrlVideo] = useState('');
   const [repeticionesSugeridas, setRepeticionesSugeridas] = useState('');
   const [duracionSugerida, setDuracionSugerida] = useState<number | ''>('');
   const [notasPersonales, setNotasPersonales] = useState('');
@@ -56,6 +58,7 @@ export default function FormularioEjercicio({
       setIntensidad(ejercicioEditar.intensidad);
       setEquipoNecesario(ejercicioEditar.equipoNecesario);
       setContraindicaciones(ejercicioEditar.contraindicaciones);
+      setVideosUrls(ejercicioEditar.videosUrls || []);
       setRepeticionesSugeridas(ejercicioEditar.repeticionesSugeridas || '');
       setDuracionSugerida(ejercicioEditar.duracionSugerida || '');
       setNotasPersonales(ejercicioEditar.notasPersonales || '');
@@ -75,6 +78,8 @@ export default function FormularioEjercicio({
     setNuevoEquipo('');
     setContraindicaciones([]);
     setNuevaContraindicacion('');
+    setVideosUrls([]);
+    setNuevaUrlVideo('');
     setRepeticionesSugeridas('');
     setDuracionSugerida('');
     setNotasPersonales('');
@@ -127,6 +132,26 @@ export default function FormularioEjercicio({
     setContraindicaciones(contraindicaciones.filter(c => c !== contraindicacion));
   };
 
+  const handleAgregarUrlVideo = () => {
+    const url = nuevaUrlVideo.trim();
+    if (!url) return;
+
+    // Validación básica: debe comenzar con http:// o https://
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      setError('La URL debe comenzar con http:// o https://');
+      return;
+    }
+
+    if (!videosUrls.includes(url)) {
+      setVideosUrls([...videosUrls, url]);
+      setNuevaUrlVideo('');
+    }
+  };
+
+  const handleEliminarUrlVideo = (url: string) => {
+    setVideosUrls(videosUrls.filter(u => u !== url));
+  };
+
   const validarFormulario = (): boolean => {
     if (!nombre.trim()) {
       setError('El nombre es obligatorio');
@@ -172,6 +197,7 @@ export default function FormularioEjercicio({
         intensidad: intensidad as any,
         equipoNecesario,
         contraindicaciones,
+        videosUrls: videosUrls.length > 0 ? videosUrls : undefined,
         repeticionesSugeridas: repeticionesSugeridas.trim() || undefined,
         duracionSugerida: duracionSugerida ? Number(duracionSugerida) : undefined,
         notasPersonales: notasPersonales.trim() || undefined,
@@ -459,6 +485,59 @@ export default function FormularioEjercicio({
                     type="button"
                     onClick={() => handleEliminarContraindicacion(contraindicacion)}
                     className="hover:text-yellow-900"
+                  >
+                    ✗
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Videos de referencia (URLs) */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Videos de referencia (URLs)
+          </label>
+          <p className="text-xs text-gray-500 mb-2">
+            Agrega enlaces a videos de YouTube, Vimeo, etc.
+          </p>
+          <div className="flex gap-2 mb-2">
+            <input
+              type="url"
+              value={nuevaUrlVideo}
+              onChange={(e) => setNuevaUrlVideo(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAgregarUrlVideo();
+                }
+              }}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saludvalpa-blue focus:border-transparent"
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <button
+              type="button"
+              onClick={handleAgregarUrlVideo}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            >
+              Agregar
+            </button>
+          </div>
+          {videosUrls.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {videosUrls.map((url, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm max-w-full"
+                >
+                  <span className="truncate max-w-[250px]">
+                    🎬 {url}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleEliminarUrlVideo(url)}
+                    className="hover:text-green-900 flex-shrink-0"
                   >
                     ✗
                   </button>
