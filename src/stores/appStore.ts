@@ -1,6 +1,7 @@
 // ============================================================================
-// saludvalpa 3.0 - APP STORE
+// saludvalpa 3.0 - APP STORE (Experimental: Fisioterapia)
 // Estado global de la aplicación usando Zustand
+// Versión experimental con feature flag para rediseño de fisioterapia
 // ============================================================================
 
 import { create } from 'zustand';
@@ -164,9 +165,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const ahora = new Date();
       
+      // Versión experimental: forzar fisioterapia como profesión
+      const profesionFinal: TipoProfesion = 'fisioterapia';
+      
       const configuracionInicial: Configuracion = {
         id: '1',
-        profesion: data.profesion,
+        profesion: profesionFinal,
         tipoCuenta: 'personal',
         licencia: {
           tipo: TipoLicencia.GRATUITA,
@@ -261,8 +265,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     const context = featureFlagsService.createContextFromConfig(configuracion);
     const flags = featureFlagsService.getAllFlags(context);
     
+    // Añadir feature flag experimental para rediseño de fisioterapia
+    const experimentalFlags = {
+      ...flags,
+      experimentalPhysioRedesign: true,
+    };
+    
     set({
-      featureFlags: flags,
+      featureFlags: experimentalFlags,
       featureFlagsContext: context
     });
   },

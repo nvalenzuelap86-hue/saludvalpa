@@ -1,6 +1,7 @@
 // ============================================================================
-// saludvalpa 3.0 - Enrutador Dinámico por Profesión
-// Carga y renderiza componentes específicos según la profesión configurada
+// saludvalpa 3.0 - Enrutador Dinámico por Profesión (Experimental: Fisioterapia)
+// Versión experimental que solo permite fisioterapia como profesión activa.
+// Otras profesiones muestran mensaje de no disponible.
 // ============================================================================
 
 import { useEffect, useState, Suspense } from 'react';
@@ -8,12 +9,13 @@ import { useAppStore } from '../stores/appStore';
 import { getProfessionModule } from '../utils/moduleLoader';
 import type { ProfessionModule } from '../utils/moduleLoader';
 
+const PROFESIONES_DISPONIBLES = ['fisioterapia'] as const;
+
 /**
  * Componente que carga dinámicamente y renderiza los componentes específicos
  * de la profesión configurada en la aplicación.
- * 
- * Este componente utiliza lazy loading para cargar solo el módulo necesario,
- * reduciendo el bundle size inicial y mejorando el performance.
+ *
+ * Versión experimental: solo fisioterapia está disponible.
  */
 export default function ProfessionRouter() {
   const { configuracion } = useAppStore();
@@ -26,7 +28,13 @@ export default function ProfessionRouter() {
     const profesion = configuracion?.profesion;
     
     if (!profesion) {
-      // Si no hay profesión configurada, no cargar ningún módulo
+      setModule(null);
+      return;
+    }
+
+    // Verificar si la profesión está disponible en esta versión experimental
+    if (!PROFESIONES_DISPONIBLES.includes(profesion as typeof PROFESIONES_DISPONIBLES[number])) {
+      setError(`"${profesion}" no está disponible en esta versión experimental. Solo Fisioterapia está habilitada.`);
       setModule(null);
       return;
     }
@@ -58,14 +66,15 @@ export default function ProfessionRouter() {
     );
   }
 
-  // Estado de error
+  // Estado de error (profesión no disponible o error de carga)
   if (error) {
     return (
-      <div className="p-4 border border-red-300 rounded-lg bg-red-50">
-        <h3 className="text-lg font-semibold text-red-800">Error al cargar módulo</h3>
-        <p className="text-red-600">{error}</p>
-        <p className="mt-2 text-red-500 text-sm">
-          Por favor, verifica la configuración de tu profesión o contacta al soporte.
+      <div className="p-4 border border-amber-300 rounded-lg bg-amber-50">
+        <h3 className="text-lg font-semibold text-amber-800">Funcionalidad no disponible</h3>
+        <p className="text-amber-700">{error}</p>
+        <p className="mt-2 text-amber-600 text-sm">
+          Esta es una versión experimental enfocada exclusivamente en Fisioterapia.
+          Las demás especialidades estarán disponibles en versiones futuras.
         </p>
       </div>
     );

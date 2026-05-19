@@ -1,5 +1,6 @@
 // ============================================================================
-// saludvalpa 3.0 - STREAMLINED ONBOARDING
+// saludvalpa 3.0 - STREAMLINED ONBOARDING (Experimental: Fisioterapia)
+// Versión experimental que solo permite fisioterapia como profesión activa.
 // ============================================================================
 
 import { useState, useEffect } from 'react';
@@ -8,7 +9,7 @@ import { useAppStore } from '../stores/appStore';
 import type { TipoProfesion } from '../types';
 import Button from '../components/shared/Button';
 
-type Step = 'welcome' | 'specialty' | 'profile' | 'complete';
+type Step = 'welcome' | 'profile' | 'complete';
 
 interface OnboardingData {
   nombreProfesional: string;
@@ -18,6 +19,8 @@ interface OnboardingData {
   email: string;
   profesion: TipoProfesion | null;
 }
+
+const PROFESION_UNICA: TipoProfesion = 'fisioterapia';
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -30,32 +33,22 @@ const Onboarding = () => {
     especialidad: '',
     telefono: '',
     email: '',
-    profesion: location.state?.specialty || null,
+    profesion: PROFESION_UNICA,
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // If specialty was passed from landing page, skip to specialty step
+  // Auto-set fisioterapia as the profession
   useEffect(() => {
-    if (location.state?.specialty && step === 'welcome') {
-      const specialty = location.state.specialty as TipoProfesion;
-      setData(prev => ({ ...prev, profesion: specialty }));
-      setStep('specialty');
+    if (step === 'welcome') {
+      setData(prev => ({ ...prev, profesion: PROFESION_UNICA }));
     }
-  }, [location.state, step]);
+  }, [step]);
 
-  const handleSelectProfession = (profesion: TipoProfesion) => {
-    const specialtyDefaults: Partial<Record<TipoProfesion, string>> = {
-      fisioterapia: 'Fisioterapia',
-      psicologia: 'Psicología',
-      nutricion: 'Nutrición',
-      medicina_general: 'Medicina General',
-      odontologia: 'Odontología',
-    };
-
+  const handleSelectProfession = () => {
     setData(prev => ({
       ...prev,
-      profesion,
-      especialidad: specialtyDefaults[profesion] || '',
+      profesion: PROFESION_UNICA,
+      especialidad: 'Fisioterapia',
     }));
     setStep('profile');
   };
@@ -65,7 +58,6 @@ const Onboarding = () => {
     
     if (!data.profesion) {
       alert('Por favor selecciona tu profesión primero');
-      setStep('specialty');
       return;
     }
     
@@ -115,7 +107,6 @@ const Onboarding = () => {
   const ProgressIndicator = () => {
     const stepsConfig = [
       { id: 'welcome', title: 'Bienvenida' },
-      { id: 'specialty', title: 'Especialidad' },
       { id: 'profile', title: 'Perfil' },
       { id: 'complete', title: 'Listo' },
     ];
@@ -194,10 +185,10 @@ const Onboarding = () => {
               <Button
                 size="lg"
                 variant="primary"
-                onClick={() => setStep('specialty')}
+                onClick={handleSelectProfession}
                 className="w-full max-w-md mx-auto py-4"
               >
-                Comenzar Configuración
+                Comenzar como Fisioterapeuta 💪
               </Button>
               <Button
                 size="lg"
@@ -215,78 +206,13 @@ const Onboarding = () => {
           </div>
         );
 
-      case 'specialty':
-        return (
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-4">
-              ¿Cuál es tu especialidad?
-            </h2>
-            <p className="text-gray-600 text-center mb-10 max-w-2xl mx-auto">
-              Selecciona tu área para personalizar la experiencia con herramientas específicas
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { id: 'fisioterapia' as TipoProfesion, name: 'Fisioterapia', icon: '💪', color: 'from-blue-500 to-cyan-500', description: 'Evaluaciones, planes de tratamiento, evoluciones' },
-                { id: 'psicologia' as TipoProfesion, name: 'Psicología', icon: '🧠', color: 'from-purple-500 to-pink-500', description: 'Historia clínica, sesiones terapéuticas, planes' },
-                { id: 'medicina_general' as TipoProfesion, name: 'Medicina General', icon: '🩺', color: 'from-red-500 to-orange-500', description: 'Historia clínica, recetas, certificados' },
-                { id: 'odontologia' as TipoProfesion, name: 'Odontología', icon: '🦷', color: 'from-teal-500 to-emerald-500', description: 'Historia odontológica, odontogramas, tratamientos' },
-                { id: 'nutricion' as TipoProfesion, name: 'Nutrición', icon: '🥗', color: 'from-green-500 to-lime-500', description: 'Planes nutricionales, valoraciones, seguimiento' },
-              ].map((specialty) => (
-                <button
-                  key={specialty.id}
-                  onClick={() => handleSelectProfession(specialty.id)}
-                  className={`bg-white rounded-2xl p-8 text-center hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 border-2 ${
-                    data.profesion === specialty.id ? 'border-saludvalpa-blue' : 'border-gray-100'
-                  }`}
-                >
-                  <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${specialty.color} flex items-center justify-center mb-4`}>
-                    <span className="text-3xl">{specialty.icon}</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{specialty.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{specialty.description}</p>
-                  <div className="text-xs text-gray-500 space-y-1">
-                    <div className="flex items-center justify-center">
-                      <span className="text-green-500 mr-1">✓</span>
-                      <span>Herramientas específicas</span>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <span className="text-green-500 mr-1">✓</span>
-                      <span>Documentos personalizados</span>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="text-center mt-10">
-              <button
-                onClick={() => setStep('welcome')}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                ← Volver
-              </button>
-            </div>
-          </div>
-        );
-
       case 'profile':
-        return data.profesion ? (
+        return (
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
-              <div className="text-5xl mb-3">
-                {data.profesion === 'fisioterapia' && '💪'}
-                {data.profesion === 'psicologia' && '🧠'}
-                {data.profesion === 'nutricion' && '🥗'}
-                {data.profesion === 'medicina_general' && '🩺'}
-                {data.profesion === 'odontologia' && '🦷'}
-              </div>
+              <div className="text-5xl mb-3">💪</div>
               <h2 className="text-3xl font-bold mb-2">
-                Bienvenido, {data.profesion === 'fisioterapia' ? 'Fisioterapeuta' : 
-                data.profesion === 'psicologia' ? 'Psicólogo/a' :
-                data.profesion === 'medicina_general' ? 'Médico/a' :
-                data.profesion === 'odontologia' ? 'Odontólogo/a' :
-                data.profesion === 'nutricion' ? 'Nutriólogo/a' : 'Profesional'}
+                Bienvenido, Fisioterapeuta
               </h2>
               <p className="text-gray-600">
                 Configura tu perfil para comenzar a usar SaludValpa
@@ -370,25 +296,16 @@ const Onboarding = () => {
 
               <div className="flex gap-4 pt-8">
                 <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep('specialty')}
-                  disabled={isSaving}
-                  className="flex-1"
-                >
-                  ← Cambiar especialidad
-                </Button>
-                <Button
                   type="submit"
                   disabled={isSaving}
-                  className="flex-1"
+                  className="w-full"
                 >
                   {isSaving ? 'Guardando...' : 'Continuar →'}
                 </Button>
               </div>
             </form>
           </div>
-        ) : null;
+        );
 
       case 'complete':
         return (

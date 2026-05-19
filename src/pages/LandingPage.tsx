@@ -1,5 +1,6 @@
 // ============================================================================
-// saludvalpa 3.0 - LANDING PAGE
+// saludvalpa 3.0 - LANDING PAGE (Experimental: Fisioterapia)
+// Versión experimental enfocada en fisioterapia como especialidad principal.
 // ============================================================================
 
 import { useState, useEffect } from 'react';
@@ -54,34 +55,68 @@ const LandingPage = () => {
       description: 'Accede a tus datos desde cualquier dispositivo, siempre actualizados.'
     },
     {
-      icon: '🎯',
-      title: 'Especializado por Profesión',
-      description: 'Herramientas específicas para medicina, fisioterapia, psicología y más.'
+      icon: '💪',
+      title: 'Especializado en Fisioterapia',
+      description: 'Herramientas específicas para fisioterapeutas: ejercicios, rutinas, evaluaciones y más.'
     }
   ];
 
   const specialties = [
-    { id: 'medicina', name: 'Medicina', icon: '🩺', color: 'bg-blue-100 text-blue-800', status: 'en construcción' },
-    { id: 'fisioterapia', name: 'Fisioterapia', icon: '💪', color: 'bg-green-100 text-green-800', status: 'concluido' },
-    { id: 'psicologia', name: 'Psicología', icon: '🧠', color: 'bg-purple-100 text-purple-800', status: 'en construcción' },
-    { id: 'odontologia', name: 'Odontología', icon: '🦷', color: 'bg-teal-100 text-teal-800', status: 'en construcción' },
-    { id: 'nutricion', name: 'Nutrición', icon: '🥗', color: 'bg-yellow-100 text-yellow-800', status: 'en construcción' }
+    {
+      id: 'fisioterapia',
+      name: 'Fisioterapia',
+      icon: '💪',
+      color: 'bg-gradient-to-br from-blue-500 to-cyan-500 text-white',
+      status: 'disponible',
+      description: 'Herramientas completas para tu práctica de fisioterapia'
+    },
+    {
+      id: 'medicina',
+      name: 'Medicina',
+      icon: '🩺',
+      color: 'bg-gray-100 text-gray-400',
+      status: 'próximamente',
+      description: 'Disponible en futuras versiones'
+    },
+    {
+      id: 'psicologia',
+      name: 'Psicología',
+      icon: '🧠',
+      color: 'bg-gray-100 text-gray-400',
+      status: 'próximamente',
+      description: 'Disponible en futuras versiones'
+    },
+    {
+      id: 'odontologia',
+      name: 'Odontología',
+      icon: '🦷',
+      color: 'bg-gray-100 text-gray-400',
+      status: 'próximamente',
+      description: 'Disponible en futuras versiones'
+    },
+    {
+      id: 'nutricion',
+      name: 'Nutrición',
+      icon: '🥗',
+      color: 'bg-gray-100 text-gray-400',
+      status: 'próximamente',
+      description: 'Disponible en futuras versiones'
+    }
   ];
 
   const handleGetStarted = () => {
     if (hasCompletedOnboarding) {
-      // Usuario ya completó onboarding - ir al dashboard independientemente del tipo de licencia
       navigate('/dashboard');
     } else {
-      // Usuario no ha completado onboarding - ir al onboarding
       navigate('/onboarding');
     }
   };
 
   const handleSpecialtySelect = (specialtyId: string) => {
-    // Store selected specialty in app store
-    // Then navigate to onboarding
-    navigate('/onboarding', { state: { specialty: specialtyId } });
+    if (specialtyId === 'fisioterapia') {
+      navigate('/onboarding', { state: { specialty: 'fisioterapia' } });
+    }
+    // Otras especialidades no hacen nada (están deshabilitadas)
   };
 
   return (
@@ -89,17 +124,22 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section className="pt-20 pb-16 px-4 max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-saludvalpa-blue to-saludvalpa-teal rounded-2xl mb-6">
-            <span className="text-3xl">⚕️</span>
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl mb-6">
+            <span className="text-3xl">💪</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-            Tu práctica profesional,
+            Tu práctica de fisioterapia,
             <span className="block text-saludvalpa-blue">más eficiente que nunca</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            SaludValpa es la plataforma todo-en-uno diseñada específicamente para profesionales de la salud.
+            SaludValpa es la plataforma todo-en-uno diseñada específicamente para fisioterapeutas.
             Simplifica tu gestión diaria, automatiza tareas repetitivas y enfócate en lo que realmente importa: tus pacientes.
           </p>
+          <div className="mb-6">
+            <span className="inline-block bg-amber-100 text-amber-800 text-sm px-4 py-2 rounded-full font-medium">
+              🧪 Versión experimental — Enfoque exclusivo en Fisioterapia
+            </span>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
@@ -185,23 +225,41 @@ const LandingPage = () => {
           <h2 className="text-3xl font-bold text-center mb-4">
             Especializado para tu profesión
           </h2>
-          <p className="text-gray-600 text-center mb-12 max-w-3xl mx-auto">
+          <p className="text-gray-600 text-center mb-4 max-w-3xl mx-auto">
             SaludValpa se adapta a las necesidades específicas de cada especialidad con herramientas y flujos de trabajo diseñados exclusivamente.
           </p>
+          <div className="text-center mb-10">
+            <span className="inline-block bg-amber-100 text-amber-800 text-sm px-4 py-2 rounded-full font-medium">
+              ⚠️ Versión experimental — Actualmente solo Fisioterapia está disponible
+            </span>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {specialties.map((specialty) => (
-              <button
-                key={specialty.id}
-                onClick={() => handleSpecialtySelect(specialty.id)}
-                className={`flex flex-col items-center justify-center p-6 rounded-xl ${specialty.color} hover:scale-105 transition-transform relative`}
-              >
-                <span className="text-3xl mb-2">{specialty.icon}</span>
-                <span className="font-medium">{specialty.name}</span>
-                <span className={`absolute -top-2 -right-2 text-xs px-2 py-1 rounded-full ${specialty.status === 'concluido' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'}`}>
-                  {specialty.status}
-                </span>
-              </button>
-            ))}
+            {specialties.map((specialty) => {
+              const isDisabled = specialty.status === 'próximamente';
+              return (
+                <button
+                  key={specialty.id}
+                  onClick={() => !isDisabled && handleSpecialtySelect(specialty.id)}
+                  disabled={isDisabled}
+                  className={`flex flex-col items-center justify-center p-6 rounded-xl ${specialty.color} transition-all relative ${
+                    isDisabled
+                      ? 'opacity-60 cursor-not-allowed grayscale'
+                      : 'hover:scale-105 hover:shadow-lg cursor-pointer'
+                  }`}
+                >
+                  <span className="text-3xl mb-2">{specialty.icon}</span>
+                  <span className="font-medium">{specialty.name}</span>
+                  <span className="mt-2 text-xs text-center">{specialty.description}</span>
+                  <span className={`absolute -top-2 -right-2 text-xs px-2 py-1 rounded-full font-medium ${
+                    specialty.status === 'disponible'
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-400 text-white'
+                  }`}>
+                    {specialty.status === 'disponible' ? 'Disponible' : 'Próximamente'}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>

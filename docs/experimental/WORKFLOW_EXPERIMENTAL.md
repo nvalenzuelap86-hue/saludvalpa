@@ -1,17 +1,32 @@
-# Workflow Experimental - Rama `experimental/nueva-caracteristica-20260226`
+# Workflow Experimental - Rama `experimental/rediseno-inicio-fisioterapia`
 
 ## Objetivo
-Establecer un proceso estructurado para el desarrollo de características experimentales manteniendo la estabilidad de la versión base (v1.0.0).
+Rediseñar la experiencia inicial de usuario (onboarding, landing page y enrutamiento) para enfocarse exclusivamente en **Fisioterapia** como profesión principal. Esta rama experimental restringe la aplicación a solo fisioterapeutas, manteniendo las demás especialidades como "Próximamente".
+
+## Alcance
+- **Onboarding simplificado**: Solo fisioterapia como opción activa, selección automática de la profesión
+- **Landing Page**: Hero section y botones de especialidad enfocados en fisioterapia
+- **ProfessionRouter**: Solo enruta a módulos de fisioterapia; otras profesiones muestran mensaje de no disponible
+- **Feature Flag**: `experimentalPhysioRedesign = true` en el appStore
+
+## Archivos Modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/pages/Onboarding.tsx` | Eliminado paso de selección de especialidad; fisioterapia es automática |
+| `src/pages/LandingPage.tsx` | Hero section enfocado en fisioterapia; especialidades no-fisio deshabilitadas |
+| `src/components/ProfessionRouter.tsx` | Validación de profesión disponible; solo fisioterapia permitida |
+| `src/stores/appStore.ts` | `completarOnboarding()` fuerza fisioterapia; feature flag añadido |
 
 ## Flujo de Trabajo
 
-### 1. Inicio de Nueva Característica
+### 1. Desarrollo en esta Rama
 ```bash
-# Desde la rama experimental
-git checkout experimental/nueva-caracteristica-20260226
+# Ya estás en la rama experimental
+git checkout experimental/rediseno-inicio-fisioterapia
 
-# Crear rama de feature
-git checkout -b feature/nombre-caracteristica
+# Para crear una sub-rama de feature
+git checkout -b feature/mejora-onboarding-fisio
 
 # Desarrollo...
 ```
@@ -27,7 +42,7 @@ git add .
 git commit -m "feat: descripción concisa"
 
 # Subir cambios
-git push origin feature/nombre-caracteristica
+git push origin experimental/rediseno-inicio-fisioterapia
 ```
 
 ### 3. Pruebas y Validación
@@ -44,14 +59,10 @@ npm run dev
 
 ### 4. Integración con Rama Experimental
 ```bash
-# Volver a la rama experimental
-git checkout experimental/nueva-caracteristica-20260226
-
-# Merge de la feature
-git merge --no-ff feature/nombre-caracteristica
-
-# Resolver conflictos si los hay
-# Ejecutar pruebas de integración
+# Ya trabajas directamente en la rama experimental
+# Para integrar cambios de sub-rama:
+git checkout experimental/rediseno-inicio-fisioterapia
+git merge --no-ff feature/mejora-onboarding-fisio
 ```
 
 ### 5. Backup Diario
@@ -80,12 +91,6 @@ git merge --no-ff feature/nombre-caracteristica
 - `e2e/` - Pruebas end-to-end
 - `mocks/` - Datos y mocks para pruebas
 
-### `src/experimental/` (Opcional)
-- `features/` - Características en desarrollo
-- `hooks/` - Custom hooks experimentales
-- `utils/` - Utilidades experimentales
-- `types/` - Tipos TypeScript experimentales
-
 ## Checklist de Calidad
 
 ### Antes de Cada Commit
@@ -95,12 +100,13 @@ git merge --no-ff feature/nombre-caracteristica
 - [ ] Formato consistente (`npm run format`)
 - [ ] Documentación actualizada
 
-### Antes de Merge a Rama Experimental
+### Antes de Merge a Main
 - [ ] Revisión de código completada
 - [ ] Pruebas de integración pasadas
-- [ ] No hay regresiones en funcionalidad existente
+- [ ] No hay regresiones en funcionalidad existente (fisioterapia)
 - [ ] Performance aceptable
 - [ ] Documentación de usuario actualizada
+- [ ] Feature flag `experimentalPhysioRedesign` removido o desactivado
 
 ### Semanalmente
 - [ ] Backup completo del estado
@@ -146,6 +152,7 @@ npm run clean:experimental
 2. **Conflictos con main** → Rebase regular
 3. **Pérdida de datos** → Backups diarios
 4. **Scope creep** → Definición clara de alcance
+5. **Usuarios no-fisioterapia confundidos** → Mensajes claros de "Próximamente"
 
 ### Plan de Contingencia
 ```bash
@@ -155,9 +162,9 @@ git reset --hard HEAD~1
 # Restauración desde backup
 ./scripts/restore_experimental.sh
 
-# Abandonar feature problemática
-git branch -D feature/problema
-git checkout experimental/nueva-caracteristica-20260226
+# Abandonar rama experimental
+git checkout main
+git branch -D experimental/rediseno-inicio-fisioterapia
 ```
 
 ## Comunicación y Colaboración
@@ -200,11 +207,12 @@ Ver `docs/experimental/REVIEW_CHECKLIST.md`
 Ver `docs/experimental/TESTING_GUIDELINES.md`
 
 ## Estado Actual
-✅ **Workflow establecido**  
-✅ **Estructura de directorios creada**  
-✅ **Documentación inicial completa**  
-✅ **Procesos definidos**  
-🚀 **Listo para comenzar desarrollo experimental**
+✅ **Rama experimental creada:** `experimental/rediseno-inicio-fisioterapia`
+✅ **Onboarding simplificado:** Selección automática de fisioterapia
+✅ **Landing Page:** Hero y especialidades enfocados en fisioterapia
+✅ **ProfessionRouter:** Solo fisioterapia permitida
+✅ **Feature Flag:** `experimentalPhysioRedesign = true`
+🚀 **Listo para pruebas y validación**
 
 ---
 
@@ -214,9 +222,11 @@ Ver `docs/experimental/TESTING_GUIDELINES.md`
 |---------|-------|---------|
 | 1.0 | 2026-02-26 | Creación inicial del workflow experimental |
 | 1.0 | 2026-02-26 | Integración con estructura del proyecto |
+| 2.0 | 2026-05-18 | Nueva rama: `experimental/rediseno-inicio-fisioterapia` - Rediseño de onboarding y landing para fisioterapia exclusiva |
 
 ## Próximos Pasos
-1. Crear scripts de backup/restore específicos
-2. Establecer pipeline de CI/CD para la rama experimental
-3. Definir primera característica a implementar
-4. Configurar herramientas de monitoreo
+1. Probar el flujo completo de onboarding con fisioterapia
+2. Verificar que las demás especialidades muestren "Próximamente" correctamente
+3. Validar que el feature flag funcione correctamente
+4. Recibir feedback y ajustar según sea necesario
+5. Preparar para merge a main (remover feature flag)
