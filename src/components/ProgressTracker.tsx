@@ -28,7 +28,11 @@ interface ProgressStats {
   completionRate: number;
 }
 
-const ProgressTracker = () => {
+interface ProgressTrackerProps {
+  onClose?: () => void;
+}
+
+const ProgressTracker = ({ onClose }: ProgressTrackerProps) => {
   const { configuracion, licencia } = useAppStore();
   const [isExpanded, setIsExpanded] = useState(false);
   const [stats, setStats] = useState<ProgressStats>({
@@ -190,7 +194,16 @@ const ProgressTracker = () => {
 
   if (!isExpanded) {
     return (
-      <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={toggleExpanded}>
+      <Card className="cursor-pointer hover:shadow-lg transition-shadow relative" onClick={toggleExpanded}>
+        {onClose && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            aria-label="Cerrar progreso"
+          >
+            ✕
+          </button>
+        )}
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-12 h-12 bg-gradient-to-br from-saludvalpa-blue to-saludvalpa-teal rounded-xl flex items-center justify-center mr-4">
@@ -236,14 +249,26 @@ const ProgressTracker = () => {
           <h2 className="text-xl font-bold text-gray-900">Tu Progreso en SaludValpa</h2>
           <p className="text-gray-600">Sigue tu evolución y desbloquea recompensas</p>
         </div>
-        <button
-          onClick={toggleExpanded}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleExpanded}
+            className="text-gray-400 hover:text-gray-600"
+            aria-label="Colapsar"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              aria-label="Cerrar progreso"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Level and Stats */}

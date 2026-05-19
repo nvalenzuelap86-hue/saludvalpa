@@ -123,7 +123,7 @@ const ActivarLicencia = () => {
                 
                 <div className="space-y-4">
                   <a
-                    href="https://mpago.la/1siypQK"
+                    href="https://wa.me/5215512769504?text=Me%20interesa%20adquirir%20la%20licencia"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full bg-white text-saludvalpa-blue px-6 py-4 rounded-xl hover:bg-gray-50 transition-colors text-center font-bold text-lg shadow-lg"
@@ -131,12 +131,6 @@ const ActivarLicencia = () => {
                     Obtener Licencia
                   </a>
                   
-                  <p className="text-white/80 text-center text-sm">
-                    <span className="inline-flex items-center gap-1">
-                      <span>🔒</span>
-                      Pago seguro con Mercado Pago
-                    </span>
-                  </p>
                 </div>
               </div>
               
@@ -153,7 +147,7 @@ const ActivarLicencia = () => {
                   </div>
                   
                   <a
-                    href="mailto:contacto@valpa.app?subject=Código promocional SaludValpa"
+                    href="mailto:ovalenzuelap86@gmail.com?subject=Código promocional SaludValpa"
                     className="block w-full bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-lg text-center font-medium transition-colors"
                   >
                     Contactar Soporte
@@ -293,8 +287,8 @@ const ActivarLicencia = () => {
               configuracion?.profesion === 'nutricion' ? 'nutriólogos' : 'profesionales de la salud'}
           </p>
           <p className="flex items-center justify-center gap-4">
-            <a href="mailto:contacto@valpa.app" className="hover:text-saludvalpa-blue hover:underline">
-              contacto@valpa.app
+            <a href="mailto:ovalenzuelap86@gmail.com" className="hover:text-saludvalpa-blue hover:underline">
+              ovalenzuelap86@gmail.com
             </a>
             <span>•</span>
             <a href="https://valpa.app" target="_blank" rel="noopener noreferrer" className="hover:text-saludvalpa-blue hover:underline">

@@ -201,7 +201,7 @@ const LicenseAlert = ({
             
             {/* Botón para contactar soporte */}
             <a
-              href="mailto:contacto@valpa.app"
+              href="mailto:ovalenzuelap86@gmail.com"
               className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
             >
               Contactar Soporte

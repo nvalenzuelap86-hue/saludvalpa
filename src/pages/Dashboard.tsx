@@ -27,6 +27,7 @@ const Dashboard = () => {
     ingresosEsteMes: 0,
     pendientesCobro: 0,
   });
+  const [showProgress, setShowProgress] = useState(true);
   const [showSpecialtyWelcome, setShowSpecialtyWelcome] = useState(false);
   const [showFeatureUnlock, setShowFeatureUnlock] = useState(false);
   const [showInteractiveTour, setShowInteractiveTour] = useState(false);
@@ -96,7 +97,7 @@ const Dashboard = () => {
       
       {/* Componentes mejorados */}
       {isFirstVisit && <SpecialtyWelcome />}
-      <ProgressTracker />
+      {showProgress && <ProgressTracker onClose={() => setShowProgress(false)} />}
       
       {/* Bienvenida mejorada */}
       <div className="mb-6">
