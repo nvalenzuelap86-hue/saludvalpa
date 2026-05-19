@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "fecha_actualizacion": "2026-02-28",
+  "fecha_actualizacion": "2026-05-19",
   "descripcion": "Códigos de licencia válidos para SaludValpa 3.0 - Solo licencias anuales (VERSIÓN SANITIZADA PARA REPOSITORIO PÚBLICO)",
   "precio_anual": 999,
   "moneda": "MXN",
@@ -254,13 +254,58 @@
       "generado": "2026-02-28T00:00:00Z",
       "estado": "disponible",
       "descripcion": "Licencia anual completa"
+    },
+    {
+      "codigo": "SALUDVALPA-ICAO2-526AY-EJ968",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-05-19T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual SaludValpa - Venta pública"
+    },
+    {
+      "codigo": "SALUDVALPA-3NODG-2QM0W-LX52H",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-05-19T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual SaludValpa - Venta pública"
+    },
+    {
+      "codigo": "SALUDVALPA-KIVHZ-QWQXS-HW4Y0",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-05-19T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual SaludValpa - Venta pública"
+    },
+    {
+      "codigo": "SALUDVALPA-E7DV0-MH2KF-9HWRB",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-05-19T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual SaludValpa - Venta pública"
+    },
+    {
+      "codigo": "SALUDVALPA-3ZCF0-KMPHS-AE2B0",
+      "tipo": "anual",
+      "duracion_dias": 365,
+      "precio": 999,
+      "generado": "2026-05-19T00:00:00Z",
+      "estado": "disponible",
+      "descripcion": "Licencia anual SaludValpa - Venta pública"
     }
   ],
   "estadisticas": {
-    "total_generados": 27,
-    "disponibles": 27,
+    "total_generados": 32,
+    "disponibles": 32,
     "usados": 0,
-    "ingreso_potencial": 26973
+    "ingreso_potencial": 31968
   },
   "configuracion_automatizacion": {
     "api_endpoint": "https://api.valpa.app/licencias",

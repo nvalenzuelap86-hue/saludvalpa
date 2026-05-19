@@ -23,6 +23,7 @@
     "migrate-config:dry-run": "node migrate-configurations.js --dry-run"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^5.2.0",
     "date-fns": "^4.1.0",
     "dexie": "^4.2.1",
     "dexie-react-hooks": "^4.2.0",

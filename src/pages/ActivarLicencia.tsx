@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../stores/appStore';
-import { activarLicencia } from '../services/licenseService';
+import { activarLicencia, validarCodigoLicencia } from '../services/licenseService';
 import FeatureUnlockModal from '../components/FeatureUnlockModal';
 
 const ActivarLicencia = () => {
@@ -26,6 +26,22 @@ const ActivarLicencia = () => {
     setMensaje(null);
 
     try {
+      // Primero validar para detectar errores específicos como multi-dispositivo
+      const validacion = await validarCodigoLicencia(codigo.toUpperCase().trim());
+      
+      if (!validacion.valido) {
+        if (validacion.errorDispositivo) {
+          setMensaje({
+            tipo: 'error',
+            texto: '❌ Esta licencia ya fue activada en otro dispositivo. Cada licencia solo puede usarse en un dispositivo a la vez. Contacta a soporte para transferirla.'
+          });
+        } else {
+          setMensaje({ tipo: 'error', texto: validacion.mensaje || 'Código de licencia inválido.' });
+        }
+        setProcesando(false);
+        return;
+      }
+
       const resultado = await activarLicencia(codigo.toUpperCase().trim());
       
       if (resultado.success) {

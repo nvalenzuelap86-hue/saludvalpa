@@ -1,10 +1,12 @@
 // ============================================================================
 // saludvalpa 3.0 - LICENSE SERVICE
-// Sistema de gestión y validación de licencias - Versión 2.0
+// Sistema de gestión y validación de licencias - Versión 3.0
+// Con Device Fingerprinting para evitar activaciones múltiples
 // ============================================================================
 
 import { db } from '../db/database';
 import { TipoLicencia, EstadoLicencia, type Licencia } from '../types';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 // URL del archivo JSON de códigos (en public/)
 // Usar URL absoluta en producción para evitar problemas de ruta
@@ -27,6 +29,142 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
 // Clave para almacenar códigos usados en localStorage (como fallback)
 const USED_CODES_STORAGE_KEY = 'valpa_used_license_codes';
+
+// Clave para el registro de activaciones con fingerprint
+const LICENSE_REGISTRY_KEY = 'valpa_license_registry';
+
+// ============================================================================
+// INTERFACES
+// ============================================================================
+
+export interface ActivacionRegistro {
+  codigo: string;
+  fingerprint: string;
+  fechaActivacion: string; // ISO date
+  dispositivo: string; // navigator.userAgent
+}
+
+// ============================================================================
+// FUNCIONES DE FINGERPRINTING
+// ============================================================================
+
+/**
+ * Generar un hash simple a partir de un string (fallback si fingerprintjs falla)
+ */
+function hashString(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return 'fp_' + Math.abs(hash).toString(16);
+}
+
+/**
+ * Obtener la huella digital del dispositivo actual
+ * Usa FingerprintJS como método principal con fallback basado en navigator properties
+ */
+export async function obtenerHuellaDispositivo(): Promise<string> {
+  try {
+    const fp = await FingerprintJS.load();
+    const result = await fp.get();
+    return result.visitorId;
+  } catch (error) {
+    console.warn('⚠️ FingerprintJS no disponible, usando fallback:', error);
+    // Fallback: generar un hash basado en navigator properties
+    const fallback = `${navigator.userAgent}-${navigator.language}-${screen.width}x${screen.height}-${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
+    return hashString(fallback);
+  }
+}
+
+// ============================================================================
+// REGISTRO DE ACTIVACIONES (FINGERPRINT)
+// ============================================================================
+
+/**
+ * Obtener el registro completo de activaciones desde localStorage
+ */
+function obtenerRegistroActivaciones(): ActivacionRegistro[] {
+  try {
+    const stored = localStorage.getItem(LICENSE_REGISTRY_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Error al leer registro de activaciones:', error);
+  }
+  return [];
+}
+
+/**
+ * Guardar el registro de activaciones en localStorage
+ */
+function guardarRegistroActivaciones(registro: ActivacionRegistro[]): void {
+  try {
+    localStorage.setItem(LICENSE_REGISTRY_KEY, JSON.stringify(registro));
+  } catch (error) {
+    console.error('Error al guardar registro de activaciones:', error);
+  }
+}
+
+/**
+ * Buscar una activación por código en el registro
+ */
+function buscarActivacionPorCodigo(codigo: string): ActivacionRegistro | undefined {
+  const registro = obtenerRegistroActivaciones();
+  return registro.find(a => a.codigo === codigo.toUpperCase().trim());
+}
+
+/**
+ * Verificar si un código ya fue activado en OTRO dispositivo
+ * @returns null si no hay activación previa, true si es el mismo dispositivo, false si es otro dispositivo
+ */
+function verificarActivacionMultiDispositivo(codigo: string, fingerprint: string): 'no_existe' | 'mismo_dispositivo' | 'otro_dispositivo' {
+  const activacion = buscarActivacionPorCodigo(codigo);
+  
+  if (!activacion) {
+    return 'no_existe';
+  }
+  
+  if (activacion.fingerprint === fingerprint) {
+    return 'mismo_dispositivo';
+  }
+  
+  return 'otro_dispositivo';
+}
+
+/**
+ * Registrar una activación en el registro de fingerprints
+ */
+function registrarActivacion(codigo: string, fingerprint: string): void {
+  try {
+    const registro = obtenerRegistroActivaciones();
+    
+    // Eliminar entrada previa del mismo código si existe (para reinstalaciones)
+    const index = registro.findIndex(a => a.codigo === codigo.toUpperCase().trim());
+    if (index !== -1) {
+      registro.splice(index, 1);
+    }
+    
+    // Agregar nueva entrada
+    registro.push({
+      codigo: codigo.toUpperCase().trim(),
+      fingerprint,
+      fechaActivacion: new Date().toISOString(),
+      dispositivo: navigator.userAgent.substring(0, 200) // Limitar longitud
+    });
+    
+    guardarRegistroActivaciones(registro);
+    console.log(`✅ Activación registrada con fingerprint para código ${codigo}`);
+  } catch (error) {
+    console.error('Error al registrar activación:', error);
+  }
+}
+
+// ============================================================================
+// FUNCIONES EXISTENTES (códigos usados en localStorage)
+// ============================================================================
 
 /**
  * Obtener códigos usados desde localStorage
@@ -65,6 +203,10 @@ function esCodigoUsado(codigo: string): boolean {
   const usedCodes = obtenerCodigosUsados();
   return usedCodes.has(codigo.toUpperCase().trim());
 }
+
+// ============================================================================
+// CARGA DE CÓDIGOS VÁLIDOS
+// ============================================================================
 
 /**
  * Cargar códigos válidos desde el archivo JSON externo
@@ -163,14 +305,19 @@ async function cargarCodigosValidos(): Promise<{
   }
 }
 
+// ============================================================================
+// VALIDACIÓN DE CÓDIGO DE LICENCIA
+// ============================================================================
+
 /**
  * Validar un código de licencia
- * Verifica formato y si está en la lista de códigos válidos
+ * Verifica formato, lista de códigos válidos, y registro de activaciones multi-dispositivo
  */
 export async function validarCodigoLicencia(codigo: string): Promise<{
   valido: boolean;
   detalles?: any;
   mensaje?: string;
+  errorDispositivo?: boolean; // Indica si el error es por activación en otro dispositivo
 }> {
   console.log(`🔍 Validando código: "${codigo}"`);
   
@@ -222,11 +369,42 @@ export async function validarCodigoLicencia(codigo: string): Promise<{
   
   console.log(`✅ Código válido encontrado`);
   
+  // --- NUEVO: Verificación de activación multi-dispositivo ---
+  try {
+    const fingerprint = await obtenerHuellaDispositivo();
+    const resultadoVerificacion = verificarActivacionMultiDispositivo(codigoNormalizado, fingerprint);
+    
+    if (resultadoVerificacion === 'otro_dispositivo') {
+      console.log(`❌ Código "${codigoNormalizado}" ya activado en OTRO dispositivo (fingerprint mismatch)`);
+      return {
+        valido: false,
+        mensaje: 'Esta licencia ya fue activada en otro dispositivo. Cada licencia solo puede usarse en un dispositivo a la vez. Si deseas transferir la licencia, contacta a soporte.',
+        errorDispositivo: true
+      };
+    }
+    
+    if (resultadoVerificacion === 'mismo_dispositivo') {
+      console.log(`✅ Código "${codigoNormalizado}" ya activado en ESTE dispositivo (reinstalación permitida)`);
+    }
+    
+    if (resultadoVerificacion === 'no_existe') {
+      console.log(`✅ Código "${codigoNormalizado}" sin activación previa, permitiendo activación`);
+    }
+  } catch (error) {
+    // Si falla la verificación de fingerprint, permitir la validación de todas formas
+    // para no bloquear al usuario por un error técnico
+    console.warn('⚠️ Error al verificar fingerprint, omitiendo validación multi-dispositivo:', error);
+  }
+  
   return {
     valido: true,
     detalles: details.get(codigoNormalizado)
   };
 }
+
+// ============================================================================
+// ACTIVACIÓN DE LICENCIA
+// ============================================================================
 
 /**
  * Activar una licencia con código
@@ -279,6 +457,15 @@ export async function activarLicencia(codigo: string): Promise<{
       expiracion.setFullYear(expiracion.getFullYear() + 1);
     }
 
+    // --- NUEVO: Obtener fingerprint y registrar activación ---
+    let fingerprint = '';
+    try {
+      fingerprint = await obtenerHuellaDispositivo();
+      registrarActivacion(codigo, fingerprint);
+    } catch (error) {
+      console.warn('⚠️ Error al registrar fingerprint, continuando sin registro de dispositivo:', error);
+    }
+
     const licenciaActivada: Licencia = {
       tipo: TipoLicencia.PAGADA,
       codigo: codigo,
@@ -289,7 +476,8 @@ export async function activarLicencia(codigo: string): Promise<{
       metadata: {
         tipo: tipoLicencia,
         duracionDias: detalles?.duracion_dias || 365,
-        precio: detalles?.precio || 800
+        precio: detalles?.precio || 800,
+        fingerprint: fingerprint || undefined // Guardar fingerprint en metadata de la licencia
       }
     };
 
@@ -336,6 +524,10 @@ export async function activarLicencia(codigo: string): Promise<{
   }
 }
 
+// ============================================================================
+// VERIFICACIÓN DE LICENCIA (al iniciar la app)
+// ============================================================================
+
 /**
  * Obtener el estado actual de la licencia
  */
@@ -366,6 +558,54 @@ export async function obtenerEstadoLicencia(): Promise<Licencia> {
 
   return licencia;
 }
+
+/**
+ * Verificar la licencia al iniciar la aplicación
+ * Valida que el fingerprint del dispositivo coincida con el registrado
+ * @returns Objeto con estado de verificación y advertencias
+ */
+export async function verificarLicencia(): Promise<{
+  valida: boolean;
+  sospechosa: boolean;
+  mensaje?: string;
+  licencia: Licencia;
+}> {
+  const licencia = await obtenerEstadoLicencia();
+  
+  const resultado: {
+    valida: boolean;
+    sospechosa: boolean;
+    mensaje?: string;
+    licencia: Licencia;
+  } = {
+    valida: licencia.estado === EstadoLicencia.ACTIVA,
+    sospechosa: false,
+    licencia
+  };
+
+  // Solo verificar fingerprint si la licencia está activa y tiene código
+  if (licencia.estado === EstadoLicencia.ACTIVA && licencia.codigo) {
+    try {
+      const fingerprintActual = await obtenerHuellaDispositivo();
+      const activacion = buscarActivacionPorCodigo(licencia.codigo);
+      
+      if (activacion && activacion.fingerprint !== fingerprintActual) {
+        // El fingerprint no coincide - posible uso en otro dispositivo
+        console.warn(`⚠️ Licencia detectada como sospechosa: el fingerprint del dispositivo no coincide con el registrado`);
+        resultado.sospechosa = true;
+        resultado.mensaje = 'Esta licencia parece haber sido activada en otro dispositivo. Verifica que estés usando el dispositivo correcto.';
+      }
+    } catch (error) {
+      console.warn('⚠️ Error al verificar fingerprint durante verificación de licencia:', error);
+    }
+  }
+
+  return resultado;
+}
+
+// ============================================================================
+// FUNCIONES EXISTENTES (sin cambios)
+// ============================================================================
 
 /**
  * Verificar si se puede agregar un nuevo paciente (respetando límites)
