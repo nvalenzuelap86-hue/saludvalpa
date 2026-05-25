@@ -25,10 +25,6 @@ const FormularioPaciente = ({ paciente, onSubmit, onCancel, isLoading }: Formula
     email: paciente?.email || '',
     direccion: paciente?.direccion || '',
     profesion: paciente?.profesion || '',
-    motivoConsulta: paciente?.motivoConsulta || '',
-    historialMedico: paciente?.historialMedico || '',
-    alergias: paciente?.alergias?.join(', ') || '',
-    medicamentos: paciente?.medicamentos?.join(', ') || '',
     contactoEmergenciaNombre: paciente?.contactoEmergencia?.nombre || '',
     contactoEmergenciaTelefono: paciente?.contactoEmergencia?.telefono || '',
     contactoEmergenciaRelacion: paciente?.contactoEmergencia?.relacion || '',
@@ -88,11 +84,11 @@ const FormularioPaciente = ({ paciente, onSubmit, onCancel, isLoading }: Formula
       email: formData.email.trim() || undefined,
       direccion: formData.direccion.trim() || undefined,
       profesion: formData.profesion.trim() || undefined,
-      profesionPrincipal: paciente?.profesionPrincipal || 'medicina_general', // Usar profesión del paciente existente o default
-      motivoConsulta: formData.motivoConsulta.trim() || undefined,
-      historialMedico: formData.historialMedico.trim() || undefined,
-      alergias: formData.alergias.split(',').map(a => a.trim()).filter(Boolean),
-      medicamentos: formData.medicamentos.split(',').map(m => m.trim()).filter(Boolean),
+      profesionPrincipal: paciente?.profesionPrincipal || 'medicina_general',
+      motivoConsulta: undefined, // Se gestiona en el historial clínico del perfil
+      historialMedico: undefined, // Se gestiona en el historial clínico del perfil
+      alergias: [], // Se gestiona como antecedentes en el historial clínico
+      medicamentos: [], // Se gestiona como antecedentes en el historial clínico
       contactoEmergencia: formData.contactoEmergenciaNombre.trim() ? {
         nombre: formData.contactoEmergenciaNombre.trim(),
         telefono: formData.contactoEmergenciaTelefono.trim(),
@@ -201,57 +197,15 @@ const FormularioPaciente = ({ paciente, onSubmit, onCancel, isLoading }: Formula
         </div>
       </div>
 
-      {/* Información médica */}
+      {/* Profesión/Ocupación */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Información clínica</h3>
-        <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Información adicional</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Profesión/Ocupación"
             value={formData.profesion}
             onChange={(e) => handleChange('profesion', e.target.value)}
             placeholder="Ej: Ingeniero, Estudiante, etc."
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Motivo de consulta
-            </label>
-            <textarea
-              value={formData.motivoConsulta}
-              onChange={(e) => handleChange('motivoConsulta', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saludvalpa-blue focus:border-transparent"
-              rows={3}
-              placeholder="Descripción breve del motivo por el cual consulta..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Historial médico
-            </label>
-            <textarea
-              value={formData.historialMedico}
-              onChange={(e) => handleChange('historialMedico', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saludvalpa-blue focus:border-transparent"
-              rows={3}
-              placeholder="Enfermedades previas, cirugías, tratamientos anteriores..."
-            />
-          </div>
-
-          <Input
-            label="Alergias"
-            value={formData.alergias}
-            onChange={(e) => handleChange('alergias', e.target.value)}
-            placeholder="Separadas por comas: polen, penicilina, etc."
-            helperText="Separa cada alergia con una coma"
-          />
-
-          <Input
-            label="Medicamentos actuales"
-            value={formData.medicamentos}
-            onChange={(e) => handleChange('medicamentos', e.target.value)}
-            placeholder="Separados por comas: ibuprofeno, omeprazol, etc."
-            helperText="Separa cada medicamento con una coma"
           />
         </div>
       </div>

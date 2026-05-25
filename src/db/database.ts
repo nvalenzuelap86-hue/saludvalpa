@@ -19,6 +19,9 @@ import type {
   Ejercicio,
   RutinaEjercicios,
   SeguimientoRutina,
+  DiagnosticoEntry,
+  SignosVitalesEntry,
+  AntecedenteEntry,
 } from '../types';
 
 export class SaludValpaDatabase extends Dexie {
@@ -37,6 +40,10 @@ export class SaludValpaDatabase extends Dexie {
   ejercicios!: Table<Ejercicio, string>;
   rutinas!: Table<RutinaEjercicios, string>;
   seguimientoRutinas!: Table<SeguimientoRutina, string>;
+  // Tablas para historial clínico del paciente
+  diagnosticos!: Table<DiagnosticoEntry, string>;
+  signosVitales!: Table<SignosVitalesEntry, string>;
+  antecedentes!: Table<AntecedenteEntry, string>;
 
   constructor() {
     super('SaludValpaDB');
@@ -138,6 +145,27 @@ export class SaludValpaDatabase extends Dexie {
       });
       
       console.log('✅ Migración v2 → v3 completada');
+    });
+
+    // Versión 4: Agregar tablas para historial clínico del paciente
+    this.version(4).stores({
+      pacientes: 'id, nombre, apellidos, fechaNacimiento, fechaCreacion, ultimaConsulta, activo, profesionPrincipal',
+      sesiones: 'id, pacienteId, profesionalId, fecha, fechaCreacion, profesion',
+      citas: 'id, pacienteId, profesionalId, fechaHora, estado, fechaCreacion, profesion',
+      documentos: 'id, tipo, pacienteId, profesionalId, fechaGeneracion, profesion',
+      configuracion: 'id',
+      usuarios: 'id, email, activo, profesion',
+      servicios: 'id, nombre, profesion, activo',
+      cotizaciones: 'id, pacienteId, fecha, estado, profesion',
+      recibos: 'id, numero, pacienteId, fecha, estadoPago, profesion',
+      biblioteca: 'id, profesion, categoria, titulo, favorito',
+      ejercicios: 'id, nombre, categoria, precargado, favorito, usuarioCreadorId, fechaCreacion, profesion',
+      rutinas: 'id, nombre, pacienteId, esPlantilla, activa, usuarioCreadorId, fechaCreacion, fechaActualizacion, profesion',
+      seguimientoRutinas: 'id, rutinaId, pacienteId, fecha, fechaCreacion, profesion',
+      // Nuevas tablas para historial clínico
+      diagnosticos: 'id, pacienteId, profesion, fecha, activo',
+      signosVitales: 'id, pacienteId, profesion, fecha',
+      antecedentes: 'id, pacienteId, tipo, activo',
     });
   }
 }

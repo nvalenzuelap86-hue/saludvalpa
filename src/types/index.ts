@@ -144,6 +144,65 @@ export interface ContactoEmergencia {
   relacion: string;
 }
 
+// ----------------------------------------------------------------------------
+// HISTORIAL CLÍNICO DEL PACIENTE
+// ----------------------------------------------------------------------------
+
+export interface DiagnosticoEntry {
+  id: string;
+  pacienteId: string;
+  profesion: TipoProfesion;
+  fecha: Date;
+  codigo?: string;          // Código CIE-10, DSM-5, etc.
+  descripcion: string;      // Descripción del diagnóstico
+  tipo?: string;            // "principal", "secundario", "diferencial"
+  notas?: string;           // Notas adicionales
+  activo: boolean;          // Si el diagnóstico sigue vigente
+  creadoPor?: string;       // ID del profesional
+  fechaCreacion: Date;
+  fechaActualizacion: Date;
+}
+
+export interface SignosVitalesEntry {
+  id: string;
+  pacienteId: string;
+  profesion: TipoProfesion;
+  fecha: Date;
+  // Antropometría
+  peso?: number;            // kg
+  talla?: number;           // cm
+  imc?: number;             // calculado automáticamente peso / (talla/100)^2
+  circunferenciaCintura?: number; // cm
+  circunferenciaCadera?: number;  // cm
+  relacionCinturaCadera?: number; // calculado
+  // Signos vitales
+  presionArterialSistolica?: number; // mmHg
+  presionArterialDiastolica?: number; // mmHg
+  frecuenciaCardiaca?: number;       // bpm
+  frecuenciaRespiratoria?: number;   // rpm
+  temperatura?: number;              // °C
+  saturacionOxigeno?: number;        // %
+  glucosaCapilar?: number;           // mg/dL
+  // Metadata
+  notas?: string;
+  creadoPor?: string;
+  fechaCreacion: Date;
+  fechaActualizacion: Date;
+}
+
+export interface AntecedenteEntry {
+  id: string;
+  pacienteId: string;
+  tipo: 'patologico' | 'quirurgico' | 'alergico' | 'toxicos' | 'familiares' | 'farmacologicos' | 'traumaticos' | 'otros';
+  descripcion: string;
+  fechaRegistro?: Date;
+  activo: boolean;
+  notas?: string;
+  creadoPor?: string;
+  fechaCreacion: Date;
+  fechaActualizacion: Date;
+}
+
 export interface Sesion {
   id: string;
   pacienteId: string;
