@@ -8,6 +8,9 @@ import { descargarRespaldo, importarRespaldoDesdeArchivo, obtenerEstadisticasRes
 import { Card } from '../components';
 import CloudSyncPanel from '../components/CloudSyncPanel';
 
+// SECCIÓN OCULTA: Sincronización en la nube - funcionalidad no completada
+const SHOW_SYNC_SECTION = false;
+
 type Tab = 'general' | 'branding' | 'preferencias' | 'recordatorios' | 'documentos' | 'respaldos' | 'sincronizacion';
 
 const ConfiguracionAvanzada = () => {
@@ -141,7 +144,7 @@ const ConfiguracionAvanzada = () => {
             { id: 'recordatorios', label: '🔔 Recordatorios', icon: '' },
             { id: 'documentos', label: '📄 Documentos', icon: '' },
             { id: 'respaldos', label: '💾 Respaldos', icon: '' },
-            { id: 'sincronizacion', label: '☁️ Sincronización', icon: '' },
+            ...(SHOW_SYNC_SECTION ? [{ id: 'sincronizacion', label: '☁️ Sincronización', icon: '' }] : []),
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1068,8 +1071,8 @@ const ConfiguracionAvanzada = () => {
           </div>
         )}
 
-        {/* TAB: SINCRONIZACIÓN */}
-        {tabActiva === 'sincronizacion' && (
+        {/* SECCIÓN OCULTA: Sincronización en la nube - funcionalidad no completada */}
+        {SHOW_SYNC_SECTION && tabActiva === 'sincronizacion' && (
           <div className="space-y-6">
             <CloudSyncPanel />
           </div>
