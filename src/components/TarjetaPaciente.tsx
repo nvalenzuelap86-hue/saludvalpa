@@ -3,7 +3,7 @@
 // Componente con modo dual: Revisión / Ejecución
 // ============================================================================
 
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import type { Paciente } from '../types';
@@ -18,6 +18,7 @@ import GenerarConsentimiento from './common/GenerarConsentimiento';
 import GenerarHojaBlanco from './common/GenerarHojaBlanco';
 import VisorPDF from './common/VisorPDF';
 import SesionEnVivo from './SesionEnVivo';
+import HistorialClinicoPaciente from './HistorialClinicoPaciente';
 import { useAppStore } from '../stores/appStore';
 import { useSesiones } from '../hooks/useSesiones';
 
@@ -29,18 +30,26 @@ interface TarjetaPacienteProps {
   onEditar?: () => void;
   onEliminar?: () => void;
   onActualizar?: () => void;
+  onAbrirModalSesion?: () => void;
 }
 
 type Modo = 'revision' | 'ejecucion';
 
-const TarjetaPaciente = ({ paciente, onEditar, onEliminar, onActualizar }: TarjetaPacienteProps) => {
+const TarjetaPaciente = ({ paciente, onEditar, onEliminar, onActualizar, onAbrirModalSesion }: TarjetaPacienteProps) => {
   const [modo, setModo] = useState<Modo>('revision');
   const [sesionActiva, setSesionActiva] = useState(false);
   const { configuracion } = useAppStore();
 
   const iniciarSesionEnVivo = () => {
     setModo('ejecucion');
-    setSesionActiva(true);
+    // Si hay un callback para abrir el modal de tipo de sesión, usarlo
+    // El modal se maneja desde PerfilPaciente (padre)
+    if (onAbrirModalSesion) {
+      onAbrirModalSesion();
+    } else {
+      // Fallback: ir directo a SesionEnVivo (sin modal de selección)
+      setSesionActiva(true);
+    }
   };
 
   const cerrarSesion = () => {
@@ -148,7 +157,8 @@ const TarjetaPaciente = ({ paciente, onEditar, onEliminar, onActualizar }: Tarje
           onActualizar={onActualizar}
         />
       ) : (
-        <ModoEjecucion 
+        <ModoEjecucion
+          paciente={paciente}
           onVolverRevision={() => setModo('revision')}
           onIniciarSesion={iniciarSesionEnVivo}
         />
@@ -285,27 +295,15 @@ const ModoRevision = ({
         )}
       </Card>
 
-      {/* Historial médico */}
-      {(paciente.motivoConsulta || paciente.historialMedico) && (
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Historial clínico</h3>
-          {paciente.motivoConsulta && (
-            <div className="mb-4">
-              <span className="text-gray-600 text-sm">Motivo de consulta:</span>
-              <p className="text-gray-900 mt-1">{paciente.motivoConsulta}</p>
-            </div>
-          )}
-          {paciente.historialMedico && (
-            <div>
-              <span className="text-gray-600 text-sm">Historial médico:</span>
-              <p className="text-gray-900 mt-1">{paciente.historialMedico}</p>
-            </div>
-          )}
-        </Card>
-      )}
-
-      {/* Historial de sesiones */}
-      <HistorialSesiones paciente={paciente} />
+      {/* Historial clínico - Diagnósticos y signos vitales */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">📋 Historial clínico</h3>
+        <HistorialClinicoPaciente
+          pacienteId={paciente.id}
+          profesion={configuracion?.profesion}
+          motivoConsulta={paciente.motivoConsulta}
+        />
+      </Card>
 
       {/* Rutinas de Ejercicios - Solo para Fisioterapia */}
       {configuracion?.profesion === TipoProfesion.FISIOTERAPIA && (
@@ -453,14 +451,12 @@ const ModoRevision = ({
         </Modal>
       </Card>
 
+      {/* Historial de sesiones */}
+      <HistorialSesiones paciente={paciente} />
+
       {/* Acciones */}
       <Card className="p-6">
         <div className="flex flex-col md:flex-row gap-3">
-          {onIniciarSesion && (
-            <Button variant="primary" onClick={onIniciarSesion} className="flex-1">
-              🏃 Iniciar sesión/consulta
-            </Button>
-          )}
           {onEliminar && (
             <Button variant="danger" onClick={onEliminar}>
               🗑️ Eliminar paciente
@@ -476,70 +472,144 @@ const ModoRevision = ({
 // MODO EJECUCIÓN
 // ============================================================================
 
-const ModoEjecucion = ({ 
+const ModoEjecucion = ({
+  paciente,
   onVolverRevision,
   onIniciarSesion
-}: { 
+}: {
+  paciente: Paciente;
   onVolverRevision: () => void;
   onIniciarSesion: () => void;
 }) => {
+  const { configuracion } = useAppStore();
+  const [sesionActiva, setSesionActiva] = useState(false);
+  const [segundos, setSegundos] = useState(0);
+  const intervalRef = useRef<number | null>(null);
+
+  // Temporizador: se activa cuando sesionActiva es true
+  useEffect(() => {
+    if (sesionActiva) {
+      intervalRef.current = window.setInterval(() => {
+        setSegundos(prev => prev + 1);
+      }, 1000);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [sesionActiva]);
+
+  const formatearTiempo = (s: number): string => {
+    const horas = Math.floor(s / 3600);
+    const minutos = Math.floor((s % 3600) / 60);
+    const segs = s % 60;
+    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segs.toString().padStart(2, '0')}`;
+  };
+
+  const handleIniciarSesion = () => {
+    // Llamar al callback del padre para abrir el modal de tipo de sesión
+    // El padre (PerfilPaciente) manejará la creación de la sesión real
+    onIniciarSesion();
+  };
+
+  const handlePausarReanudar = () => {
+    setSesionActiva(prev => !prev);
+  };
+
   return (
     <div className="space-y-4">
-      <Card className="p-6 bg-gradient-to-r from-saludvalpa-blue-light to-saludvalpa-green-light border-2 border-saludvalpa-blue">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-3xl">🏃</span>
-          <div className="flex-1">
-            <h3 className="font-bold text-saludvalpa-blue text-xl">Modo Ejecución - Sesión en vivo</h3>
-            <p className="text-sm text-gray-700">
-              Interfaz optimizada para registrar consulta en tiempo real
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="text-center">
-            <div className="inline-block p-4 bg-saludvalpa-blue-light rounded-full mb-4">
-              <span className="text-4xl">⏱️</span>
+      {/* Grid superior: Info del paciente + Temporizador */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Card izquierda: Información del paciente + Iniciar Sesión */}
+        <Card className="p-6 bg-gradient-to-r from-saludvalpa-blue-light to-saludvalpa-green-light border-2 border-saludvalpa-blue">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-3xl">👤</span>
+            <div className="flex-1">
+              <h3 className="font-bold text-saludvalpa-blue text-lg">Iniciar Sesión</h3>
+              <p className="text-sm text-gray-700">
+                Comienza una nueva consulta
+              </p>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">
-              ¿Listo para iniciar la sesión?
-            </h4>
-            <p className="text-gray-600 text-sm mb-6">
-              Al iniciar, se activará el temporizador y podrás registrar:
-            </p>
-            
-            <div className="grid grid-cols-2 gap-3 mb-6 text-left">
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-lg">✏️</span>
-                <span>Notas clínicas</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-lg">💊</span>
-                <span>Materiales</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-lg">🔧</span>
-                <span>Medios físicos</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-lg">📊</span>
-                <span>Datos específicos</span>
-              </div>
-            </div>
-
-            <button
-              onClick={onIniciarSesion}
-              className="w-full bg-saludvalpa-lime text-white px-8 py-4 rounded-lg hover:bg-saludvalpa-lime/90 font-bold text-lg shadow-lg hover:shadow-xl transition-all"
-            >
-              ▶️ Iniciar sesión ahora
-            </button>
           </div>
-        </div>
-      </Card>
 
-      {/* Vista rápida del historial */}
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div className="text-center">
+              <p className="text-gray-800 font-semibold text-base mb-1">
+                {paciente.nombre} {paciente.apellidos}
+              </p>
+              <p className="text-gray-600 text-sm mb-1">
+                {paciente.edad} años
+              </p>
+              <p className="text-gray-500 text-sm mb-4">
+                📞 {paciente.telefono}
+              </p>
+
+              <button
+                onClick={handleIniciarSesion}
+                className="w-full bg-saludvalpa-blue text-white px-6 py-3 rounded-lg hover:bg-saludvalpa-blue-dark font-bold text-base shadow-lg hover:shadow-xl transition-all"
+              >
+                ▶️ Iniciar Sesión
+              </button>
+            </div>
+          </div>
+        </Card>
+
+        {/* Card derecha: Temporizador */}
+        <Card className="p-6 bg-gradient-to-r from-saludvalpa-blue-light to-saludvalpa-green-light border-2 border-saludvalpa-blue">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-3xl">⏱️</span>
+            <div className="flex-1">
+              <h3 className="font-bold text-saludvalpa-blue text-lg">Sesión en vivo</h3>
+              <p className="text-sm text-gray-700">
+                Tiempo y controles de la sesión
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            {sesionActiva ? (
+              <div className="text-center">
+                <div className="inline-block p-3 bg-saludvalpa-blue-light rounded-full mb-3">
+                  <span className="text-3xl">🔴</span>
+                </div>
+                <h4 className="text-base font-semibold text-gray-900 mb-2">
+                  Sesión en curso
+                </h4>
+                <div className="text-3xl font-mono font-bold text-saludvalpa-teal mb-4">
+                  {formatearTiempo(segundos)}
+                </div>
+                <button
+                  onClick={handlePausarReanudar}
+                  className="w-full px-4 py-2 rounded-lg font-medium text-sm transition-all border border-gray-300 hover:bg-gray-100"
+                >
+                  ⏸ Pausar
+                </button>
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="inline-block p-3 bg-gray-100 rounded-full mb-3">
+                  <span className="text-3xl">⏸️</span>
+                </div>
+                <h4 className="text-base font-semibold text-gray-900 mb-2">
+                  Sin sesión activa
+                </h4>
+                <p className="text-gray-500 text-sm">
+                  Inicia una sesión desde la card izquierda para ver el temporizador aquí
+                </p>
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
+
+      {/* Última sesión */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">📚 Últimas sesiones</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">📚 Última sesión</h3>
         <div className="text-center py-8 text-gray-500">
           <span className="text-4xl block mb-2">📋</span>
           <p className="text-sm">No hay sesiones registradas aún</p>

@@ -10,6 +10,7 @@ import type { Paciente } from '../types';
 import TarjetaPaciente from '../components/TarjetaPaciente';
 import Modal from '../components/shared/Modal';
 import FormularioPaciente from '../components/FormularioPaciente';
+import SesionEnVivo from '../components/SesionEnVivo';
 import { usePacientes } from '../hooks/usePacientes';
 import { useAppStore } from '../stores/appStore';
 
@@ -32,6 +33,7 @@ const PerfilPaciente = () => {
   // Estado para el modal de sesión
   const [modalSesionAbierto, setModalSesionAbierto] = useState(false);
   const [tipoSesionActiva, setTipoSesionActiva] = useState<TipoSesion>(null);
+  const [sesionEnVivoActiva, setSesionEnVivoActiva] = useState(false);
 
   useEffect(() => {
     const cargarPaciente = async () => {
@@ -87,10 +89,19 @@ const PerfilPaciente = () => {
   const handleSeleccionarTipoSesion = (tipo: TipoSesion) => {
     setTipoSesionActiva(tipo);
     setModalSesionAbierto(false);
+    // Para consulta general, activar SesionEnVivo directamente
+    if (tipo === 'general') {
+      setSesionEnVivoActiva(true);
+    }
   };
 
   const cerrarSesion = () => {
     setTipoSesionActiva(null);
+    setSesionEnVivoActiva(false);
+  };
+
+  const handleAbrirModalSesion = () => {
+    setModalSesionAbierto(true);
   };
 
 
@@ -136,17 +147,18 @@ const PerfilPaciente = () => {
         paciente={paciente}
         onEditar={() => setMostrarEditar(true)}
         onEliminar={handleEliminar}
+        onAbrirModalSesion={handleAbrirModalSesion}
       />
 
-      {/* Botón para iniciar sesión */}
-      {!tipoSesionActiva && (
+
+      {/* Sesión en vivo para Consulta General */}
+      {sesionEnVivoActiva && (
         <div className="mt-6">
-          <button
-            onClick={() => setModalSesionAbierto(true)}
-            className="w-full md:w-auto bg-saludvalpa-blue text-white px-8 py-4 rounded-lg hover:bg-opacity-90 transition-colors font-medium text-lg shadow-lg"
-          >
-            ▶️ Iniciar sesión
-          </button>
+          <SesionEnVivo
+            paciente={paciente}
+            profesion={configuracion?.profesion || 'fisioterapia'}
+            onCerrar={cerrarSesion}
+          />
         </div>
       )}
 
@@ -268,30 +280,6 @@ const PerfilPaciente = () => {
         </Modal>
       )}
 
-      {tipoSesionActiva === 'general' && (
-        <Modal
-          isOpen={true}
-          onClose={cerrarSesion}
-          title="Consulta General"
-          size="lg"
-        >
-          <div className="p-6 text-center">
-            <span className="text-6xl block mb-4">🏥</span>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Sesión en progreso
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Registra las notas de tu consulta general con {paciente.nombre} {paciente.apellidos}
-            </p>
-            <button
-              onClick={cerrarSesion}
-              className="bg-saludvalpa-blue text-white px-6 py-2 rounded-lg hover:bg-opacity-90"
-            >
-              Finalizar sesión
-            </button>
-          </div>
-        </Modal>
-      )}
 
       {/* Modal de edición de paciente */}
       <Modal
