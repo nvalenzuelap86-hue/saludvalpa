@@ -170,6 +170,11 @@ const ProgressTracker = ({ onClose }: ProgressTrackerProps) => {
   const totalMilestones = milestones.length;
   const progressPercentage = Math.round((completedMilestones / totalMilestones) * 100);
 
+  // Hide component when progress reaches 100%
+  if (progressPercentage >= 100) {
+    return null;
+  }
+
   const getNextMilestone = (): Milestone | undefined => {
     return milestones.find(m => !m.completed);
   };

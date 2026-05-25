@@ -4,6 +4,7 @@
 // ============================================================================
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { startOfWeek, endOfWeek, format } from 'date-fns';
@@ -344,9 +345,13 @@ const CitaMiniCard = ({ cita, onClick }: { cita: Cita; onClick: () => void }) =>
       </div>
       
       {paciente && (
-        <div className="font-medium text-sm text-gray-900">
+        <Link
+          to={`/app/pacientes/${cita.pacienteId}`}
+          className="font-medium text-sm text-saludvalpa-teal hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
           {paciente.nombre} {paciente.apellidos}
-        </div>
+        </Link>
       )}
       
       <div className="text-xs text-gray-600 mt-1">
@@ -422,9 +427,12 @@ const DetalleCita = ({
               {paciente.nombre[0]}{paciente.apellidos[0]}
             </div>
             <div>
-              <div className="font-semibold text-gray-900">
+              <Link
+                to={`/app/pacientes/${cita.pacienteId}`}
+                className="font-semibold text-saludvalpa-teal hover:underline"
+              >
                 {paciente.nombre} {paciente.apellidos}
-              </div>
+              </Link>
               <div className="text-sm text-gray-600">
                 {paciente.telefono}
               </div>

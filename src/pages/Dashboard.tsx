@@ -27,6 +27,8 @@ const Dashboard = () => {
     ingresosEsteMes: 0,
     pendientesCobro: 0,
   });
+  const [citasHoyLista, setCitasHoyLista] = useState<any[]>([]);
+  const [pacientesCitasHoy, setPacientesCitasHoy] = useState<Record<string, any>>({});
   const [showProgress, setShowProgress] = useState(true);
   const [showSpecialtyWelcome, setShowSpecialtyWelcome] = useState(false);
   const [showFeatureUnlock, setShowFeatureUnlock] = useState(false);
@@ -57,10 +59,23 @@ const Dashboard = () => {
       const manana = new Date(hoy);
       manana.setDate(manana.getDate() + 1);
       
-      const citasHoy = await db.citas
+      const citasHoyArr = await db.citas
         .where('fechaHora')
         .between(hoy, manana)
-        .count();
+        .toArray();
+
+      // Fetch patient data for each appointment
+      const pacientesMap: Record<string, any> = {};
+      for (const cita of citasHoyArr) {
+        if (cita.pacienteId && !pacientesMap[cita.pacienteId]) {
+          const paciente = await db.pacientes.get(cita.pacienteId);
+          if (paciente) {
+            pacientesMap[cita.pacienteId] = paciente;
+          }
+        }
+      }
+      setCitasHoyLista(citasHoyArr);
+      setPacientesCitasHoy(pacientesMap);
 
       // Sesiones de este mes
       const inicioMes = startOfMonth(hoy);
@@ -76,7 +91,7 @@ const Dashboard = () => {
 
       setStats({
         pacientes: cantidadPacientes,
-        citasHoy,
+        citasHoy: citasHoyArr.length,
         sesionesEsteMes,
         ingresosEsteMes: statsEconomicas.totalIngresos,
         pendientesCobro: statsEconomicas.totalPendiente,
@@ -225,18 +240,49 @@ const Dashboard = () => {
           </div>
         </Link>
 
-        <Link 
-          to="/agenda"
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center justify-between">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-sm text-gray-600">Citas hoy</p>
               <p className="text-3xl font-bold text-saludvalpa-teal mt-1">{stats.citasHoy}</p>
             </div>
             <span className="text-4xl">📅</span>
           </div>
-        </Link>
+          {citasHoyLista.length > 0 ? (
+            <div className="space-y-2 mt-2 border-t border-gray-100 pt-3">
+              {citasHoyLista.map(cita => {
+                const paciente = pacientesCitasHoy[cita.pacienteId];
+                return (
+                  <div key={cita.id} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {paciente ? (
+                        <Link
+                          to={`/app/pacientes/${cita.pacienteId}`}
+                          className="font-medium text-saludvalpa-teal hover:underline truncate"
+                        >
+                          {paciente.nombre} {paciente.apellidos}
+                        </Link>
+                      ) : (
+                        <span className="text-gray-500 truncate">Paciente #{cita.pacienteId}</span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                      {new Date(cita.fechaHora).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} • {cita.tipo}
+                    </div>
+                  </div>
+                );
+              })}
+              <Link
+                to="/agenda"
+                className="block text-center text-xs text-saludvalpa-blue hover:underline pt-2 border-t border-gray-100 mt-2"
+              >
+                Ver todas en agenda →
+              </Link>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500 mt-2">No hay citas programadas para hoy</p>
+          )}
+        </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
