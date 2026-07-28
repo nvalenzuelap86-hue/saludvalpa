@@ -1,7 +1,6 @@
 // ============================================================================
-// saludvalpa 3.0 - Enrutador Dinámico por Profesión (Experimental: Fisioterapia)
-// Versión experimental que solo permite fisioterapia como profesión activa.
-// Otras profesiones muestran mensaje de no disponible.
+// saludvalpa 3.0 - Enrutador Dinámico por Profesión
+// Carga dinámicamente el módulo correspondiente a la profesión configurada.
 // ============================================================================
 
 import { useEffect, useState, Suspense } from 'react';
@@ -9,13 +8,9 @@ import { useAppStore } from '../stores/appStore';
 import { getProfessionModule } from '../utils/moduleLoader';
 import type { ProfessionModule } from '../utils/moduleLoader';
 
-const PROFESIONES_DISPONIBLES = ['fisioterapia'] as const;
-
 /**
  * Componente que carga dinámicamente y renderiza los componentes específicos
  * de la profesión configurada en la aplicación.
- *
- * Versión experimental: solo fisioterapia está disponible.
  */
 export default function ProfessionRouter() {
   const { configuracion } = useAppStore();
@@ -28,13 +23,6 @@ export default function ProfessionRouter() {
     const profesion = configuracion?.profesion;
     
     if (!profesion) {
-      setModule(null);
-      return;
-    }
-
-    // Verificar si la profesión está disponible en esta versión experimental
-    if (!PROFESIONES_DISPONIBLES.includes(profesion as typeof PROFESIONES_DISPONIBLES[number])) {
-      setError(`"${profesion}" no está disponible en esta versión experimental. Solo Fisioterapia está habilitada.`);
       setModule(null);
       return;
     }
@@ -66,16 +54,12 @@ export default function ProfessionRouter() {
     );
   }
 
-  // Estado de error (profesión no disponible o error de carga)
+  // Estado de error (error de carga)
   if (error) {
     return (
       <div className="p-4 border border-amber-300 rounded-lg bg-amber-50">
-        <h3 className="text-lg font-semibold text-amber-800">Funcionalidad no disponible</h3>
+        <h3 className="text-lg font-semibold text-amber-800">Error al cargar módulo</h3>
         <p className="text-amber-700">{error}</p>
-        <p className="mt-2 text-amber-600 text-sm">
-          Esta es una versión experimental enfocada exclusivamente en Fisioterapia.
-          Las demás especialidades estarán disponibles en versiones futuras.
-        </p>
       </div>
     );
   }

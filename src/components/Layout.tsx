@@ -30,7 +30,6 @@ const Layout = () => {
     { path: '/app/agenda', icon: '📅', label: 'Agenda' },
     { path: '/app/economia', icon: '💰', label: 'Economía' },
     { path: '/app/biblioteca', icon: '📚', label: 'Biblioteca' },
-    { path: '/app/rutinas', icon: '🗓️', label: 'Rutinas' },
     { path: '/app/documentos', icon: '📄', label: 'Documentos' },
     { path: '/app/configuracion', icon: '⚙️', label: 'Config' },
     { path: '/acerca-de-saludvalpa', icon: 'ℹ️', label: 'Acerca de SaludValpa' },
@@ -38,7 +37,7 @@ const Layout = () => {
 
   // Dividir menú móvil: principales vs secundarios
   const navPrincipales = navItems.slice(0, 4); // Dashboard, Pacientes, Agenda, Economía
-  const navSecundarios = navItems.slice(4); // Biblioteca, Rutinas, Documentos, Config
+  const navSecundarios = navItems.slice(4); // Biblioteca, Documentos, Config, Acerca de
 
   const isActive = (path: string) => location.pathname === path;
   

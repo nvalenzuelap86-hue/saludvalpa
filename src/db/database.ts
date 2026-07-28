@@ -23,6 +23,11 @@ import type {
   SignosVitalesEntry,
   AntecedenteEntry,
 } from '../types';
+import type {
+  PlanAlimentacion,
+  ComidaEnPlanDB,
+  SeguimientoNutricional,
+} from '../types/nutricion';
 
 export class SaludValpaDatabase extends Dexie {
   // Tablas
@@ -36,7 +41,7 @@ export class SaludValpaDatabase extends Dexie {
   cotizaciones!: Table<Cotizacion, string>;
   recibos!: Table<Recibo, string>;
   biblioteca!: Table<RecursoBiblioteca, string>;
-  // Nuevas tablas para biblioteca de ejercicios y rutinas
+  // Tablas para biblioteca de ejercicios y rutinas
   ejercicios!: Table<Ejercicio, string>;
   rutinas!: Table<RutinaEjercicios, string>;
   seguimientoRutinas!: Table<SeguimientoRutina, string>;
@@ -44,6 +49,10 @@ export class SaludValpaDatabase extends Dexie {
   diagnosticos!: Table<DiagnosticoEntry, string>;
   signosVitales!: Table<SignosVitalesEntry, string>;
   antecedentes!: Table<AntecedenteEntry, string>;
+  // Tablas para módulo de nutrición
+  planesAlimentacion!: Table<PlanAlimentacion, string>;
+  comidas!: Table<ComidaEnPlanDB, string>;
+  seguimientoNutricional!: Table<SeguimientoNutricional, string>;
 
   constructor() {
     super('SaludValpaDB');
@@ -166,6 +175,30 @@ export class SaludValpaDatabase extends Dexie {
       diagnosticos: 'id, pacienteId, profesion, fecha, activo',
       signosVitales: 'id, pacienteId, profesion, fecha',
       antecedentes: 'id, pacienteId, tipo, activo',
+    });
+
+    // Versión 5: Agregar tablas para módulo de nutrición
+    this.version(5).stores({
+      pacientes: 'id, nombre, apellidos, fechaNacimiento, fechaCreacion, ultimaConsulta, activo, profesionPrincipal',
+      sesiones: 'id, pacienteId, profesionalId, fecha, fechaCreacion, profesion',
+      citas: 'id, pacienteId, profesionalId, fechaHora, estado, fechaCreacion, profesion',
+      documentos: 'id, tipo, pacienteId, profesionalId, fechaGeneracion, profesion',
+      configuracion: 'id',
+      usuarios: 'id, email, activo, profesion',
+      servicios: 'id, nombre, profesion, activo',
+      cotizaciones: 'id, pacienteId, fecha, estado, profesion',
+      recibos: 'id, numero, pacienteId, fecha, estadoPago, profesion',
+      biblioteca: 'id, profesion, categoria, titulo, favorito',
+      ejercicios: 'id, nombre, categoria, precargado, favorito, usuarioCreadorId, fechaCreacion, profesion',
+      rutinas: 'id, nombre, pacienteId, esPlantilla, activa, usuarioCreadorId, fechaCreacion, fechaActualizacion, profesion',
+      seguimientoRutinas: 'id, rutinaId, pacienteId, fecha, fechaCreacion, profesion',
+      diagnosticos: 'id, pacienteId, profesion, fecha, activo',
+      signosVitales: 'id, pacienteId, profesion, fecha',
+      antecedentes: 'id, pacienteId, tipo, activo',
+      // Nuevas tablas para nutrición
+      planesAlimentacion: 'id, nombre, objetivo, pacienteId, activo, esPlantilla, usuarioCreadorId, fechaCreacion, fechaActualizacion, profesion',
+      comidas: 'id, planId, tipo, horario, orden, fechaCreacion',
+      seguimientoNutricional: 'id, planId, pacienteId, fecha, cumplimiento, profesion, fechaCreacion',
     });
   }
 }
@@ -398,6 +431,31 @@ async function actualizarEjerciciosGenericosEnDB(): Promise<void> {
 }
 
 /**
+ * Inicializar comidas precargadas en la base de datos
+ */
+export async function inicializarComidasPrecargadas(): Promise<void> {
+  try {
+    const count = await db.comidas.count();
+    if (count > 0) {
+      console.log(`ℹ️ Ya existen ${count} comidas precargadas en la base de datos`);
+      return;
+    }
+
+    const { comidasPrecargadas } = await import('../modules/nutricion/data/comidasPrecargadas');
+    
+    const comidasConMetadata = comidasPrecargadas.map(c => ({
+      ...c,
+      fechaCreacion: new Date(),
+    }));
+
+    await db.comidas.bulkAdd(comidasConMetadata);
+    console.log(`✅ ${comidasConMetadata.length} comidas precargadas insertadas correctamente`);
+  } catch (error) {
+    console.error('❌ Error al inicializar comidas precargadas:', error);
+  }
+}
+
+/**
  * Inicializar la base de datos completa
  */
 export async function inicializarDB(): Promise<void> {
@@ -410,6 +468,8 @@ export async function inicializarDB(): Promise<void> {
     await limpiarEjerciciosDuplicados();
     // Actualizar ejercicios genéricos con versiones específicas (solo una vez)
     await actualizarEjerciciosGenericosEnDB();
+    // Inicializar comidas precargadas para nutrición
+    await inicializarComidasPrecargadas();
     console.log('✅ Base de datos SaludValpa inicializada correctamente');
   } catch (error) {
     console.error('❌ Error al inicializar la base de datos:', error);

@@ -1,15 +1,16 @@
 // ============================================================================
-// saludvalpa 3.0 - STREAMLINED ONBOARDING (Experimental: Fisioterapia)
-// Versión experimental que solo permite fisioterapia como profesión activa.
+// saludvalpa 3.0 - ONBOARDING MULTIPROFESIÓN
+// Permite seleccionar entre las 5 profesiones disponibles.
 // ============================================================================
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '../stores/appStore';
 import type { TipoProfesion } from '../types';
 import Button from '../components/shared/Button';
+import ProfessionSelector from '../components/ProfessionSelector';
 
-type Step = 'welcome' | 'profile' | 'complete';
+type Step = 'welcome' | 'specialty' | 'profile' | 'complete';
 
 interface OnboardingData {
   nombreProfesional: string;
@@ -19,8 +20,6 @@ interface OnboardingData {
   email: string;
   profesion: TipoProfesion | null;
 }
-
-const PROFESION_UNICA: TipoProfesion = 'fisioterapia';
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -33,24 +32,34 @@ const Onboarding = () => {
     especialidad: '',
     telefono: '',
     email: '',
-    profesion: PROFESION_UNICA,
+    profesion: null,
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Auto-set fisioterapia as the profession
-  useEffect(() => {
-    if (step === 'welcome') {
-      setData(prev => ({ ...prev, profesion: PROFESION_UNICA }));
-    }
-  }, [step]);
+  const getEspecialidadPorDefecto = (prof: TipoProfesion): string => {
+    const mapa: Record<TipoProfesion, string> = {
+      fisioterapia: 'Fisioterapia',
+      psicologia: 'Psicología',
+      nutricion: 'Nutrición',
+      medicina_general: 'Medicina General',
+      odontologia: 'Odontología',
+    };
+    return mapa[prof] || '';
+  };
+
+  const getIconoProfesion = (prof: TipoProfesion): string => {
+    const iconos: Record<TipoProfesion, string> = {
+      fisioterapia: '💪',
+      psicologia: '🧠',
+      nutricion: '🥗',
+      medicina_general: '🩺',
+      odontologia: '🦷',
+    };
+    return iconos[prof] || '⚕️';
+  };
 
   const handleSelectProfession = () => {
-    setData(prev => ({
-      ...prev,
-      profesion: PROFESION_UNICA,
-      especialidad: 'Fisioterapia',
-    }));
-    setStep('profile');
+    setStep('specialty');
   };
 
   const handleSubmitProfile = async (e: React.FormEvent) => {
@@ -107,6 +116,7 @@ const Onboarding = () => {
   const ProgressIndicator = () => {
     const stepsConfig = [
       { id: 'welcome', title: 'Bienvenida' },
+      { id: 'specialty', title: 'Especialidad' },
       { id: 'profile', title: 'Perfil' },
       { id: 'complete', title: 'Listo' },
     ];
@@ -188,7 +198,7 @@ const Onboarding = () => {
                 onClick={handleSelectProfession}
                 className="w-full max-w-md mx-auto py-4"
               >
-                Comenzar como Fisioterapeuta 💪
+                Seleccionar mi profesión →
               </Button>
               <Button
                 size="lg"
@@ -206,13 +216,51 @@ const Onboarding = () => {
           </div>
         );
 
+      case 'specialty':
+        return (
+          <div className="max-w-4xl mx-auto">
+            <ProfessionSelector
+              selectedProfession={data.profesion || undefined}
+              onSelect={(prof) => {
+                setData(prev => ({
+                  ...prev,
+                  profesion: prof,
+                  especialidad: getEspecialidadPorDefecto(prof),
+                }));
+              }}
+            />
+            <div className="mt-8 flex justify-between">
+              <Button
+                variant="outline"
+                onClick={() => setStep('welcome')}
+              >
+                ← Atrás
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!data.profesion}
+                onClick={() => setStep('profile')}
+              >
+                Continuar →
+              </Button>
+            </div>
+          </div>
+        );
+
       case 'profile':
+        const nombreProfesion = data.profesion
+          ? getEspecialidadPorDefecto(data.profesion)
+          : 'Fisioterapeuta';
+        const iconoProfesion = data.profesion
+          ? getIconoProfesion(data.profesion)
+          : '💪';
+
         return (
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
-              <div className="text-5xl mb-3">💪</div>
+              <div className="text-5xl mb-3">{iconoProfesion}</div>
               <h2 className="text-3xl font-bold mb-2">
-                Bienvenido, Fisioterapeuta
+                Bienvenido, {nombreProfesion}
               </h2>
               <p className="text-gray-600">
                 Configura tu perfil para comenzar a usar SaludValpa

@@ -10,7 +10,7 @@ import { db } from '../db/database';
 // Importaremos los componentes específicos de cada profesión
 import CamposFisioterapia from '../modules/fisioterapia/components/CamposFisioterapia';
 import CamposPsicologia from './CamposPsicologia';
-import CamposManicurista from './CamposManicurista';
+import CamposNutricionSOAP from '../modules/nutricion/components/CamposNutricionSOAP';
 import CamposMedicina from '../modules/medicina/components/CamposMedicina';
 import CamposOdontologia from '../modules/odontologia/components/CamposOdontologia';
 
@@ -521,7 +521,7 @@ export default function SesionEnVivo({
           )}
 
           {profesion === 'nutricion' && (
-            <CamposManicurista
+            <CamposNutricionSOAP
               datos={datosEspecificos}
               onChange={setDatosEspecificos}
             />

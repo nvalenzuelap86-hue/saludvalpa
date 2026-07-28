@@ -361,207 +361,287 @@ export const contenidosPsicologia: Omit<RecursoBiblioteca, 'id' | 'fechaCreacion
   },
 ];
 
+
 // ============================================================================
-// MANICURISTA - CUIDADOS Y RECOMENDACIONES
+// NUTRICIÓN - CONTENIDO DE ALIMENTACIÓN Y NUTRICIÓN
 // ============================================================================
 
-export const contenidosManicurista: Omit<RecursoBiblioteca, 'id' | 'fechaCreacion' | 'fechaActualizacion'>[] = [
+export const contenidosNutricion: Omit<RecursoBiblioteca, 'id' | 'fechaCreacion' | 'fechaActualizacion'>[] = [
   {
-    titulo: 'Cuidados Post-Manicure',
-    descripcion: 'Instrucciones para mantener las uñas hermosas por más tiempo',
+    titulo: 'Guía de Alimentación Balanceada',
+    descripcion: 'Principios básicos para una alimentación equilibrada',
     contenido: `
-      <h3>Cuidados Después de tu Manicure</h3>
+      <h3>Alimentación Balanceada: Guía Completa</h3>
       
-      <h4>Primeras 24 horas:</h4>
+      <h4>¿Qué es una alimentación balanceada?</h4>
+      <p>Es aquella que proporciona todos los nutrientes esenciales en las cantidades adecuadas para mantener la salud, prevenir enfermedades y promover el bienestar general.</p>
+      
+      <h4>Grupos de Alimentos Esenciales:</h4>
       <ul>
-        <li>❌ Evita agua caliente (ducha, lavaplatos)</li>
-        <li>❌ No uses guantes ajustados</li>
-        <li>✅ Deja secar completamente el esmalte (al menos 2 horas)</li>
-        <li>✅ Evita actividades que puedan golpear las uñas</li>
+        <li>🥩 <strong>Proteínas:</strong> Carnes magras, pescado, huevos, legumbres, tofu</li>
+        <li>🌾 <strong>Carbohidratos complejos:</strong> Cereales integrales, avena, quinoa, arroz integral</li>
+        <li>🥑 <strong>Grasas saludables:</strong> Aguacate, nueces, aceite de oliva, pescados grasos</li>
+        <li>🥦 <strong>Vitaminas y minerales:</strong> Frutas y verduras de todos los colores</li>
+        <li>🥛 <strong>Calcio:</strong> Lácteos, leches vegetales fortificadas, brócoli</li>
       </ul>
       
-      <h4>Cuidado Diario:</h4>
+      <h4>Distribución Recomendada del Plato:</h4>
       <ul>
-        <li>🧴 Aplica aceite de cutícula cada noche</li>
-        <li>🧤 Usa guantes para lavar platos y limpiar</li>
-        <li>💧 Mantén tus manos hidratadas (crema varias veces al día)</li>
-        <li>✋ Evita usar las uñas como herramientas</li>
+        <li>½ plato: Verduras y frutas</li>
+        <li>¼ plato: Proteínas magras</li>
+        <li>¼ plato: Carbohidratos complejos</li>
       </ul>
       
-      <h4>Para Manicure en Gel:</h4>
+      <h4>Consejos Prácticos:</h4>
       <ul>
-        <li>No retires el gel tu misma (puede dañar la uña natural)</li>
-        <li>Si se levanta un borde, cubre con esmalte transparente y agenda cita</li>
-        <li>Regresa cada 3-4 semanas para mantenimiento</li>
+        <li>✅ Come 5 porciones de frutas y verduras al día</li>
+        <li>✅ Elige granos integrales sobre refinados</li>
+        <li>✅ Limita azúcares añadidos y alimentos procesados</li>
+        <li>✅ Bebe 2-3 litros de agua al día</li>
+        <li>✅ Cocina en casa siempre que sea posible</li>
       </ul>
-      
-      <h4>Para Manicure Tradicional:</h4>
-      <ul>
-        <li>Aplica capa de top coat cada 2-3 días</li>
-        <li>Lima suavemente si hay un despunte</li>
-        <li>Reprograma cada 7-10 días</li>
-      </ul>
-      
-      <p><strong>💅 Consejo:</strong> Una buena hidratación es la clave para manos y uñas hermosas!</p>
-    `,
-    categoria: 'cuidados',
-    profesion: TipoProfesion.NUTRICION,
-    etiquetas: ['manicure', 'cuidados', 'esmalte', 'uñas', 'mantenimiento'],
-    esContenidoPrecargado: true,
-  },
-  {
-    titulo: 'Fortalecimiento de Uñas Débiles',
-    descripcion: 'Tratamiento casero para uñas quebradizas',
-    contenido: `
-      <h3>Fortalece tus Uñas en Casa</h3>
-      
-      <h4>Tratamiento Intensivo (2-4 semanas):</h4>
-      
-      <p><strong>1. Baño de Aceite de Oliva</strong></p>
-      <ul>
-        <li>Calienta aceite de oliva (tibio, no caliente)</li>
-        <li>Sumerge las uñas 10-15 minutos</li>
-        <li>Realiza 3 veces por semana</li>
-      </ul>
-      
-      <p><strong>2. Mascarilla de Aguacate</strong></p>
-      <ul>
-        <li>Machaca medio aguacate maduro</li>
-        <li>Mezcla con 1 cucharada de aceite de coco</li>
-        <li>Aplica en uñas y cutículas</li>
-        <li>Deja 20 minutos y enjuaga</li>
-        <li>1-2 veces por semana</li>
-      </ul>
-      
-      <p><strong>3. Vitaminas Esenciales</strong></p>
-      <ul>
-        <li>Biotina (vitamina B7) - suplemento diario</li>
-        <li>Vitamina E - aplicación tópica</li>
-        <li>Alimentación rica en proteínas</li>
-      </ul>
-      
-      <h4>Qué Evitar:</h4>
-      <ul>
-        <li>❌ Acetona pura (usa removedor sin acetona)</li>
-        <li>❌ Uñas artificiales por periodos prolongados</li>
-        <li>❌ Lima metálica (usa lima de vidrio o cartón)</li>
-        <li>❌ Cortar cutículas (solo empujarlas suavemente)</li>
-      </ul>
-      
-      <h4>Hábitos Saludables:</h4>
-      <ul>
-        <li>✅ Mantén las uñas cortas mientras se fortalecen</li>
-        <li>✅ Lima en una sola dirección</li>
-        <li>✅ Usa base coat fortalecedora</li>
-        <li>✅ Hidrata cutículas diariamente</li>
-      </ul>
-      
-      <p><strong>Resultados:</strong> Deberías ver mejora en 3-4 semanas de tratamiento constante.</p>
-    `,
-    categoria: 'tratamientos',
-    profesion: TipoProfesion.NUTRICION,
-    etiquetas: ['uñas', 'fortalecimiento', 'quebradizas', 'tratamiento', 'casero'],
-    esContenidoPrecargado: true,
-  },
-  {
-    titulo: 'Guía de Formas de Uñas',
-    descripcion: 'Cómo elegir la forma ideal según tu mano',
-    contenido: `
-      <h3>Formas de Uñas y Cómo Elegir</h3>
-      
-      <h4>1. Cuadrada</h4>
-      <p><strong>Descripción:</strong> Bordes rectos, esquinas de 90 grados<br>
-      <strong>Ideal para:</strong> Dedos largos y delgados, uñas anchas<br>
-      <strong>Estilo:</strong> Clásico, elegante, formal</p>
-      
-      <h4>2. Cuadrada Redondeada (Squoval)</h4>
-      <p><strong>Descripción:</strong> Base cuadrada con esquinas suavizadas<br>
-      <strong>Ideal para:</strong> Casi todos los tipos de manos<br>
-      <strong>Estilo:</strong> Versátil, moderno, práctico<br>
-      <strong>✨ Más popular</strong></p>
-      
-      <h4>3. Redonda</h4>
-      <p><strong>Descripción:</strong> Bordes curvos que siguen la forma natural<br>
-      <strong>Ideal para:</strong> Uñas cortas, manos pequeñas<br>
-      <strong>Estilo:</strong> Natural, suave, bajo mantenimiento</p>
-      
-      <h4>4. Ovalada</h4>
-      <p><strong>Descripción:</strong> Forma de óvalo alargado<br>
-      <strong>Ideal para:</strong> Dedos cortos, manos anchas<br>
-      <strong>Estilo:</strong> Femenino, elegante, alarga visualmente los dedos</p>
-      
-      <h4>5. Almendra (Almond)</h4>
-      <p><strong>Descripción:</strong> Punta suave y redondeada<br>
-      <strong>Ideal para:</strong> Dedos medianos a largos<br>
-      <strong>Estilo:</strong> Sofisticado, femenino, muy popular</p>
-      
-      <h4>6. Stiletto</h4>
-      <p><strong>Descripción:</strong> Punta muy afilada y dramática<br>
-      <strong>Ideal para:</strong> Dedos largos, ocasiones especiales<br>
-      <strong>Estilo:</strong> Dramático, llamativo, requiere mantenimiento</p>
-      
-      <h4>7. Coffin/Ballerina</h4>
-      <p><strong>Descripción:</strong> Forma de ataúd con punta plana<br>
-      <strong>Ideal para:</strong> Uñas largas, dedos delgados<br>
-      <strong>Estilo:</strong> Moderno, trendy, fashion forward</p>
-      
-      <p><strong>💡 Consejo:</strong> Si no estás segura, squoval o almendra son opciones seguras para casi todas!</p>
     `,
     categoria: 'educacion',
     profesion: TipoProfesion.NUTRICION,
-    etiquetas: ['formas', 'uñas', 'estilos', 'guia', 'diseño'],
+    etiquetas: ['nutricion', 'alimentacion', 'balance', 'guia', 'salud'],
     esContenidoPrecargado: true,
   },
   {
-    titulo: 'Cuidado de Cutículas',
-    descripcion: 'Técnicas seguras para mantener cutículas saludables',
+    titulo: 'Plan de Alimentación para Pérdida de Peso',
+    descripcion: 'Estrategias nutricionales para pérdida de peso saludable',
     contenido: `
-      <h3>Cuidado Profesional de Cutículas</h3>
+      <h3>Pérdida de Peso Saludable</h3>
       
-      <p><strong>¿Qué son las cutículas?</strong><br>
-      Son la capa de piel que protege la matriz de la uña (donde crece la uña). 
-      Su función es proteger contra bacterias e infecciones.</p>
-      
-      <h4>Cuidado Diario:</h4>
+      <h4>Principios Fundamentales:</h4>
       <ul>
-        <li>🧴 Aplica aceite de cutícula cada noche</li>
-        <li>💆 Masajea suavemente para mejorar circulación</li>
-        <li>💧 Mantén hidratadas (crema de manos)</li>
-        <li>🚫 NO las muerdas ni arranques</li>
+        <li>Déficit calórico moderado (300-500 kcal menos del gasto basal)</li>
+        <li>Alta densidad nutricional en cada comida</li>
+        <li>Proteínas adecuadas para preservar masa muscular</li>
+        <li>Fibra para saciedad y salud digestiva</li>
       </ul>
       
-      <h4>Tratamiento Semanal:</h4>
-      <ol>
-        <li>Remoja las manos en agua tibia 3-5 minutos</li>
-        <li>Aplica ablandador de cutículas</li>
-        <li>Espera 30-60 segundos</li>
-        <li>Con palito de naranjo, empuja suavemente hacia atrás</li>
-        <li>Limpia exceso con toalla húmeda</li>
-        <li>Aplica aceite nutritivo</li>
-      </ol>
-      
-      <h4>Qué NO Hacer:</h4>
+      <h4>Alimentos Recomendados:</h4>
       <ul>
-        <li>❌ Cortar las cutículas (aumenta riesgo de infección)</li>
-        <li>❌ Empujar en seco (puede romperlas)</li>
-        <li>❌ Usar tijeras o cortauñas para cutículas</li>
-        <li>❌ Aplicar productos muy agresivos</li>
+        <li>🥬 Verduras de hoja verde (espinacas, kale, lechuga)</li>
+        <li>🍗 Proteínas magras (pollo, pavo, pescado, claras de huevo)</li>
+        <li>🫘 Legumbres (lentejas, garbanzos, frijoles)</li>
+        <li>🍎 Frutas bajas en azúcar (berries, manzana, toronja)</li>
+        <li>🥑 Grasas saludables en porciones controladas</li>
       </ul>
       
-      <h4>Aceites Recomendados:</h4>
+      <h4>Alimentos a Limitar:</h4>
       <ul>
-        <li>🥥 Aceite de coco</li>
-        <li>🫒 Aceite de oliva</li>
-        <li>🌺 Aceite de jojoba</li>
-        <li>🌸 Aceite de rosa mosqueta</li>
-        <li>🥑 Aceite de aguacate</li>
+        <li>❌ Azúcares refinados y bebidas azucaradas</li>
+        <li>❌ Harinas refinadas (pan blanco, pasta regular)</li>
+        <li>❌ Alimentos fritos y ultraprocesados</li>
+        <li>❌ Alcohol</li>
       </ul>
       
-      <p><strong>⚠️ Señales de alerta:</strong> Enrojecimiento, hinchazón, pus o dolor indican posible infección. Consulta a un dermatólogo.</p>
+      <h4>Ejemplo de Menú Diario (1500 kcal):</h4>
+      <p><strong>Desayuno:</strong> Omelette de claras con espinacas<br>
+      <strong>Colación:</strong> Manzana con 6 almendras<br>
+      <strong>Comida:</strong> Pechuga de pollo con verduras salteadas y quinoa<br>
+      <strong>Colación:</strong> Yogurt griego natural<br>
+      <strong>Cena:</strong> Ensalada de atún con verduras mixtas</p>
     `,
-    categoria: 'cuidados',
+    categoria: 'planes',
     profesion: TipoProfesion.NUTRICION,
-    etiquetas: ['cuticulas', 'cuidados', 'salud', 'uñas', 'hidratacion'],
+    etiquetas: ['perdida_peso', 'dieta', 'calorias', 'saludable'],
+    esContenidoPrecargado: true,
+  },
+  {
+    titulo: 'Nutrición para Diabéticos',
+    descripcion: 'Guía de alimentación para control de diabetes tipo 2',
+    contenido: `
+      <h3>Alimentación para Control de Diabetes</h3>
+      
+      <h4>Principios Clave:</h4>
+      <ul>
+        <li>Control de porciones de carbohidratos</li>
+        <li>Elegir carbohidratos de bajo índice glucémico</li>
+        <li>Distribuir carbohidratos uniformemente en el día</li>
+        <li>No saltar comidas</li>
+      </ul>
+      
+      <h4>Alimentos con Bajo Índice Glucémico:</h4>
+      <ul>
+        <li>🌾 Avena integral, quinoa, cebada</li>
+        <li>🫘 Legumbres (lentejas, garbanzos, frijoles)</li>
+        <li>🥦 Verduras no almidonosas</li>
+        <li>🍎 Frutas como manzana, pera, toronja, berries</li>
+        <li>🥜 Nueces y semillas</li>
+      </ul>
+      
+      <h4>Alimentos a Evitar:</h4>
+      <ul>
+        <li>❌ Azúcares simples (refrescos, jugos, dulces)</li>
+        <li>❌ Pan blanco, arroz blanco, pasta regular</li>
+        <li>❌ Papas fritas y botanas procesadas</li>
+        <li>❌ Frutas en almíbar</li>
+      </ul>
+      
+      <h4>Recomendaciones Especiales:</h4>
+      <ul>
+        <li>✅ Monitorear porciones con el método del plato</li>
+        <li>✅ Incluir fibra en cada comida (mínimo 25-30g/día)</li>
+        <li>✅ Combinar carbohidratos con proteína y grasa saludable</li>
+        <li>✅ Realizar actividad física regular</li>
+        <li>✅ Mantener horarios regulares de comida</li>
+      </ul>
+    `,
+    categoria: 'condiciones',
+    profesion: TipoProfesion.NUTRICION,
+    etiquetas: ['diabetes', 'glucosa', 'indice_glucemico', 'control'],
+    esContenidoPrecargado: true,
+  },
+  {
+    titulo: 'Suplementación Deportiva: Guía Básica',
+    descripcion: 'Suplementos nutricionales para rendimiento deportivo',
+    contenido: `
+      <h3>Guía de Suplementación Deportiva</h3>
+      
+      <h4>Suplementos con Evidencia Científica:</h4>
+      
+      <p><strong>1. Proteína de Suero (Whey)</strong><br>
+      Beneficio: Recuperación muscular, síntesis de proteína<br>
+      Dosis: 20-30g post-entreno<br>
+      Momento: Dentro de 30-60 minutos después del ejercicio</p>
+      
+      <p><strong>2. Creatina Monohidratada</strong><br>
+      Beneficio: Fuerza, potencia, rendimiento anaeróbico<br>
+      Dosis: 3-5g diarios<br>
+      Ciclo: Uso continuo sin necesidad de ciclar</p>
+      
+      <p><strong>3. Cafeína</strong><br>
+      Beneficio: Energía, concentración, rendimiento aeróbico<br>
+      Dosis: 1-3 mg/kg de peso corporal<br>
+      Momento: 30-60 minutos antes del ejercicio</p>
+      
+      <p><strong>4. Omega-3</strong><br>
+      Beneficio: Antiinflamatorio, salud cardiovascular<br>
+      Dosis: 1-2g diarios de EPA/DHA</p>
+      
+      <h4>Precauciones:</h4>
+      <ul>
+        <li>⚠️ Consultar con profesional de la salud antes de iniciar</li>
+        <li>⚠️ Los suplementos NO reemplazan una alimentación balanceada</li>
+        <li>⚠️ Verificar calidad y certificación de los productos</li>
+        <li>⚠️ Respetar dosis recomendadas</li>
+      </ul>
+    `,
+    categoria: 'deporte',
+    profesion: TipoProfesion.NUTRICION,
+    etiquetas: ['suplementos', 'deporte', 'rendimiento', 'proteina', 'creatina'],
+    esContenidoPrecargado: true,
+  },
+  {
+    titulo: 'Alimentación para Ganancia Muscular',
+    descripcion: 'Estrategias nutricionales para hipertrofia muscular',
+    contenido: `
+      <h3>Nutrición para Ganar Masa Muscular</h3>
+      
+      <h4>Principios Nutricionales:</h4>
+      <ul>
+        <li>Superávit calórico moderado (200-400 kcal sobre gasto basal)</li>
+        <li>Proteína: 1.6-2.2 g/kg de peso corporal</li>
+        <li>Carbohidratos adecuados para rendimiento en entrenamiento</li>
+        <li>Grasas saludables para función hormonal</li>
+      </ul>
+      
+      <h4>Alimentos Clave:</h4>
+      <ul>
+        <li>🥩 Carnes magras (pollo, res, pavo)</li>
+        <li>🥚 Huevos (fuente completa de proteína)</li>
+        <li>🐟 Pescados grasos (salmón, atún, sardinas)</li>
+        <li>🥛 Lácteos (yogurt griego, leche, queso cottage)</li>
+        <li>🫘 Legumbres y quinoa (proteína vegetal)</li>
+        <li>🥜 Mantequilla de cacahuate, almendras, nueces</li>
+      </ul>
+      
+      <h4>Distribución de Comidas:</h4>
+      <ul>
+        <li>Comer cada 3-4 horas (5-6 comidas al día)</li>
+        <li>Incluir proteína en cada comida</li>
+        <li>Comida pre-entreno: carbohidratos + proteína (1-2h antes)</li>
+        <li>Comida post-entreno: proteína + carbohidratos (dentro de 2h)</li>
+      </ul>
+    `,
+    categoria: 'deporte',
+    profesion: TipoProfesion.NUTRICION,
+    etiquetas: ['musculo', 'hipertrofia', 'proteina', 'entreno', 'volumen'],
+    esContenidoPrecargado: true,
+  },
+  {
+    titulo: 'Alimentos Ricos en Hierro para Combatir la Anemia',
+    descripcion: 'Guía de alimentos para prevenir y tratar la anemia ferropénica',
+    contenido: `
+      <h3>Alimentos Ricos en Hierro</h3>
+      
+      <h4>Hierro Hemo (Alta Absorción):</h4>
+      <ul>
+        <li>🥩 Carne roja magra (res, cordero)</li>
+        <li>🐟 Pescados (sardinas, atún, salmón)</li>
+        <li>🍗 Aves (pollo, pavo - especialmente pierna y muslo)</li>
+        <li>🫘 Mariscos (almejas, mejillones, ostras)</li>
+      </ul>
+      
+      <h4>Hierro No Hemo (Vegetal):</h4>
+      <ul>
+        <li>🫘 Legumbres (lentejas, garbanzos, frijoles negros)</li>
+        <li>🥬 Espinacas y acelgas</li>
+        <li>🌾 Cereales fortificados</li>
+        <li>🥜 Semillas de calabaza</li>
+        <li>🌿 Quinoa</li>
+      </ul>
+      
+      <h4>Consejos para Mejorar la Absorción:</h4>
+      <ul>
+        <li>✅ Combinar con vitamina C (limón, naranja, pimiento)</li>
+        <li>✅ Evitar café/té inmediatamente después de comidas ricas en hierro</li>
+        <li>✅ Cocinar en sartenes de hierro fundido</li>
+        <li>✅ Remojar legumbres y granos antes de cocinar</li>
+      </ul>
+    `,
+    categoria: 'condiciones',
+    profesion: TipoProfesion.NUTRICION,
+    etiquetas: ['hierro', 'anemia', 'nutrientes', 'salud'],
+    esContenidoPrecargado: true,
+  },
+  {
+    titulo: 'Guía de Hidratación Saludable',
+    descripcion: 'Importancia de la hidratación y cómo mantenerla',
+    contenido: `
+      <h3>Hidratación: La Base de la Salud</h3>
+      
+      <h4>¿Cuánta Agua Necesitas?</h4>
+      <ul>
+        <li>Mujeres: ~2.7 litros/día (incluyendo agua de alimentos)</li>
+        <li>Hombres: ~3.7 litros/día</li>
+        <li>+500ml por hora de ejercicio intenso</li>
+        <li>+300ml por cada 30 minutos en clima caluroso</li>
+      </ul>
+      
+      <h4>Señales de Deshidratación:</h4>
+      <ul>
+        <li>⚠️ Sed intensa</li>
+        <li>⚠️ Orina oscura</li>
+        <li>⚠️ Fatiga y dolor de cabeza</li>
+        <li>⚠️ Mareos al levantarse</li>
+        <li>⚠️ Piel seca</li>
+      </ul>
+      
+      <h4>Estrategias para Mantener Hidratación:</h4>
+      <ul>
+        <li>✅ Llevar botella de agua reutilizable</li>
+        <li>✅ Establecer recordatorios cada hora</li>
+        <li>✅ Infusiones y aguas de frutas sin azúcar</li>
+        <li>✅ Consumir frutas y verduras ricas en agua</li>
+        <li>✅ Beber un vaso de agua al despertar</li>
+      </ul>
+    `,
+    categoria: 'educacion',
+    profesion: TipoProfesion.NUTRICION,
+    etiquetas: ['hidratacion', 'agua', 'salud', 'bienestar'],
     esContenidoPrecargado: true,
   },
 ];
@@ -577,7 +657,7 @@ export const obtenerContenidosPorProfesion = (profesion: typeof TipoProfesion[ke
     case TipoProfesion.PSICOLOGIA:
       return contenidosPsicologia;
     case TipoProfesion.NUTRICION:
-      return contenidosManicurista; // TODO: Cambiar a contenidosNutricion cuando estén listos
+      return contenidosNutricion;
     default:
       return [];
   }
@@ -587,6 +667,6 @@ export const obtenerTodosLosContenidos = () => {
   return [
     ...contenidosFisioterapia,
     ...contenidosPsicologia,
-    ...contenidosManicurista,
+    ...contenidosNutricion,
   ];
 };

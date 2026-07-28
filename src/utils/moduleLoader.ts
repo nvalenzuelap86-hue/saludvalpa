@@ -69,6 +69,7 @@ export async function getProfessionModule(profession: TipoProfesion): Promise<Pr
         hooks: {
           useAlimentos: module.useAlimentos,
           usePlanesNutricionales: module.usePlanesNutricionales,
+          usePlanesAlimentacion: module.usePlanesAlimentacion,
         },
       }));
 

@@ -6,6 +6,8 @@
 import { useState, Suspense, lazy } from 'react';
 import { useAppStore } from '../stores/appStore';
 import useConfiguracion from '../hooks/useConfiguracion';
+import ProfessionSelector from '../components/ProfessionSelector';
+import type { TipoProfesion } from '../types';
 import { LicenseGate, useLicenseCheck } from '../components/configuracion/LicenseGate';
 import SectionCard from '../components/configuracion/SectionCard';
 import DangerZone from '../components/configuracion/DangerZone';
@@ -39,12 +41,16 @@ const TabLoadingFallback = () => (
 type TabType = 'general' | 'preferencias' | 'recordatorios' | 'documentos' | 'personalizacion' | 'sincronizacion' | 'respaldos' | 'instalacion' | 'avanzada' | 'usuarios' | 'integraciones' | 'respaldos_avanzados' | 'seguridad' | 'analiticas';
 
 const ConfiguracionUnificada = () => {
-  const { configuracion, actualizarConfiguracion } = useAppStore();
+  const { configuracion, actualizarConfiguracion, cambiarProfesion } = useAppStore();
   const { updateNestedField } = useConfiguracion();
   const { isPaid } = useLicenseCheck();
   
   const [tabActiva, setTabActiva] = useState<TabType>('general');
   const [stats, setStats] = useState<any>(null);
+  const [showChangeProfession, setShowChangeProfession] = useState(false);
+  const [pendingProfession, setPendingProfession] = useState<TipoProfesion | null>(null);
+  const [migrateData, setMigrateData] = useState(true);
+  const [isChanging, setIsChanging] = useState(false);
 
   const handleReiniciarOnboarding = async () => {
     const confirmar = confirm(
@@ -105,6 +111,23 @@ const ConfiguracionUnificada = () => {
   const cargarEstadisticas = async () => {
     const estadisticas = await obtenerEstadisticasRespaldo();
     setStats(estadisticas);
+  };
+
+  const handleChangeProfession = async () => {
+    if (!pendingProfession) return;
+    
+    setIsChanging(true);
+    try {
+      await cambiarProfesion(pendingProfession, migrateData);
+      setShowChangeProfession(false);
+      setPendingProfession(null);
+      alert(`✅ Profesión cambiada exitosamente a ${pendingProfession}. La página se recargará para aplicar los cambios.`);
+      window.location.reload();
+    } catch (error) {
+      alert('❌ Error al cambiar la profesión. Intenta de nuevo.');
+    } finally {
+      setIsChanging(false);
+    }
   };
 
   return (
@@ -350,6 +373,93 @@ const ConfiguracionUnificada = () => {
               </div>
             </div>
           </SectionCard>
+        )}
+
+        {/* SECCIÓN: Cambiar Profesión */}
+        {tabActiva === 'general' && (
+          <>
+            <div className="border-t border-gray-200 pt-6 mt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Cambiar Profesión</h3>
+                  <p className="text-sm text-gray-600">
+                    Profesión actual: <strong>{configuracion?.profesion || 'No configurada'}</strong>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowChangeProfession(true)}
+                  className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium"
+                >
+                  Cambiar Profesión
+                </button>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-sm text-amber-800">
+                  ⚠️ <strong>Importante:</strong> Al cambiar de profesión, los módulos y documentos disponibles se actualizarán.
+                  Los datos existentes (pacientes, sesiones) mantendrán su profesión original a menos que elijas migrarlos.
+                </p>
+              </div>
+            </div>
+
+            {/* MODAL: Confirmar cambio de profesión */}
+            {showChangeProfession && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Cambiar Profesión</h2>
+                  
+                  <ProfessionSelector
+                    selectedProfession={pendingProfession || undefined}
+                    onSelect={(prof) => setPendingProfession(prof)}
+                    showTitle={false}
+                    showDescription={false}
+                  />
+                  
+                  {/* Opción de migración */}
+                  <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={migrateData}
+                        onChange={(e) => setMigrateData(e.target.checked)}
+                        className="mt-1 h-4 w-4 text-saludvalpa-blue rounded border-gray-300 focus:ring-saludvalpa-blue"
+                      />
+                      <div>
+                        <span className="font-medium text-gray-900">Migrar datos existentes</span>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Actualizar la profesión en todos los pacientes, sesiones, citas y documentos existentes.
+                          Si no marcas esta opción, los datos históricos conservarán su profesión original.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                  
+                  {/* Botones */}
+                  <div className="mt-6 flex gap-3 justify-end">
+                    <button
+                      onClick={() => {
+                        setShowChangeProfession(false);
+                        setPendingProfession(null);
+                      }}
+                      className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleChangeProfession}
+                      disabled={!pendingProfession || isChanging}
+                      className={`px-6 py-2 rounded-lg text-white font-medium transition-colors ${
+                        !pendingProfession || isChanging
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-amber-500 hover:bg-amber-600'
+                      }`}
+                    >
+                      {isChanging ? 'Cambiando...' : 'Confirmar Cambio'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* TAB: PREFERENCIAS */}

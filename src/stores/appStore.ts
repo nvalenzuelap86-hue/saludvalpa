@@ -54,6 +54,7 @@ interface AppState {
   cargarConfiguracion: () => Promise<void>;
   actualizarConfiguracion: (config: Partial<Configuracion>) => Promise<void>;
   actualizarLicencia: (licencia: Licencia) => Promise<void>;
+  cambiarProfesion: (nuevaProfesion: TipoProfesion, migrarDatos?: boolean) => Promise<void>;
   completarOnboarding: (data: OnboardingData) => Promise<void>;
   setLoading: (loading: boolean) => void;
   setOnboardingStep: (step: 'landing' | 'welcome' | 'specialty' | 'profile' | 'complete') => void;
@@ -161,12 +162,71 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  cambiarProfesion: async (nuevaProfesion: TipoProfesion, migrarDatos: boolean = false) => {
+    try {
+      const currentConfig = get().configuracion;
+      if (!currentConfig) return;
+
+      const profesionAnterior = currentConfig.profesion;
+      
+      // Si es la misma profesión, no hacer nada
+      if (profesionAnterior === nuevaProfesion) return;
+
+      // Actualizar la configuración con la nueva profesión
+      const nuevaConfig = {
+        ...currentConfig,
+        profesion: nuevaProfesion,
+        fechaActualizacion: new Date(),
+      };
+
+      await db.configuracion.update('1', nuevaConfig);
+      
+      // Actualizar caché
+      ConfigurationCache.setConfig(nuevaConfig);
+      
+      // Si migrarDatos es true, actualizar la profesión en todas las tablas
+      if (migrarDatos) {
+        await db.pacientes.toCollection().modify((paciente: any) => {
+          paciente.profesionPrincipal = nuevaProfesion;
+        });
+        await db.sesiones.toCollection().modify((sesion: any) => {
+          sesion.profesion = nuevaProfesion;
+        });
+        await db.citas.toCollection().modify((cita: any) => {
+          cita.profesion = nuevaProfesion;
+        });
+        await db.documentos.toCollection().modify((documento: any) => {
+          documento.profesion = nuevaProfesion;
+        });
+        await db.cotizaciones.toCollection().modify((cotizacion: any) => {
+          cotizacion.profesion = nuevaProfesion;
+        });
+        await db.recibos.toCollection().modify((recibo: any) => {
+          recibo.profesion = nuevaProfesion;
+        });
+      }
+
+      // Actualizar estado
+      set({
+        configuracion: nuevaConfig,
+      });
+
+      // Recargar feature flags con el nuevo contexto
+      get().cargarFeatureFlags();
+
+      console.log(`✅ Profesión cambiada de "${profesionAnterior}" a "${nuevaProfesion}"${migrarDatos ? ' con migración de datos' : ''}`);
+    } catch (error) {
+      console.error('Error al cambiar profesión:', error);
+      throw error;
+    }
+  },
+
   completarOnboarding: async (data: OnboardingData) => {
     try {
       const ahora = new Date();
       
-      // Versión experimental: forzar fisioterapia como profesión
-      const profesionFinal: TipoProfesion = 'fisioterapia';
+      // Usar la profesión seleccionada por el usuario
+      const profesionFinal: TipoProfesion = data.profesion || 'fisioterapia';
       
       const configuracionInicial: Configuracion = {
         id: '1',

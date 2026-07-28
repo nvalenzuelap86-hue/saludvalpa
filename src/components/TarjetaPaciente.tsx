@@ -25,6 +25,9 @@ import { useSesiones } from '../hooks/useSesiones';
 // Lazy load del componente de rutinas (solo para fisioterapia)
 const RutinasPaciente = lazy(() => import('../modules/fisioterapia/rutinas/RutinasPaciente'));
 
+// Lazy load del componente de planes de alimentación (solo para nutrición)
+const GestionPlanesAlimentacion = lazy(() => import('../modules/nutricion/components/GestionPlanesAlimentacion'));
+
 interface TarjetaPacienteProps {
   paciente: Paciente;
   onEditar?: () => void;
@@ -304,6 +307,19 @@ const ModoRevision = ({
           motivoConsulta={paciente.motivoConsulta}
         />
       </Card>
+
+      {/* Planes de Alimentación - Solo para Nutrición (entre Historial Clínico y Documentos Generados) */}
+      {configuracion?.profesion === 'nutricion' && (
+        <Card className="p-6">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-saludvalpa-blue"></div>
+            </div>
+          }>
+            <GestionPlanesAlimentacion paciente={paciente} />
+          </Suspense>
+        </Card>
+      )}
 
       {/* Rutinas de Ejercicios - Solo para Fisioterapia */}
       {configuracion?.profesion === TipoProfesion.FISIOTERAPIA && (

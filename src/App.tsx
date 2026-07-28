@@ -27,9 +27,6 @@ import InstalacionPWA from './pages/InstalacionPWA';
 // Componentes de redirección
 import { ConfigRedirection, OldConfigRedirect } from './components/configuracion/ConfigRedirection';
 
-// Módulos de fisioterapia (será reemplazado por sistema dinámico en Fase 2)
-import GestionRutinas from './modules/fisioterapia/rutinas/GestionRutinas';
-
 // Layout y protección
 import Layout from './components/Layout';
 import RequireSetup from './components/RequireSetup';
@@ -115,7 +112,6 @@ function App() {
             <Route path="agenda" element={<Agenda />} />
             <Route path="economia" element={<Economia />} />
             <Route path="biblioteca" element={<Biblioteca />} />
-            <Route path="rutinas" element={<GestionRutinas />} />
             <Route path="documentos" element={<Documentos />} />
             
             {/* Rutas de configuración con redirección automática basada en feature flags */}
@@ -141,7 +137,6 @@ function App() {
         <Route path="/agenda" element={<Navigate to="/app/agenda" replace />} />
         <Route path="/economia" element={<Navigate to="/app/economia" replace />} />
         <Route path="/biblioteca" element={<Navigate to="/app/biblioteca" replace />} />
-        <Route path="/rutinas" element={<Navigate to="/app/rutinas" replace />} />
         <Route path="/documentos" element={<Navigate to="/app/documentos" replace />} />
         
         {/* Redirección externa de configuración con soporte para feature flags */}

@@ -18,6 +18,7 @@ import { useAppStore } from '../stores/appStore';
 const GenerarEvaluacionFisioterapeutica = lazy(() => import('../modules/fisioterapia/components/GenerarEvaluacionFisioterapeutica'));
 const GenerarPlanTratamiento = lazy(() => import('../modules/fisioterapia/components/GenerarPlanTratamiento'));
 const GenerarNotaEvolucion = lazy(() => import('../modules/fisioterapia/components/GenerarNotaEvolucion'));
+const RutinasPaciente = lazy(() => import('../modules/fisioterapia/rutinas/RutinasPaciente'));
 
 type TipoSesion = 'general' | 'evaluacion' | 'plan' | 'nota' | null;
 
@@ -159,6 +160,15 @@ const PerfilPaciente = () => {
             profesion={configuracion?.profesion || 'fisioterapia'}
             onCerrar={cerrarSesion}
           />
+        </div>
+      )}
+
+      {/* Rutinas de ejercicios (solo fisioterapia) */}
+      {configuracion?.profesion === 'fisioterapia' && (
+        <div className="mt-6">
+          <Suspense fallback={<div className="text-center py-8">Cargando rutinas...</div>}>
+            <RutinasPaciente paciente={paciente} />
+          </Suspense>
         </div>
       )}
 

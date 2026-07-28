@@ -7,6 +7,7 @@ import { useAppStore } from '../stores/appStore';
 import { descargarRespaldo, importarRespaldoDesdeArchivo, obtenerEstadisticasRespaldo } from '../services/backupService';
 import { Card } from '../components';
 import CloudSyncPanel from '../components/CloudSyncPanel';
+import SpecialtySelector from '../components/SpecialtySelector';
 
 // SECCIÓN OCULTA: Sincronización en la nube - funcionalidad no completada
 const SHOW_SYNC_SECTION = false;
@@ -251,22 +252,7 @@ const ConfiguracionAvanzada = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Especialidad
                   </label>
-                  <input
-                    type="text"
-                    value={configuracion?.branding.especialidad || ''}
-                    onChange={(e) => {
-                      if (configuracion) {
-                        actualizarConfiguracion({
-                          branding: {
-                            ...configuracion.branding,
-                            especialidad: e.target.value,
-                          }
-                        });
-                      }
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saludvalpa-blue focus:border-transparent"
-                    placeholder="Ej: Especialista en Rehabilitación Deportiva"
-                  />
+                  <SpecialtySelector variant="dropdown" />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

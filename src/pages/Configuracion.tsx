@@ -6,10 +6,13 @@ import { useState } from 'react';
 import { useAppStore } from '../stores/appStore';
 import { descargarRespaldo, importarRespaldoDesdeArchivo, obtenerEstadisticasRespaldo } from '../services/backupService';
 import { db } from '../db/database';
+import SpecialtySelector from '../components/SpecialtySelector';
+import { PROFESIONES_DISPONIBLES } from '../components/ProfessionSelector';
 
 const Configuracion = () => {
   const { configuracion, actualizarConfiguracion } = useAppStore();
-  const [tabActiva, setTabActiva] = useState<'general' | 'branding' | 'respaldos' | 'instalacion'>('general');
+  const [tabActiva, setTabActiva] = useState<'general' | 'branding' | 'respaldos' | 'instalacion' | 'especialidad'>('general');
+  const [mostrarSelectorEspecialidad, setMostrarSelectorEspecialidad] = useState(false);
   const [stats, setStats] = useState<any>(null);
 
   const handleReiniciarOnboarding = async () => {
@@ -121,6 +124,17 @@ const Configuracion = () => {
             }`}
           >
             Respaldos
+          </button>
+          <button
+            onClick={() => setTabActiva('especialidad')}
+            className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+              tabActiva === 'especialidad'
+                ? 'border-saludvalpa-blue text-saludvalpa-blue'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <span className="mr-1">🥗</span>
+            Especialidad
           </button>
           <button
             onClick={() => setTabActiva('instalacion')}
@@ -339,6 +353,62 @@ const Configuracion = () => {
                 <span>Reiniciar desde cero</span>
               </button>
             </div>
+          </div>
+        )}
+
+        {tabActiva === 'especialidad' && (
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Especialidad activa</h2>
+
+            {/* Current specialty info */}
+            {(() => {
+              const profesionActual = configuracion?.profesion;
+              const profActual = PROFESIONES_DISPONIBLES.find(p => p.id === profesionActual);
+              return (
+                <div className="mb-6">
+                  <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                    <div className="flex items-center gap-4">
+                      {profActual && (
+                        <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${profActual.color} flex items-center justify-center text-3xl shadow-lg`}>
+                          {profActual.icono}
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-900">
+                          {profActual?.nombre || 'No definida'}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {profActual?.descripcion || 'Selecciona una especialidad para comenzar'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800">
+                      <strong>💡 Información:</strong> Al cambiar de especialidad, los datos de la especialidad actual
+                      se conservan intactos. Puedes regresar cuando quieras sin perder nada.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setMostrarSelectorEspecialidad(true)}
+                    className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-saludvalpa-blue text-white rounded-lg hover:bg-opacity-90 transition-colors font-medium"
+                  >
+                    <span>🔄</span>
+                    <span>Cambiar especialidad</span>
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* SpecialtySelector modal */}
+            {mostrarSelectorEspecialidad && (
+              <SpecialtySelector
+                variant="modal"
+                onClose={() => setMostrarSelectorEspecialidad(false)}
+              />
+            )}
           </div>
         )}
 
