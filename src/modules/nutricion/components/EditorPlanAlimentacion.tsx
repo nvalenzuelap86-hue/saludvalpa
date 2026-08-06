@@ -5,12 +5,12 @@
 // ============================================================================
 
 import { useState, useEffect } from 'react';
-import type { PlanAlimentacion, ComidaEnPlan, ComidaPrecargada, ComidaEnDia, DiaSemana } from '../../../types/nutricion';
-import { buscarComidasPorCategoria, buscarComidasPorNombre } from '../data/comidasPrecargadas';
+import type { PlanAlimentacion, ComidaEnPlan, ComidaPrecargada, ComidaEnDia, RecetaPersonalizada } from '../../../types/nutricion';
+import { buscarComidasPorNombre } from '../data/comidasPrecargadas';
 import PlanSemanal from './PlanSemanal';
 
 interface EditorPlanAlimentacionProps {
-  plan?: PlanAlimentacion;
+  plan?: PlanAlimentacion | null;
   onGuardar: (nombre: string, descripcion: string, objetivo: PlanAlimentacion['objetivo'], opciones?: {
     pacienteId?: string;
     esPlantilla?: boolean;
@@ -20,6 +20,11 @@ interface EditorPlanAlimentacionProps {
     recomendaciones?: string[];
   }) => void;
   onCancelar: () => void;
+  // Recetas personalizadas
+  recetasPersonalizadas?: RecetaPersonalizada[];
+  onCrearReceta?: (receta: Omit<RecetaPersonalizada, 'id' | 'fechaCreacion' | 'fechaActualizacion'>) => void;
+  onEditarReceta?: (receta: RecetaPersonalizada) => void;
+  onEliminarReceta?: (id: string) => void;
 }
 
 const OBJETIVOS: { value: PlanAlimentacion['objetivo']; label: string }[] = [
@@ -38,7 +43,15 @@ const TIPOS_COMIDA: { key: ComidaEnPlan['tipo']; label: string; icon: string }[]
   { key: 'cena', label: 'Cena', icon: '🌙' },
 ];
 
-export default function EditorPlanAlimentacion({ plan, onGuardar, onCancelar }: EditorPlanAlimentacionProps) {
+export default function EditorPlanAlimentacion({
+  plan,
+  onGuardar,
+  onCancelar,
+  recetasPersonalizadas = [],
+  onCrearReceta,
+  onEditarReceta,
+  onEliminarReceta,
+}: EditorPlanAlimentacionProps) {
   const [nombre, setNombre] = useState(plan?.nombre || '');
   const [descripcion, setDescripcion] = useState(plan?.descripcion || '');
   const [objetivo, setObjetivo] = useState<PlanAlimentacion['objetivo']>(plan?.objetivo || 'mantener');
@@ -50,8 +63,11 @@ export default function EditorPlanAlimentacion({ plan, onGuardar, onCancelar }: 
   const [recomendaciones, setRecomendaciones] = useState<string[]>(plan?.recomendaciones || []);
   const [nuevaRecomendacion, setNuevaRecomendacion] = useState('');
 
-  // Modo de edición: Simple (lista plana) vs Semanal (cuadrícula de 7 días)
-  const [modoSemanal, setModoSemanal] = useState(!!plan?.comidasPorDia);
+  // Modo de edición: Semanal (cuadrícula de 7 días) es el PRINCIPAL por defecto.
+  // Simple (lista plana / un solo día) queda como opción secundaria.
+  const [modoSemanal, setModoSemanal] = useState(
+    plan ? !!plan.comidasPorDia : true
+  );
 
   // Distribución de comidas (modo Simple)
   const [distribucion, setDistribucion] = useState<PlanAlimentacion['distribucionComidas']>(
@@ -103,6 +119,7 @@ export default function EditorPlanAlimentacion({ plan, onGuardar, onCancelar }: 
       tipo: tipoSeleccionado,
       horario: obtenerHorarioPorDefecto(tipoSeleccionado),
       ingredientes: comida.ingredientes,
+      preparacion: comida.preparacion?.join('\n'),
       porcion: `${comida.porciones} porción(es)`,
       porcionMultiplicador: 1,
       nutrientes: {
@@ -248,34 +265,57 @@ export default function EditorPlanAlimentacion({ plan, onGuardar, onCancelar }: 
         </div>
       </div>
 
-      {/* Toggle de modo: Simple / Semanal */}
+      {/* Modo de edición: Semanal (principal) vs Simple/un día (secundario) */}
       <div className="bg-gray-50 rounded-lg p-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm font-medium text-gray-700">Modo de edición:</span>
-            <span className="ml-2 text-sm text-gray-500">
-              {modoSemanal ? '📅 Plan semanal (Lun-Dom)' : '📋 Lista simple de comidas'}
-            </span>
-          </div>
+        <span className="text-sm font-medium text-gray-700">Modo de carga de la dieta:</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
           <button
             type="button"
-            onClick={() => setModoSemanal(!modoSemanal)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              modoSemanal ? 'bg-blue-600' : 'bg-gray-300'
+            onClick={() => setModoSemanal(true)}
+            className={`flex items-start gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
+              modoSemanal
+                ? 'border-blue-600 bg-blue-50'
+                : 'border-gray-200 bg-white hover:border-blue-300'
             }`}
           >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                modoSemanal ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
+            <span className="text-2xl">📅</span>
+            <span>
+              <span className="block text-sm font-semibold text-gray-800">
+                Plan semanal (Lun-Dom)
+                <span className="ml-2 text-xs font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full">
+                  Principal
+                </span>
+              </span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                Planifica las comidas de toda la semana en una cuadrícula visual. Incluye
+                desayuno, colación matutina, comida, colación vespertina y cena.
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setModoSemanal(false)}
+            className={`flex items-start gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
+              !modoSemanal
+                ? 'border-blue-600 bg-blue-50'
+                : 'border-gray-200 bg-white hover:border-blue-300'
+            }`}
+          >
+            <span className="text-2xl">📋</span>
+            <span>
+              <span className="block text-sm font-semibold text-gray-800">
+                Un solo día
+                <span className="ml-2 text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                  Secundario
+                </span>
+              </span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                Agrega comidas en una lista plana organizada por tipo (desayuno, comida,
+                cena, colaciones). Útil para ajustes puntuales de un día.
+              </span>
+            </span>
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-1">
-          {modoSemanal
-            ? 'Planifica las comidas de cada día de la semana con una cuadrícula visual'
-            : 'Agrega comidas en una lista plana organizada por tipo (desayuno, comida, cena)'}
-        </p>
       </div>
 
       {/* Distribución de comidas - Modo Simple */}
@@ -381,6 +421,10 @@ export default function EditorPlanAlimentacion({ plan, onGuardar, onCancelar }: 
           <PlanSemanal
             comidasPorDia={comidasPorDia}
             onChange={setComidasPorDia}
+            recetasPersonalizadas={recetasPersonalizadas}
+            onCrearReceta={onCrearReceta}
+            onEditarReceta={onEditarReceta}
+            onEliminarReceta={onEliminarReceta}
           />
         </div>
       )}

@@ -1,18 +1,30 @@
 // ============================================================================
 // saludvalpa 3.0 - PLAN SEMANAL DE COMIDAS
 // Componente de cuadrícula semanal (Lun-Dom) para planificar comidas por día
-// Sigue el patrón de EditorRutina.tsx de fisioterapia
+// Incluye soporte para repetición de menú (copiar día/semana)
 // ============================================================================
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import SelectorComidas from './SelectorComidas';
-import type { ComidaEnDia, DiaSemana, ComidaEnPlan, ComidaPrecargada } from '../../../types/nutricion';
-import { obtenerComidaPorId } from '../data/comidasPrecargadas';
+import type { ComidaEnDia, DiaSemana, ComidaEnPlan, ComidaPrecargada, RecetaPersonalizada } from '../../../types/nutricion';
 
 interface PlanSemanalProps {
   comidasPorDia: ComidaEnDia[];
   onChange: (comidasPorDia: ComidaEnDia[]) => void;
   readOnly?: boolean;
+  // Soporte para repetición de menú
+  semanaActual?: number; // Número de semana actual (1-based)
+  totalSemanas?: number; // Total de semanas en el ciclo
+  onCambiarSemana?: (semana: number) => void;
+  onCopiarDia?: (origen: DiaSemana, destino: DiaSemana) => void;
+  onCopiarSemana?: (origen: number, destino: number) => void;
+  onLimpiarDia?: (dia: DiaSemana) => void;
+  onLimpiarSemana?: () => void;
+  // Soporte para recetas personalizadas
+  recetasPersonalizadas?: RecetaPersonalizada[];
+  onCrearReceta?: (receta: Omit<RecetaPersonalizada, 'id' | 'fechaCreacion' | 'fechaActualizacion'>) => void;
+  onEditarReceta?: (receta: RecetaPersonalizada) => void;
+  onEliminarReceta?: (id: string) => void;
 }
 
 const DIAS: { key: DiaSemana; label: string; labelCorto: string }[] = [
@@ -25,10 +37,12 @@ const DIAS: { key: DiaSemana; label: string; labelCorto: string }[] = [
   { key: 'domingo', label: 'Domingo', labelCorto: 'Dom' },
 ];
 
+// 5 categorías: desayuno, colación matutina, comida, colación vespertina, cena
 const CATEGORIAS_COMIDA: { key: string; label: string; icon: string; color: string }[] = [
   { key: 'desayuno', label: 'Desayuno', icon: '🌅', color: 'bg-amber-50 border-amber-200' },
-  { key: 'colacion', label: 'Colación', icon: '🍎', color: 'bg-green-50 border-green-200' },
+  { key: 'colacion1', label: 'Colación matutina', icon: '🍎', color: 'bg-green-50 border-green-200' },
   { key: 'comida', label: 'Comida', icon: '🍽️', color: 'bg-blue-50 border-blue-200' },
+  { key: 'colacion2', label: 'Colación vespertina', icon: '🥜', color: 'bg-orange-50 border-orange-200' },
   { key: 'cena', label: 'Cena', icon: '🌙', color: 'bg-purple-50 border-purple-200' },
 ];
 
@@ -36,12 +50,26 @@ export default function PlanSemanal({
   comidasPorDia,
   onChange,
   readOnly = false,
+  semanaActual = 1,
+  totalSemanas = 1,
+  onCambiarSemana,
+  onCopiarDia,
+  onCopiarSemana,
+  onLimpiarDia,
+  onLimpiarSemana,
+  recetasPersonalizadas = [],
+  onCrearReceta,
+  onEditarReceta,
+  onEliminarReceta,
 }: PlanSemanalProps) {
   const [selectorAbierto, setSelectorAbierto] = useState(false);
   const [diaSeleccionado, setDiaSeleccionado] = useState<DiaSemana | null>(null);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('todas');
+  const [colacionTipo, setColacionTipo] = useState<'colacion1' | 'colacion2'>('colacion1');
   const [diaExpandido, setDiaExpandido] = useState<DiaSemana | null>(null);
   const [editandoPorcion, setEditandoPorcion] = useState<{ dia: DiaSemana; comidaId: string } | null>(null);
+  const [menuCopiarDia, setMenuCopiarDia] = useState<DiaSemana | null>(null);
+  const [menuCopiarSemana, setMenuCopiarSemana] = useState(false);
 
   // Obtener IDs de comidas ya seleccionadas
   const comidasYaSeleccionadas = useMemo(() => {
@@ -62,34 +90,44 @@ export default function PlanSemanal({
     return diaData?.comidas || [];
   };
 
-  // Agrupar comidas de un día por categoría
+  // Agrupar comidas de un día por categoría (colación matutina y vespertina separadas)
   const getComidasPorCategoria = (dia: DiaSemana) => {
     const comidas = getComidasDelDia(dia);
     return {
       desayuno: comidas.filter(c => c.tipo === 'desayuno'),
-      colacion: comidas.filter(c => c.tipo === 'colacion1' || c.tipo === 'colacion2'),
+      colacion1: comidas.filter(c => c.tipo === 'colacion1'),
       comida: comidas.filter(c => c.tipo === 'comida'),
+      colacion2: comidas.filter(c => c.tipo === 'colacion2'),
       cena: comidas.filter(c => c.tipo === 'cena'),
     };
+  };
+
+  // Determinar el tipo de comida a asignar según la categoría seleccionada.
+  // Las categorías de la cuadrícula (colacion1/colacion2) coinciden con los tipos.
+  const resolverTipoComida = (comida: ComidaPrecargada): ComidaEnPlan['tipo'] => {
+    if (categoriaSeleccionada !== 'todas') {
+      return categoriaSeleccionada as ComidaEnPlan['tipo'];
+    }
+    // Sin categoría específica: mapear la categoría del catálogo.
+    // Las colaciones del catálogo usan el tipo de colación elegido (matutina/vespertina).
+    if (comida.categoria === 'colacion') return colacionTipo;
+    return comida.categoria as ComidaEnPlan['tipo'];
   };
 
   // Agregar comida a un día
   const handleAgregarComida = (comida: ComidaPrecargada) => {
     if (!diaSeleccionado) return;
 
+    const tipo = resolverTipoComida(comida);
+
     const nuevaComida: ComidaEnPlan = {
       id: crypto.randomUUID(),
       comidaPrecargadaId: comida.id,
       nombre: comida.nombre,
-      tipo: categoriaSeleccionada !== 'todas'
-        ? (categoriaSeleccionada as ComidaEnPlan['tipo'])
-        : (comida.categoria === 'colacion' ? 'colacion1' : comida.categoria as ComidaEnPlan['tipo']),
-      horario: obtenerHorarioPorDefecto(
-        categoriaSeleccionada !== 'todas'
-          ? (categoriaSeleccionada as ComidaEnPlan['tipo'])
-          : (comida.categoria === 'colacion' ? 'colacion1' : comida.categoria as ComidaEnPlan['tipo'])
-      ),
+      tipo,
+      horario: obtenerHorarioPorDefecto(tipo),
       ingredientes: comida.ingredientes,
+      preparacion: comida.preparacion?.join('\n'),
       porcion: `${comida.porciones} porción(es)`,
       porcionMultiplicador: 1,
       nutrientes: {
@@ -166,11 +204,160 @@ export default function PlanSemanal({
   const abrirSelector = (dia: DiaSemana, categoria?: string) => {
     setDiaSeleccionado(dia);
     setCategoriaSeleccionada(categoria || 'todas');
+    // Si se abre desde una colación específica, fijar el tipo de colación
+    if (categoria === 'colacion1') setColacionTipo('colacion1');
+    if (categoria === 'colacion2') setColacionTipo('colacion2');
     setSelectorAbierto(true);
   };
 
+  // Copiar contenido de un día a otro
+  const handleCopiarDia = useCallback((origen: DiaSemana, destino: DiaSemana) => {
+    if (onCopiarDia) {
+      onCopiarDia(origen, destino);
+    } else {
+      // Comportamiento por defecto: copiar comidas de origen a destino
+      const comidasOrigen = comidasPorDia.find(d => d.dia === origen)?.comidas || [];
+      if (comidasOrigen.length === 0) return;
+
+      const nuevasComidas = comidasOrigen.map(c => ({
+        ...c,
+        id: crypto.randomUUID(),
+      }));
+
+      const nuevosDias = comidasPorDia.filter(d => d.dia !== destino);
+      nuevosDias.push({ dia: destino, comidas: nuevasComidas });
+      onChange(nuevosDias);
+    }
+    setMenuCopiarDia(null);
+  }, [comidasPorDia, onChange, onCopiarDia]);
+
+  // Copiar el contenido de un día a varios días de destino (optimización de carga semanal)
+  const handleCopiarDiaAVarios = useCallback((origen: DiaSemana, destinos: DiaSemana[]) => {
+    const comidasOrigen = comidasPorDia.find(d => d.dia === origen)?.comidas || [];
+    if (comidasOrigen.length === 0 || destinos.length === 0) return;
+
+    const nuevosDias = comidasPorDia.filter(d => !destinos.includes(d.dia));
+    destinos.forEach(destino => {
+      const nuevasComidas = comidasOrigen.map(c => ({
+        ...c,
+        id: crypto.randomUUID(),
+      }));
+      nuevosDias.push({ dia: destino, comidas: nuevasComidas });
+    });
+    onChange(nuevosDias);
+    setMenuCopiarDia(null);
+  }, [comidasPorDia, onChange]);
+
+  // Copiar un día a todos los demás días de la semana
+  const handleCopiarDiaATodos = useCallback((origen: DiaSemana) => {
+    const destinos = DIAS.filter(d => d.key !== origen).map(d => d.key);
+    handleCopiarDiaAVarios(origen, destinos);
+  }, [handleCopiarDiaAVarios]);
+
+  // Copiar un día a todos los días laborables (lunes a viernes)
+  const handleCopiarDiaASemana = useCallback((origen: DiaSemana) => {
+    const laborables: DiaSemana[] = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+    const destinos = laborables.filter(d => d !== origen);
+    handleCopiarDiaAVarios(origen, destinos);
+  }, [handleCopiarDiaAVarios]);
+
+  // Copiar semana completa
+  const handleCopiarSemana = useCallback((semanaDestino: number) => {
+    if (onCopiarSemana) {
+      onCopiarSemana(semanaActual, semanaDestino);
+    }
+    setMenuCopiarSemana(false);
+  }, [semanaActual, onCopiarSemana]);
+
+  // Limpiar un día
+  const handleLimpiarDia = useCallback((dia: DiaSemana) => {
+    if (onLimpiarDia) {
+      onLimpiarDia(dia);
+    } else {
+      onChange(comidasPorDia.filter(d => d.dia !== dia));
+    }
+  }, [comidasPorDia, onChange, onLimpiarDia]);
+
+  // Limpiar toda la semana
+  const handleLimpiarSemana = useCallback(() => {
+    if (onLimpiarSemana) {
+      onLimpiarSemana();
+    } else {
+      onChange([]);
+    }
+  }, [onChange, onLimpiarSemana]);
+
   return (
     <div className="space-y-4">
+      {/* Navegación de semanas (para ciclos de menú) */}
+      {totalSemanas > 1 && (
+        <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2 border border-gray-200">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">📅 Semana</span>
+            <div className="flex gap-1">
+              {Array.from({ length: totalSemanas }, (_, i) => i + 1).map(sem => (
+                <button
+                  key={sem}
+                  type="button"
+                  onClick={() => onCambiarSemana?.(sem)}
+                  className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                    sem === semanaActual
+                      ? 'bg-blue-600 text-white font-medium'
+                      : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100'
+                  }`}
+                >
+                  {sem}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {!readOnly && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuCopiarSemana(!menuCopiarSemana)}
+                className="px-3 py-1 text-xs bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
+              >
+                📋 Copiar semana
+              </button>
+
+              {menuCopiarSemana && (
+                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[180px]">
+                  <div className="p-2">
+                    <p className="text-xs text-gray-500 mb-2 px-2">Copiar a semana:</p>
+                    {Array.from({ length: totalSemanas }, (_, i) => i + 1)
+                      .filter(s => s !== semanaActual)
+                      .map(sem => (
+                        <button
+                          key={sem}
+                          type="button"
+                          onClick={() => handleCopiarSemana(sem)}
+                          className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-blue-50 rounded transition-colors"
+                        >
+                          Semana {sem}
+                        </button>
+                      ))}
+                    {totalSemanas <= 1 && (
+                      <p className="text-xs text-gray-400 px-2 py-1">No hay otras semanas</p>
+                    )}
+                  </div>
+                  <div className="border-t border-gray-100 p-1">
+                    <button
+                      type="button"
+                      onClick={handleLimpiarSemana}
+                      className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                    >
+                      🗑️ Limpiar semana
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Vista móvil: días colapsables */}
       <div className="md:hidden space-y-2">
         {DIAS.map(({ key, label }) => {
@@ -213,6 +400,56 @@ export default function PlanSemanal({
                           {cat.icon} +{cat.label}
                         </button>
                       ))}
+                      {/* Botón copiar día */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setMenuCopiarDia(menuCopiarDia === key ? null : key)}
+                          className="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                        >
+                          📋 Copiar
+                        </button>
+                        {menuCopiarDia === key && (
+                          <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[180px]">
+                            <div className="p-2">
+                              <p className="text-xs text-gray-500 mb-2 px-2">Copiar a:</p>
+                              {DIAS.filter(d => d.key !== key).map(d => (
+                                <button
+                                  key={d.key}
+                                  type="button"
+                                  onClick={() => handleCopiarDia(key, d.key)}
+                                  className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-blue-50 rounded transition-colors"
+                                >
+                                  {d.label}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="border-t border-gray-100 p-1 space-y-0.5">
+                              <button
+                                type="button"
+                                onClick={() => handleCopiarDiaATodos(key)}
+                                className="w-full text-left px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                              >
+                                ⚡ Copiar a todos los días
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleCopiarDiaASemana(key)}
+                                className="w-full text-left px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 rounded transition-colors"
+                              >
+                                💼 Copiar a días laborables
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleLimpiarDia(key)}
+                                className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                              >
+                                🗑️ Limpiar día
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -353,15 +590,68 @@ export default function PlanSemanal({
                     </div>
                   )}
 
-                  {/* Botón agregar comida */}
+                  {/* Botones de acción del día */}
                   {!readOnly && (
-                    <button
-                      type="button"
-                      onClick={() => abrirSelector(key)}
-                      className="w-full py-1 text-xs text-blue-600 hover:bg-blue-50 rounded border border-dashed border-blue-200 transition-colors"
-                    >
-                      + Agregar comida
-                    </button>
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => abrirSelector(key)}
+                        className="w-full py-1 text-xs text-blue-600 hover:bg-blue-50 rounded border border-dashed border-blue-200 transition-colors"
+                      >
+                        + Agregar comida
+                      </button>
+
+                      {/* Menú de copiar/limpiar día */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setMenuCopiarDia(menuCopiarDia === key ? null : key)}
+                          className="w-full py-1 text-xs text-gray-500 hover:bg-gray-100 rounded border border-dashed border-gray-200 transition-colors"
+                        >
+                          📋 Más opciones
+                        </button>
+                        {menuCopiarDia === key && (
+                          <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[200px]">
+                            <div className="p-2">
+                              <p className="text-xs text-gray-500 mb-2 px-2">Copiar este día a:</p>
+                              {DIAS.filter(d => d.key !== key).map(d => (
+                                <button
+                                  key={d.key}
+                                  type="button"
+                                  onClick={() => handleCopiarDia(key, d.key)}
+                                  className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-blue-50 rounded transition-colors"
+                                >
+                                  {d.label}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="border-t border-gray-100 p-1 space-y-0.5">
+                              <button
+                                type="button"
+                                onClick={() => handleCopiarDiaATodos(key)}
+                                className="w-full text-left px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                              >
+                                ⚡ Copiar a todos los días
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleCopiarDiaASemana(key)}
+                                className="w-full text-left px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 rounded transition-colors"
+                              >
+                                💼 Copiar a días laborables (Lun-Vie)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleLimpiarDia(key)}
+                                className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                              >
+                                🗑️ Limpiar día
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -369,6 +659,19 @@ export default function PlanSemanal({
           })}
         </div>
       </div>
+
+      {/* Barra de acciones para repetición (visible solo cuando no hay navegación de semanas) */}
+      {totalSemanas <= 1 && !readOnly && comidasPorDia.length > 0 && (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={handleLimpiarSemana}
+            className="px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors"
+          >
+            🗑️ Limpiar semana
+          </button>
+        </div>
+      )}
 
       {/* Totales semanales */}
       {comidasPorDia.length > 0 && (
@@ -413,7 +716,17 @@ export default function PlanSemanal({
         }}
         onSeleccionar={handleAgregarComida}
         comidasYaSeleccionadas={comidasYaSeleccionadas}
-        categoria={categoriaSeleccionada !== 'todas' ? categoriaSeleccionada as any : undefined}
+        categoria={categoriaSeleccionada !== 'todas'
+          ? (categoriaSeleccionada === 'colacion1' || categoriaSeleccionada === 'colacion2'
+              ? 'colacion'
+              : categoriaSeleccionada as any)
+          : undefined}
+        colacionTipo={colacionTipo}
+        onCambiarColacionTipo={setColacionTipo}
+        recetasPersonalizadas={recetasPersonalizadas}
+        onCrearReceta={onCrearReceta}
+        onEditarReceta={onEditarReceta}
+        onEliminarReceta={onEliminarReceta}
       />
     </div>
   );
@@ -431,10 +744,7 @@ export default function PlanSemanal({
     return (
       <div className="space-y-2">
         {CATEGORIAS_COMIDA.map((cat) => {
-          const comidasCat = comidas.filter(c => {
-            if (cat.key === 'colacion') return c.tipo === 'colacion1' || c.tipo === 'colacion2';
-            return c.tipo === cat.key;
-          });
+          const comidasCat = comidas.filter(c => c.tipo === cat.key);
           if (comidasCat.length === 0) return null;
 
           return (

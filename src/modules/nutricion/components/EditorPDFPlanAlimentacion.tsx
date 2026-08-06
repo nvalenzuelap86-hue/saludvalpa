@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Modal from '../../../components/shared/Modal';
+import VisorPDF from '../../../components/common/VisorPDF';
 import type { PlanAlimentacion } from '../../../types/nutricion';
 import type { Configuracion, Paciente } from '../../../types';
 import { generarPDFPlanAlimentacion } from './generadorPDFPlanAlimentacion';
@@ -39,6 +40,8 @@ export default function EditorPDFPlanAlimentacion({
   const [cargando, setCargando] = useState(true);
   const [generando, setGenerando] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [verPreview, setVerPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Opciones editables
@@ -69,6 +72,18 @@ export default function EditorPDFPlanAlimentacion({
     };
     cargarConfig();
   }, []);
+
+  // ============================================================================
+  // LIMPIAR OBJETO URL DEL PDF AL DESMONTAR
+  // ============================================================================
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
 
   // ============================================================================
   // MANEJADORES DE RECOMENDACIONES
@@ -123,6 +138,14 @@ export default function EditorPDFPlanAlimentacion({
         opciones
       );
 
+      // Convertir el Blob a una URL de objeto estable para que react-pdf
+      // pueda renderizar todas las páginas (pasar el Blob directo solo
+      // renderiza la primera página en react-pdf v10).
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
       setPdfBlob(blob);
     } catch (err: any) {
       console.error('Error al generar PDF:', err);
@@ -140,6 +163,7 @@ export default function EditorPDFPlanAlimentacion({
     mensajePersonalizado,
     recomendacionesEditadas,
     notasAdicionales,
+    pdfUrl,
   ]);
 
   // ============================================================================
@@ -358,7 +382,26 @@ export default function EditorPDFPlanAlimentacion({
               <span className="text-xs text-green-500 ml-2">
                 ({(pdfBlob.size / 1024).toFixed(1)} KB)
               </span>
+              <button
+                onClick={() => setVerPreview(true)}
+                className="ml-auto px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+              >
+                👁️ Ver PDF
+              </button>
             </div>
+          </div>
+        )}
+
+        {/* Vista previa del PDF (todas las páginas) */}
+        {verPreview && pdfUrl && (
+          <div className="border border-gray-200 rounded-lg overflow-auto" style={{ height: '70vh' }}>
+            <VisorPDF
+              pdfUrl={pdfUrl}
+              onCerrar={() => setVerPreview(false)}
+              permitirDescarga={false}
+              permitirImpresion={false}
+              nombreArchivo={`Plan_Alimentacion_${paciente.nombre.replace(/\s+/g, '_')}_${paciente.apellidos.replace(/\s+/g, '_')}_${plan.nombre.replace(/\s+/g, '_')}.pdf`}
+            />
           </div>
         )}
 

@@ -6,13 +6,9 @@
 
 import { useState, useMemo } from 'react';
 import Modal from '../../../components/shared/Modal';
-import type { ComidaPrecargada } from '../../../types/nutricion';
-import {
-  comidasPrecargadas,
-  buscarComidasPorCategoria,
-  buscarComidasPorNombre,
-  obtenerComidaPorId,
-} from '../data/comidasPrecargadas';
+import type { ComidaPrecargada, RecetaPersonalizada } from '../../../types/nutricion';
+import { comidasPrecargadas } from '../data/comidasPrecargadas';
+import FormularioReceta from './FormularioReceta';
 
 interface SelectorComidasProps {
   open: boolean;
@@ -20,6 +16,14 @@ interface SelectorComidasProps {
   onSeleccionar: (comida: ComidaPrecargada) => void;
   comidasYaSeleccionadas?: string[]; // IDs of already selected meals
   categoria?: 'desayuno' | 'colacion' | 'comida' | 'cena'; // optional filter
+  // Tipo de colación a asignar cuando se agrega una colación (matutina o vespertina)
+  colacionTipo?: 'colacion1' | 'colacion2';
+  onCambiarColacionTipo?: (tipo: 'colacion1' | 'colacion2') => void;
+  // Recetas personalizadas del usuario
+  recetasPersonalizadas?: RecetaPersonalizada[];
+  onCrearReceta?: (receta: Omit<RecetaPersonalizada, 'id' | 'fechaCreacion' | 'fechaActualizacion'>) => void;
+  onEditarReceta?: (receta: RecetaPersonalizada) => void;
+  onEliminarReceta?: (id: string) => void;
 }
 
 const CATEGORIAS: { value: string; label: string; icon: string }[] = [
@@ -42,6 +46,12 @@ export default function SelectorComidas({
   onSeleccionar,
   comidasYaSeleccionadas = [],
   categoria,
+  colacionTipo = 'colacion1',
+  onCambiarColacionTipo,
+  recetasPersonalizadas = [],
+  onCrearReceta,
+  onEditarReceta,
+  onEliminarReceta,
 }: SelectorComidasProps) {
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState<string>(categoria || 'todas');
@@ -49,6 +59,9 @@ export default function SelectorComidas({
   const [filtroEtiqueta, setFiltroEtiqueta] = useState<string>('');
   const [comidaDetalle, setComidaDetalle] = useState<ComidaPrecargada | null>(null);
   const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
+  const [tabActiva, setTabActiva] = useState<'precargadas' | 'misRecetas'>('precargadas');
+  const [formularioAbierto, setFormularioAbierto] = useState(false);
+  const [recetaEnEdicion, setRecetaEnEdicion] = useState<RecetaPersonalizada | null>(null);
 
   // Reset filters when categoria prop changes
   useState(() => {
@@ -57,18 +70,46 @@ export default function SelectorComidas({
     }
   });
 
+  // Convertir recetas personalizadas al formato de ComidaPrecargada para su visualización
+  const recetasComoComidas = useMemo<ComidaPrecargada[]>(() => {
+    return recetasPersonalizadas.map((r) => ({
+      id: r.id,
+      nombre: r.nombre,
+      categoria: r.categoria,
+      descripcion: r.descripcion,
+      ingredientes: r.ingredientes,
+      preparacion: r.preparacion,
+      tiempoPreparacion: r.tiempoPreparacion,
+      dificultad: r.dificultad,
+      nutrientes: r.nutrientes,
+      porciones: r.porciones,
+      alergenos: r.alergenos,
+      etiquetas: r.etiquetas,
+      aptoPara: r.aptoPara,
+      foto: r.foto,
+      esRecetaPersonalizada: true,
+    }));
+  }, [recetasPersonalizadas]);
+
   // Filtrar comidas disponibles
   const comidasDisponibles = useMemo(() => {
-    let resultados = comidasPrecargadas;
+    // Seleccionar la fuente según la pestaña activa
+    let resultados: ComidaPrecargada[] =
+      tabActiva === 'misRecetas' ? recetasComoComidas : comidasPrecargadas;
 
     // Filtrar por categoría
     if (filtroCategoria !== 'todas') {
-      resultados = buscarComidasPorCategoria(filtroCategoria as ComidaPrecargada['categoria']);
+      resultados = resultados.filter(c => c.categoria === filtroCategoria);
     }
 
     // Filtrar por búsqueda
     if (busqueda.trim().length >= 2) {
-      resultados = buscarComidasPorNombre(busqueda);
+      const termino = busqueda.toLowerCase().trim();
+      resultados = resultados.filter(c =>
+        c.nombre.toLowerCase().includes(termino) ||
+        (c.descripcion || '').toLowerCase().includes(termino) ||
+        (c.etiquetas || []).some(tag => tag.toLowerCase().includes(termino))
+      );
     }
 
     // Filtrar por alérgeno
@@ -81,13 +122,20 @@ export default function SelectorComidas({
       resultados = resultados.filter(c => c.etiquetas?.includes(filtroEtiqueta));
     }
 
-    // Excluir ya seleccionadas
-    if (comidasYaSeleccionadas.length > 0) {
-      resultados = resultados.filter(c => !comidasYaSeleccionadas.includes(c.id));
-    }
+    // NOTA: No se excluyen las comidas ya seleccionadas. El menú seleccionado
+    // permanece visible y se marca con el número de veces que se ha usado esta semana.
 
     return resultados;
-  }, [busqueda, filtroCategoria, filtroAlergeno, filtroEtiqueta, comidasYaSeleccionadas]);
+  }, [busqueda, filtroCategoria, filtroAlergeno, filtroEtiqueta, tabActiva, recetasComoComidas]);
+
+  // Contar cuántas veces se ha usado cada comida esta semana (para marcarla como "usada").
+  const usosPorComida = useMemo(() => {
+    const conteo = new Map<string, number>();
+    comidasYaSeleccionadas.forEach((id) => {
+      conteo.set(id, (conteo.get(id) || 0) + 1);
+    });
+    return conteo;
+  }, [comidasYaSeleccionadas]);
 
   const handleSeleccionar = (comida: ComidaPrecargada) => {
     onSeleccionar(comida);
@@ -104,12 +152,46 @@ export default function SelectorComidas({
     setComidaDetalle(null);
   };
 
+  // Abrir formulario para crear una nueva receta
+  const handleNuevaReceta = () => {
+    setRecetaEnEdicion(null);
+    setFormularioAbierto(true);
+  };
+
+  // Abrir formulario para editar una receta existente
+  const handleEditarReceta = (comida: ComidaPrecargada) => {
+    const receta = recetasPersonalizadas.find(r => r.id === comida.id);
+    if (receta) {
+      setRecetaEnEdicion(receta);
+      setFormularioAbierto(true);
+    }
+  };
+
+  // Guardar receta (crear o editar)
+  const handleGuardarReceta = (datos: Omit<RecetaPersonalizada, 'id' | 'fechaCreacion' | 'fechaActualizacion'>) => {
+    if (recetaEnEdicion && onEditarReceta) {
+      onEditarReceta({ ...recetaEnEdicion, ...datos });
+    } else if (onCrearReceta) {
+      onCrearReceta(datos);
+    }
+    setFormularioAbierto(false);
+    setRecetaEnEdicion(null);
+  };
+
+  // Eliminar receta personalizada
+  const handleEliminarReceta = (comida: ComidaPrecargada) => {
+    if (onEliminarReceta && window.confirm(`¿Eliminar la receta "${comida.nombre}"?`)) {
+      onEliminarReceta(comida.id);
+    }
+  };
+
   // Obtener todas las etiquetas únicas para el filtro
   const todasLasEtiquetas = useMemo(() => {
     const etiquetas = new Set<string>();
     comidasPrecargadas.forEach(c => c.etiquetas?.forEach(e => etiquetas.add(e)));
+    recetasPersonalizadas.forEach(r => r.etiquetas?.forEach(e => etiquetas.add(e)));
     return Array.from(etiquetas).sort();
-  }, []);
+  }, [recetasPersonalizadas]);
 
   return (
     <>
@@ -126,6 +208,77 @@ export default function SelectorComidas({
               <strong>Tip:</strong> Selecciona las comidas que deseas agregar al plan.
               Puedes agregar varias seguidas. El modal se mantendrá abierto.
             </p>
+          </div>
+
+          {/* Selector de tipo de colación (matutina / vespertina) */}
+          {(categoria === 'colacion' || !categoria) && onCambiarColacionTipo && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+              <p className="text-xs font-medium text-orange-800 mb-2">
+                🥜 Las colaciones se agregarán como:
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onCambiarColacionTipo('colacion1')}
+                  className={`flex-1 px-3 py-1.5 rounded text-sm transition-colors ${
+                    colacionTipo === 'colacion1'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                  }`}
+                >
+                  🍎 Colación matutina
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onCambiarColacionTipo('colacion2')}
+                  className={`flex-1 px-3 py-1.5 rounded text-sm transition-colors ${
+                    colacionTipo === 'colacion2'
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                  }`}
+                >
+                  🥜 Colación vespertina
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Pestañas: Precargadas / Mis recetas */}
+          <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
+            <button
+              type="button"
+              onClick={() => setTabActiva('precargadas')}
+              className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
+                tabActiva === 'precargadas'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              🍽️ Precargadas
+            </button>
+            <button
+              type="button"
+              onClick={() => setTabActiva('misRecetas')}
+              className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
+                tabActiva === 'misRecetas'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              📝 Mis recetas
+              {recetasPersonalizadas.length > 0 && (
+                <span className="ml-1 text-xs opacity-80">({recetasPersonalizadas.length})</span>
+              )}
+            </button>
+            {tabActiva === 'misRecetas' && onCrearReceta && (
+              <button
+                type="button"
+                onClick={handleNuevaReceta}
+                className="ml-auto px-3 py-1.5 rounded text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-colors"
+              >
+                + Nueva receta
+              </button>
+            )}
           </div>
 
           {/* Contador */}
@@ -234,14 +387,27 @@ export default function SelectorComidas({
                         <h4 className="font-medium text-gray-900 text-sm truncate">
                           {comida.nombre}
                         </h4>
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium mt-1 ${
-                          comida.categoria === 'desayuno' ? 'bg-amber-100 text-amber-700' :
-                          comida.categoria === 'colacion' ? 'bg-green-100 text-green-700' :
-                          comida.categoria === 'comida' ? 'bg-blue-100 text-blue-700' :
-                          'bg-purple-100 text-purple-700'
-                        }`}>
-                          {comida.categoria}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-1 mt-1">
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                            comida.categoria === 'desayuno' ? 'bg-amber-100 text-amber-700' :
+                            comida.categoria === 'colacion' ? 'bg-green-100 text-green-700' :
+                            comida.categoria === 'comida' ? 'bg-blue-100 text-blue-700' :
+                            'bg-purple-100 text-purple-700'
+                          }`}>
+                            {comida.categoria}
+                          </span>
+                          {(() => {
+                            const usos = usosPorComida.get(comida.id) || 0;
+                            if (usos > 0) {
+                              return (
+                                <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
+                                  ✓ Usada {usos} {usos === 1 ? 'vez' : 'veces'} esta semana
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
                       </div>
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                         DIFICULTAD_COLORS[comida.dificultad] || 'bg-gray-100 text-gray-600'
@@ -291,6 +457,24 @@ export default function SelectorComidas({
                       >
                         📋 Detalle
                       </button>
+                      {comida.esRecetaPersonalizada && onEditarReceta && (
+                        <button
+                          type="button"
+                          onClick={() => handleEditarReceta(comida)}
+                          className="px-2 py-1.5 text-xs text-amber-700 bg-amber-50 rounded hover:bg-amber-100 transition-colors"
+                        >
+                          ✏️ Editar
+                        </button>
+                      )}
+                      {comida.esRecetaPersonalizada && onEliminarReceta && (
+                        <button
+                          type="button"
+                          onClick={() => handleEliminarReceta(comida)}
+                          className="px-2 py-1.5 text-xs text-red-700 bg-red-50 rounded hover:bg-red-100 transition-colors"
+                        >
+                          🗑️
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => handleSeleccionar(comida)}
@@ -450,6 +634,17 @@ export default function SelectorComidas({
           </div>
         )}
       </Modal>
+
+      {/* Modal de Formulario de Receta Personalizada */}
+      <FormularioReceta
+        isOpen={formularioAbierto}
+        onClose={() => {
+          setFormularioAbierto(false);
+          setRecetaEnEdicion(null);
+        }}
+        onGuardar={handleGuardarReceta}
+        recetaExistente={recetaEnEdicion}
+      />
     </>
   );
 }

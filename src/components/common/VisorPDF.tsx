@@ -3,14 +3,18 @@
 // Componente para visualizar PDFs sin necesidad de descargar
 // ============================================================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { db } from '../../db/database';
 import type { Documento } from '../../types';
 import { Button } from '../';
 
-// Configurar worker de PDF.js
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Configurar worker de PDF.js desde un origen LOCAL/empaquetado (funciona offline,
+// sin depender de la red de unpkg.com). Vite resuelve el `?url` y copia el worker
+// al bundle de salida.
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 // Estilos para react-pdf
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -43,6 +47,25 @@ const VisorPDF = ({
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [inputPagina, setInputPagina] = useState<string>('1');
+  // Ancho disponible del área de visualización para ajustar las páginas al contenedor
+  const [anchoContenedor, setAnchoContenedor] = useState<number>(0);
+  const areaRef = useRef<HTMLDivElement>(null);
+
+  // Medir el ancho real del área de visualización para que las páginas siempre
+  // quepan dentro del contenedor (evita que se recorten o desaparezcan).
+  useEffect(() => {
+    const medir = () => {
+      if (areaRef.current) {
+        setAnchoContenedor(areaRef.current.clientWidth);
+      }
+    };
+    medir();
+    const observer = new ResizeObserver(medir);
+    if (areaRef.current) {
+      observer.observe(areaRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
 
   // Cargar documento desde IndexedDB si se proporciona documentoId
   useEffect(() => {
@@ -432,8 +455,8 @@ const VisorPDF = ({
       </div>
 
       {/* Área de visualización del PDF */}
-      <div className="flex-1 overflow-auto bg-gray-200 p-4">
-        <div className="flex justify-center">
+      <div ref={areaRef} className="flex-1 overflow-auto bg-gray-200 p-4">
+        <div className="flex flex-col items-center gap-4">
           <Document
             file={pdfData}
             onLoadSuccess={handleDocumentLoadSuccess}
@@ -444,14 +467,23 @@ const VisorPDF = ({
               </div>
             }
           >
-            {/* FASE 2: Navegación entre páginas con zoom */}
+            {/* Renderizar UNA página a la vez con navegación (◀ ▶).
+                Este es el patrón más fiable en react-pdf v10: renderizar todas las
+                páginas en un scroll (especialmente combinando `scale` y `width`)
+                provoca que solo la primera página se renderice de forma fiable.
+                Se usa `width` SOLO (sin `scale`) para que la página se ajuste al
+                ancho del contenedor; el zoom se aplica dividiendo el ancho. */}
             <Page
+              key={`page_${paginaActual}`}
               pageNumber={paginaActual}
               renderTextLayer={true}
               renderAnnotationLayer={true}
               className="shadow-lg bg-white"
-              scale={zoom}
-              width={Math.min(window.innerWidth - 100, 800) / zoom}
+              width={anchoContenedor > 0 ? anchoContenedor / zoom : undefined}
+              onLoadError={(err) => {
+                console.error(`Error al cargar la página ${paginaActual}:`, err);
+                setError(`No se pudo cargar la página ${paginaActual}. Intenta descargarlo.`);
+              }}
             />
           </Document>
         </div>

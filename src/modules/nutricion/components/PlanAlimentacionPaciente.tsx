@@ -4,7 +4,7 @@
 // Incluye lista de compras para planes semanales y generación de PDF
 // ============================================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Modal from '../../../components/shared/Modal';
 import type { PlanAlimentacion, ComidaEnPlan, SeguimientoNutricional } from '../../../types/nutricion';
 import type { Paciente } from '../../../types';
@@ -112,7 +112,30 @@ export default function PlanAlimentacionPaciente({ plan, onVolver, paciente }: P
     await eliminarComida(plan.id, comidaId);
   };
 
-  const totalComidas = Object.values(plan.distribucionComidas).reduce(
+  // Unificar las comidas por tipo. Si el plan usa la estructura semanal (comidasPorDia),
+  // agrupar las comidas de todos los días por tipo; de lo contrario usar distribucionComidas.
+  const distribucionComidas = useMemo(() => {
+    if (plan.comidasPorDia && plan.comidasPorDia.length > 0) {
+      const agrupadas: Record<ComidaEnPlan['tipo'], ComidaEnPlan[]> = {
+        desayuno: [],
+        colacion1: [],
+        comida: [],
+        colacion2: [],
+        cena: [],
+      };
+      plan.comidasPorDia.forEach(dia => {
+        dia.comidas.forEach(c => {
+          if (agrupadas[c.tipo]) {
+            agrupadas[c.tipo].push(c);
+          }
+        });
+      });
+      return agrupadas;
+    }
+    return plan.distribucionComidas;
+  }, [plan.comidasPorDia, plan.distribucionComidas]);
+
+  const totalComidas = Object.values(distribucionComidas).reduce(
     (sum, arr) => sum + arr.length, 0
   );
 
@@ -249,7 +272,7 @@ export default function PlanAlimentacionPaciente({ plan, onVolver, paciente }: P
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Plan de comidas</h3>
         <div className="space-y-4">
           {TIPOS_COMIDA.map(({ key, label, icon }) => {
-            const comidas = plan.distribucionComidas[key];
+            const comidas = distribucionComidas[key];
             return (
               <div key={key} className="border border-gray-200 rounded-lg overflow-hidden">
                 <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">

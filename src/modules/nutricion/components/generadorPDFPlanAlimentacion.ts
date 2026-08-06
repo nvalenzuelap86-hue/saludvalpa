@@ -127,7 +127,10 @@ export async function generarPDFPlanAlimentacion(
   // FUNCIÓN AUXILIAR: Verificar espacio y nueva página
   // ============================================================================
   const checkSpace = (needed: number = 20) => {
-    if (y > 260) {
+    // Usar el espacio requerido para decidir si se necesita una nueva página.
+    // La página 'letter' tiene ~279mm de alto; el pie de página ocupa hasta ~292.
+    const limite = 260;
+    if (y + needed > limite) {
       doc.addPage();
       agregarMarcaDeAgua();
       y = MARGEN;
@@ -391,10 +394,13 @@ export async function generarPDFPlanAlimentacion(
       for (const receta of recetasUnicas) {
         checkSpace(35);
 
+        // Nombre de la receta: usar splitTextToSize para que el nombre largo
+        // se envuelva correctamente y NO se superponga con el contenido siguiente.
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text(receta.nombre, MARGEN, y);
-        y += 6;
+        const nombreLineas = doc.splitTextToSize(receta.nombre, pageWidth - MARGEN * 2);
+        doc.text(nombreLineas, MARGEN, y);
+        y += nombreLineas.length * 5 + 2;
 
         // Ingredientes
         doc.setFontSize(9);

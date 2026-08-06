@@ -24,6 +24,7 @@ export default function GestionPlanesAlimentacion({ paciente }: GestionPlanesAli
     planes,
     planesActivos,
     plantillas,
+    recetas,
     crearPlan,
     actualizarPlan,
     eliminarPlan,
@@ -35,6 +36,9 @@ export default function GestionPlanesAlimentacion({ paciente }: GestionPlanesAli
     filtrarPlanes,
     obtenerEstadisticas,
     obtenerPlanesPaciente,
+    crearReceta,
+    actualizarReceta,
+    eliminarReceta,
   } = usePlanesAlimentacion();
 
   const [vista, setVista] = useState<Vista>('lista');
@@ -78,6 +82,7 @@ export default function GestionPlanesAlimentacion({ paciente }: GestionPlanesAli
       esPlantilla?: boolean;
       requerimientos?: PlanAlimentacion['requerimientos'];
       distribucionComidas?: PlanAlimentacion['distribucionComidas'];
+      comidasPorDia?: PlanAlimentacion['comidasPorDia'];
       recomendaciones?: string[];
     }
   ) => {
@@ -99,6 +104,7 @@ export default function GestionPlanesAlimentacion({ paciente }: GestionPlanesAli
       esPlantilla?: boolean;
       requerimientos?: PlanAlimentacion['requerimientos'];
       distribucionComidas?: PlanAlimentacion['distribucionComidas'];
+      comidasPorDia?: PlanAlimentacion['comidasPorDia'];
       recomendaciones?: string[];
     }
   ) => {
@@ -109,6 +115,7 @@ export default function GestionPlanesAlimentacion({ paciente }: GestionPlanesAli
       esPlantilla: opciones?.esPlantilla,
       requerimientos: opciones?.requerimientos,
       distribucionComidas: opciones?.distribucionComidas,
+      comidasPorDia: opciones?.comidasPorDia,
       recomendaciones: opciones?.recomendaciones,
     });
     setVista('lista');
@@ -179,6 +186,7 @@ export default function GestionPlanesAlimentacion({ paciente }: GestionPlanesAli
                 esPlantilla?: boolean;
                 requerimientos?: PlanAlimentacion['requerimientos'];
                 distribucionComidas?: PlanAlimentacion['distribucionComidas'];
+                comidasPorDia?: PlanAlimentacion['comidasPorDia'];
                 recomendaciones?: string[];
               }
             ) => {
@@ -189,6 +197,10 @@ export default function GestionPlanesAlimentacion({ paciente }: GestionPlanesAli
               }
             }}
             onCancelar={() => { setVista('lista'); setPlanSeleccionado(null); }}
+            recetasPersonalizadas={recetas}
+            onCrearReceta={crearReceta}
+            onEditarReceta={actualizarReceta}
+            onEliminarReceta={eliminarReceta}
           />
         </div>
       )}

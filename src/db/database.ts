@@ -27,6 +27,8 @@ import type {
   PlanAlimentacion,
   ComidaEnPlanDB,
   SeguimientoNutricional,
+  RecetaPersonalizada,
+  MenuCycle,
 } from '../types/nutricion';
 
 export class SaludValpaDatabase extends Dexie {
@@ -53,6 +55,9 @@ export class SaludValpaDatabase extends Dexie {
   planesAlimentacion!: Table<PlanAlimentacion, string>;
   comidas!: Table<ComidaEnPlanDB, string>;
   seguimientoNutricional!: Table<SeguimientoNutricional, string>;
+  // Tablas para recetas personalizadas y ciclos de menú
+  recetas!: Table<RecetaPersonalizada, string>;
+  menuCycles!: Table<MenuCycle, string>;
 
   constructor() {
     super('SaludValpaDB');
@@ -199,6 +204,32 @@ export class SaludValpaDatabase extends Dexie {
       planesAlimentacion: 'id, nombre, objetivo, pacienteId, activo, esPlantilla, usuarioCreadorId, fechaCreacion, fechaActualizacion, profesion',
       comidas: 'id, planId, tipo, horario, orden, fechaCreacion',
       seguimientoNutricional: 'id, planId, pacienteId, fecha, cumplimiento, profesion, fechaCreacion',
+    });
+
+    // Versión 6: Agregar tablas para recetas personalizadas y ciclos de menú
+    this.version(6).stores({
+      pacientes: 'id, nombre, apellidos, fechaNacimiento, fechaCreacion, ultimaConsulta, activo, profesionPrincipal',
+      sesiones: 'id, pacienteId, profesionalId, fecha, fechaCreacion, profesion',
+      citas: 'id, pacienteId, profesionalId, fechaHora, estado, fechaCreacion, profesion',
+      documentos: 'id, tipo, pacienteId, profesionalId, fechaGeneracion, profesion',
+      configuracion: 'id',
+      usuarios: 'id, email, activo, profesion',
+      servicios: 'id, nombre, profesion, activo',
+      cotizaciones: 'id, pacienteId, fecha, estado, profesion',
+      recibos: 'id, numero, pacienteId, fecha, estadoPago, profesion',
+      biblioteca: 'id, profesion, categoria, titulo, favorito',
+      ejercicios: 'id, nombre, categoria, precargado, favorito, usuarioCreadorId, fechaCreacion, profesion',
+      rutinas: 'id, nombre, pacienteId, esPlantilla, activa, usuarioCreadorId, fechaCreacion, fechaActualizacion, profesion',
+      seguimientoRutinas: 'id, rutinaId, pacienteId, fecha, fechaCreacion, profesion',
+      diagnosticos: 'id, pacienteId, profesion, fecha, activo',
+      signosVitales: 'id, pacienteId, profesion, fecha',
+      antecedentes: 'id, pacienteId, tipo, activo',
+      planesAlimentacion: 'id, nombre, objetivo, pacienteId, activo, esPlantilla, usuarioCreadorId, fechaCreacion, fechaActualizacion, profesion',
+      comidas: 'id, planId, tipo, horario, orden, fechaCreacion',
+      seguimientoNutricional: 'id, planId, pacienteId, fecha, cumplimiento, profesion, fechaCreacion',
+      // Nuevas tablas para recetas personalizadas y ciclos de menú
+      recetas: 'id, nombre, categoria, favorita, usuarioCreadorId, fechaCreacion, fechaActualizacion',
+      menuCycles: 'id, nombre, planId, activo, fechaCreacion, fechaActualizacion',
     });
   }
 }

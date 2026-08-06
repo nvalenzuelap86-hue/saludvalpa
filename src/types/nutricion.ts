@@ -9,6 +9,8 @@
 
 export type DiaSemana = 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo';
 
+export const DIAS_SEMANA: DiaSemana[] = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+
 // ----------------------------------------------------------------------------
 // COMIDA EN UN DÍA (para planificación semanal)
 // ----------------------------------------------------------------------------
@@ -16,6 +18,57 @@ export type DiaSemana = 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' 
 export interface ComidaEnDia {
   dia: DiaSemana;
   comidas: ComidaEnPlan[];
+}
+
+// ----------------------------------------------------------------------------
+// RECETA PERSONALIZADA (Creada por el usuario)
+// ----------------------------------------------------------------------------
+
+export interface RecetaPersonalizada {
+  id: string;
+  nombre: string;
+  categoria: 'desayuno' | 'colacion' | 'comida' | 'cena';
+  descripcion: string;
+  ingredientes: string[];
+  preparacion: string[];
+  tiempoPreparacion: number; // minutos
+  dificultad: 'facil' | 'media' | 'avanzada';
+  nutrientes: {
+    calorias: number;
+    proteinas: number;
+    carbohidratos: number;
+    grasas: number;
+    fibra?: number;
+  };
+  porciones: number;
+  alergenos?: string[];
+  etiquetas?: string[];
+  aptoPara?: string[];
+  foto?: string;
+  usuarioCreadorId?: string;
+  favorita: boolean;
+  fechaCreacion: Date;
+  fechaActualizacion: Date;
+}
+
+// ----------------------------------------------------------------------------
+// CICLO DE MENÚ (para repetición semanal)
+// ----------------------------------------------------------------------------
+
+export interface MenuCycle {
+  id: string;
+  nombre: string;
+  planId: string;
+  semanas: MenuCycleWeek[];
+  activo: boolean;
+  fechaCreacion: Date;
+  fechaActualizacion: Date;
+}
+
+export interface MenuCycleWeek {
+  numero: number; // 1-based week number within the cycle
+  nombre: string; // e.g., "Semana A", "Semana B"
+  comidasPorDia: ComidaEnDia[];
 }
 
 // ----------------------------------------------------------------------------
@@ -43,6 +96,7 @@ export interface ComidaPrecargada {
   etiquetas?: string[];
   aptoPara?: string[]; // ['diabetico', 'vegano', 'celiaco', ...]
   foto?: string; // URL o base64
+  esRecetaPersonalizada?: boolean; // Flag to distinguish custom recipes
 }
 
 // ----------------------------------------------------------------------------
@@ -123,6 +177,12 @@ export interface PlanAlimentacion {
     descripcion: string;
     usuarioId: string;
   }[];
+  // Ciclo de menú (para repetición semanal)
+  menuCycles?: MenuCycle[];
+  menuCycleActivoId?: string;
+  // Configuración de repetición
+  repetirMenu?: boolean;
+  semanasRepeticion?: number; // Cada cuántas semanas se repite (1 = semanal, 2 = quincenal, etc.)
 }
 
 // ----------------------------------------------------------------------------

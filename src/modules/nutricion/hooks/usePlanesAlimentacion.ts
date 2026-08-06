@@ -6,7 +6,7 @@
 
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../../db/database';
-import type { PlanAlimentacion, ComidaEnPlan, ComidaEnDia, SeguimientoNutricional, FiltrosPlanes, EstadisticasPlanes, CrearPlanOptions } from '../../../types/nutricion';
+import type { PlanAlimentacion, ComidaEnPlan, ComidaEnDia, SeguimientoNutricional, FiltrosPlanes, EstadisticasPlanes, CrearPlanOptions, RecetaPersonalizada, MenuCycle } from '../../../types/nutricion';
 import { v4 as uuidv4 } from 'uuid';
 
 export function usePlanesAlimentacion() {
@@ -32,6 +32,24 @@ export function usePlanesAlimentacion() {
   const plantillas = useLiveQuery(
     () => db.planesAlimentacion
       .where('esPlantilla').equals(1)
+      .toArray(),
+    []
+  ) || [];
+
+  // Recetas personalizadas del usuario
+  const recetas = useLiveQuery(
+    () => db.recetas
+      .orderBy('fechaCreacion')
+      .reverse()
+      .toArray(),
+    []
+  ) || [];
+
+  // Ciclos de menú (repetición semanal)
+  const menuCycles = useLiveQuery(
+    () => db.menuCycles
+      .orderBy('fechaCreacion')
+      .reverse()
       .toArray(),
     []
   ) || [];
@@ -85,6 +103,7 @@ export function usePlanesAlimentacion() {
       esPlantilla?: boolean;
       requerimientos?: PlanAlimentacion['requerimientos'];
       distribucionComidas?: PlanAlimentacion['distribucionComidas'];
+      comidasPorDia?: ComidaEnDia[];
       recomendaciones?: string[];
     }
   ): Promise<string> => {
@@ -112,6 +131,7 @@ export function usePlanesAlimentacion() {
         colacion2: [],
         cena: [],
       },
+      comidasPorDia: opciones?.comidasPorDia,
       recomendaciones: opciones?.recomendaciones || [],
       fechaCreacion: now,
       fechaActualizacion: now,
@@ -676,6 +696,144 @@ export function usePlanesAlimentacion() {
   };
 
   // ============================================================================
+  // RECETAS PERSONALIZADAS (CRUD)
+  // ============================================================================
+
+  /**
+   * Crear una nueva receta personalizada
+   */
+  const crearReceta = async (
+    datos: Omit<RecetaPersonalizada, 'id' | 'fechaCreacion' | 'fechaActualizacion'>
+  ): Promise<string> => {
+    const ahora = new Date();
+    const id = uuidv4();
+    const receta: RecetaPersonalizada = {
+      ...datos,
+      id,
+      fechaCreacion: ahora,
+      fechaActualizacion: ahora,
+    };
+    await db.recetas.add(receta);
+    return id;
+  };
+
+  /**
+   * Actualizar una receta personalizada existente
+   */
+  const actualizarReceta = async (receta: RecetaPersonalizada): Promise<void> => {
+    await db.recetas.update(receta.id, {
+      ...receta,
+      fechaActualizacion: new Date(),
+    });
+  };
+
+  /**
+   * Eliminar una receta personalizada
+   */
+  const eliminarReceta = async (id: string): Promise<void> => {
+    await db.recetas.delete(id);
+  };
+
+  /**
+   * Obtener una receta personalizada por su id
+   */
+  const obtenerReceta = async (id: string): Promise<RecetaPersonalizada | undefined> => {
+    return db.recetas.get(id);
+  };
+
+  /**
+   * Marcar/desmarcar una receta como favorita
+   */
+  const toggleRecetaFavorita = async (id: string): Promise<void> => {
+    const receta = await db.recetas.get(id);
+    if (receta) {
+      await db.recetas.update(id, {
+        favorita: !receta.favorita,
+        fechaActualizacion: new Date(),
+      });
+    }
+  };
+
+  // ============================================================================
+  // CICLOS DE MENÚ (Repetición semanal)
+  // ============================================================================
+
+  /**
+   * Crear un ciclo de menú para un plan
+   */
+  const crearMenuCycle = async (
+    planId: string,
+    nombre: string,
+    semanas: MenuCycle['semanas']
+  ): Promise<string> => {
+    const ahora = new Date();
+    const id = uuidv4();
+    const ciclo: MenuCycle = {
+      id,
+      nombre,
+      planId,
+      semanas,
+      activo: false,
+      fechaCreacion: ahora,
+      fechaActualizacion: ahora,
+    };
+    await db.menuCycles.add(ciclo);
+    return id;
+  };
+
+  /**
+   * Actualizar un ciclo de menú existente
+   */
+  const actualizarMenuCycle = async (ciclo: MenuCycle): Promise<void> => {
+    await db.menuCycles.update(ciclo.id, {
+      ...ciclo,
+      fechaActualizacion: new Date(),
+    });
+  };
+
+  /**
+   * Eliminar un ciclo de menú
+   */
+  const eliminarMenuCycle = async (id: string): Promise<void> => {
+    await db.menuCycles.delete(id);
+  };
+
+  /**
+   * Obtener los ciclos de menú de un plan
+   */
+  const obtenerMenuCyclesDePlan = async (planId: string): Promise<MenuCycle[]> => {
+    return db.menuCycles
+      .where('planId').equals(planId)
+      .reverse()
+      .sortBy('fechaCreacion');
+  };
+
+  /**
+   * Activar un ciclo de menú (desactiva los demás del mismo plan)
+   */
+  const activarMenuCycle = async (id: string, planId: string): Promise<void> => {
+    await db.transaction('rw', db.menuCycles, async () => {
+      // Desactivar todos los ciclos del plan
+      const ciclos = await db.menuCycles.where('planId').equals(planId).toArray();
+      for (const c of ciclos) {
+        await db.menuCycles.update(c.id, { activo: false, fechaActualizacion: new Date() });
+      }
+      // Activar el ciclo seleccionado
+      await db.menuCycles.update(id, { activo: true, fechaActualizacion: new Date() });
+    });
+  };
+
+  /**
+   * Obtener el ciclo de menú activo de un plan
+   */
+  const obtenerMenuCycleActivo = async (planId: string): Promise<MenuCycle | undefined> => {
+    return db.menuCycles
+      .where('planId').equals(planId)
+      .and(c => c.activo === true)
+      .first();
+  };
+
+  // ============================================================================
   // RETORNO
   // ============================================================================
 
@@ -684,6 +842,8 @@ export function usePlanesAlimentacion() {
     planes,
     planesActivos,
     plantillas,
+    recetas,
+    menuCycles,
     obtenerPlanesPaciente,
     obtenerPlanCompleto,
     obtenerEstadisticas,
@@ -713,6 +873,21 @@ export function usePlanesAlimentacion() {
 
     // Seguimiento
     registrarSeguimiento,
+
+    // Recetas personalizadas
+    crearReceta,
+    actualizarReceta,
+    eliminarReceta,
+    obtenerReceta,
+    toggleRecetaFavorita,
+
+    // Ciclos de menú
+    crearMenuCycle,
+    actualizarMenuCycle,
+    eliminarMenuCycle,
+    obtenerMenuCyclesDePlan,
+    activarMenuCycle,
+    obtenerMenuCycleActivo,
 
     // Lista de compras
     generarListaCompras,
