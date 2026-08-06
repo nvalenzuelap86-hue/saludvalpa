@@ -102,15 +102,13 @@ export default function PlanSemanal({
     };
   };
 
-  // Determinar el tipo de comida a asignar según la categoría seleccionada.
-  // Las categorías de la cuadrícula (colacion1/colacion2) coinciden con los tipos.
+  // Determinar el tipo de comida a asignar según la categoría de cada comida del catálogo.
+  // Esto garantiza que cada comida se ordene en su propia categoría, tanto en escritorio
+  // como en móvil, independientemente del botón que abrió el selector.
   const resolverTipoComida = (comida: ComidaPrecargada): ComidaEnPlan['tipo'] => {
-    if (categoriaSeleccionada !== 'todas') {
-      return categoriaSeleccionada as ComidaEnPlan['tipo'];
-    }
-    // Sin categoría específica: mapear la categoría del catálogo.
-    // Las colaciones del catálogo usan el tipo de colación elegido (matutina/vespertina).
+    // Colaciones del catálogo usan el tipo de colación elegido (matutina/vespertina)
     if (comida.categoria === 'colacion') return colacionTipo;
+    // Todas las demás comidas usan su propia categoría del catálogo
     return comida.categoria as ComidaEnPlan['tipo'];
   };
 
